@@ -102,3 +102,9 @@ dist
 
 # TernJS port file
 .tern-port
+muttle.iml
+
+# misc
+.idea/
+.DS_Store
+build/
