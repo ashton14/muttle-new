@@ -7,7 +7,7 @@
   "main": "src/index.ts",
   "scripts": {
     "start-dev": "PORT=3001 react-scripts start",
-    "build": "react-scripts build",
+    "build": "npm run test && react-scripts build",
     "test": "jest",
     "eject": "react-scripts eject",
     "lint": "gts lint",
@@ -19,9 +19,14 @@
     "posttest": "npm run lint"
   },
   "dependencies": {
+    "axios": "^0.21.1",
+    "bootstrap": "^4.5.3",
     "react": "^17.0.1",
+    "react-bootstrap": "^1.4.3",
     "react-dom": "^17.0.1",
-    "react-scripts": "4.0.1",
+    "react-router-dom": "^5.2.0",
+    "react-scripts": "3.4.4",
+    "react-syntax-highlighter": "^15.4.3",
     "web-vitals": "^0.2.4"
   },
   "eslintConfig": {
@@ -52,7 +57,8 @@
     "@types/node": "^14.11.2",
     "@types/react": "^16.14.2",
     "@types/react-dom": "^16.9.10",
-    "babel-jest": "^26.6.3",
+    "@types/react-router-dom": "^5.1.7",
+    "@types/react-syntax-highlighter": "^13.5.0",
     "gts": "^3.1.0",
     "jest-transform-stub": "^2.0.0",
     "react-test-renderer": "^17.0.1",

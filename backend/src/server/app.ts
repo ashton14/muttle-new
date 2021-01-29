@@ -8,6 +8,17 @@ app.set('port', process.env.PORT || 3000);
 const publicDir = path.join(__dirname, '../..', 'public');
 app.use(express.static(publicDir));
 
+app.use((req, res, next) => {
+  console.log(`Handling ${req.path}/${req.method}`);
+  res.header('Access-Control-Allow-Origin', 'http://localhost:3001');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Allow-Headers', 'Content-Type');
+  res.header('Access-Control-Expose-Headers', 'Content-Type, Location');
+  res.header('Access-Control-Allow-Methods', 'POST, GET, PUT, DELETE');
+  next();
+});
+
+
 app.options('/*', (req, res) => res.status(200).end());
 app.use(express.json());
 
