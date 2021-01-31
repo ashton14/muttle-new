@@ -1,7 +1,21 @@
 #! /bin/sh
-# Script to run muttle web application, should be run from the project root.
+# Script to run muttle web application, should be run ONLY from the project root.
+# Commands:
+#  - install: Installs all dependencies via NPM for both frontend/backend.
+#  - build: Generates build artifacts for frontend/backend.
+#    - frontend: Uses react-scripts build to generate optimized static assets.
+#    - backend: Transpiles Typescript to Javscript and type declarations (not currently used, server
+#      instead uses ts-node).
+# - run: Runs the application. May be used in development mode to enable live reloads on backend/
+#   frontend applications.
+# - clean: Remove build artifacts and node modules.
+# - clean-install: Runs "npm ci", which performs a clean install of node_modules for backend/frontend
+#    applications.
+# - help: Print help message.
 
-PACKAGE_ROOT="$HOME/workplace/CSER/muttle"
+# TODO - Design a more robust method of determining package root (currrently reliant on running from
+#  the package root). Possibly replace shell script completely.
+PACKAGE_ROOT=$(pwd)
 FRONTEND="${PACKAGE_ROOT}/frontend"
 BACKEND="${PACKAGE_ROOT}/backend"
 
@@ -49,10 +63,18 @@ clean_install() {
 }
 
 help() {
-  echo "Usage: muttle <command> [--dev]"
+  echo "Usage: muttle <command> [--dev | -D | --no-build]"
   echo
   echo "Where <command> is one of:"
   echo "  run, build, install, clean, clean-install"
+  echo ""
+  echo "For the run command, optionally specify one of the following options:"
+  echo "  --dev | -D: Run the application in development mode, with live reloads"
+  echo "              on changes to the frontend/backend applications. Frontend is"
+  echo "              accessible via the port used by react-scripts start (3001)."
+  echo "  --no-build: Run the application, skipping the build and install steps."
+  echo "              Note the development option supersedes this and already skips"
+  echo "              the build/install steps."
   exit 0
 }
 
@@ -64,7 +86,7 @@ case $key in
     DEVELOPMENT=true
     shift
     ;;
-  -h|--help)
+  -h|-H|--help|help)
     HELP=true
     shift
     ;;
@@ -105,6 +127,8 @@ case "$COMMAND" in
     ;;
   *)
     echo "Unrecognized command: ${COMMAND}"
+    echo
+    help
     exit 1
     ;;
 esac
