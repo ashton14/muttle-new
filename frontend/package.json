@@ -16,7 +16,8 @@
     "fix": "gts fix",
     "prepare": "npm run compile",
     "pretest": "npm run compile",
-    "posttest": "npm run lint"
+    "posttest": "npm run lint",
+    "postinstall": "patch-package"
   },
   "dependencies": {
     "axios": "^0.21.1",
@@ -25,15 +26,9 @@
     "react-bootstrap": "^1.4.3",
     "react-dom": "^17.0.1",
     "react-router-dom": "^5.2.0",
-    "react-scripts": "3.4.4",
+    "react-scripts": "4.0.1",
     "react-syntax-highlighter": "^15.4.3",
     "web-vitals": "^0.2.4"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
   },
   "browserslist": {
     "production": [
@@ -61,6 +56,8 @@
     "@types/react-syntax-highlighter": "^13.5.0",
     "gts": "^3.1.0",
     "jest-transform-stub": "^2.0.0",
+    "patch-package": "^6.2.2",
+    "postinstall-postinstall": "^2.1.0",
     "react-test-renderer": "^17.0.1",
     "ts-node": "^9.1.1",
     "typescript": "^4.0.3"

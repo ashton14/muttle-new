@@ -8,35 +8,25 @@ const testCases = express.Router();
 testCases.post('/', async (req: Request, res: Response) => {
   const entityManager = getManager();
   const {id, input, output, exerciseId} = req.body;
-  console.log(
-    `{id: ${id}, input: ${input}, output: ${output}, exerciseId: ${exerciseId}}`
-  );
 
   const exercise = entityManager.create(Exercise, {id: exerciseId});
   const newTest = {input, output, exercise};
 
   try {
     if (id) {
-      console.log(`Checking for existing with id=${id}`);
       const existing = await entityManager.findOne(TestCase, id);
       if (
         existing &&
         (existing.input !== input || existing.output !== output)
       ) {
-        console.log('Found existing, input/output differs:');
-        console.log(existing);
         const savedNewTest = (await entityManager.save(
           TestCase,
           newTest
         )) as TestCase;
-        console.log('Saved:');
-        console.log(savedNewTest);
 
         const updated = entityManager.merge(TestCase, existing, {
           fixedId: savedNewTest.id,
         });
-        console.log('Updating with fixedId');
-        console.log(updated);
         await entityManager.save(TestCase, updated);
       }
     } else {

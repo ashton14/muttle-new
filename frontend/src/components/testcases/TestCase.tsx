@@ -6,7 +6,6 @@ const GREEN_CHECK = String.fromCodePoint(0x2705);
 const CROSS_MARK = String.fromCodePoint(0x274c);
 
 interface TestCaseProps {
-  id: number;
   input: string;
   setInput: (input: string) => void;
   output: string;
@@ -16,7 +15,6 @@ interface TestCaseProps {
 }
 
 const TestCase = ({
-  id,
   input,
   setInput,
   output,

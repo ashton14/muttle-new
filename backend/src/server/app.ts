@@ -10,14 +10,19 @@ app.use(express.static(publicDir));
 
 app.use((req, res, next) => {
   console.log(`Handling ${req.path}/${req.method}`);
-  res.header('Access-Control-Allow-Origin', 'http://localhost:3001');
+  const allowedOrigins = ['http://localhost:3001', 'http://192.168.0.216:3001'];
+  const origin = req.headers.origin;
+
+  if (origin && allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
+
   res.header('Access-Control-Allow-Credentials', 'true');
   res.header('Access-Control-Allow-Headers', 'Content-Type');
   res.header('Access-Control-Expose-Headers', 'Content-Type, Location');
   res.header('Access-Control-Allow-Methods', 'POST, GET, PUT, DELETE');
-  next();
+  return next();
 });
-
 
 app.options('/*', (req, res) => res.status(200).end());
 app.use(express.json());
