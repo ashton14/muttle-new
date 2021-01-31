@@ -6,6 +6,7 @@ import {Switch, Route, withRouter} from 'react-router-dom';
 import {Nav, Navbar} from 'react-bootstrap';
 import ExerciseList from './exercises/ExerciseList';
 import Home from './home/Home';
+import NewExercise from './exercises/NewExercise';
 
 const App = () => {
   return (
@@ -20,11 +21,8 @@ const App = () => {
       <Switch>
         <Route exact path="/" component={Home} />
         <Route exact path={'/exercises/'} component={ExerciseList} />
-        <Route path="/exercises/:exerciseId" children={<Exercise />} />
-        <Route
-          path="/exercises/new"
-          render={() => <Body text="new exercises" />}
-        />
+        <Route path="/exercises/new" component={NewExercise} />
+        <Route path="/exercises/:exerciseId" component={Exercise} />
       </Switch>
     </div>
   );

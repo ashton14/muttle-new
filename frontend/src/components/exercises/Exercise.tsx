@@ -1,15 +1,16 @@
 import React, {useEffect, useState} from 'react';
 import {useHistory, useParams} from 'react-router-dom';
 import SyntaxHighlighter from 'react-syntax-highlighter';
+
 import {
   deleteTestCase,
-  ExerciseModel,
+  SavedExercise,
   getExercise,
   getTestCases,
   newTestCase,
   runTests,
-  SavedTestCaseModel,
-  TestCaseModel,
+  SavedTestCase,
+  NewTestCase,
 } from '../../api';
 import TestCase from '../testcases/TestCase';
 import TestCaseTable from '../testcases/TestCaseTable';
@@ -20,29 +21,32 @@ interface RouteParams {
   exerciseId: string;
 }
 
-
-const displayTests = (tests: SavedTestCaseModel[]) =>
-    tests.filter(test => test.visible && !test.fixedId)
-    .sort((t1, t2) => t1.passed && !t2.passed ? -1 : !t1.passed && t2.passed ? 1 : 0);
+const displayTests = (tests: SavedTestCase[]) =>
+  tests
+    .filter(test => test.visible && !test.fixedId)
+    .sort((t1, t2) =>
+      t1.passed && !t2.passed ? -1 : !t1.passed && t2.passed ? 1 : 0
+    );
 
 const Exercise = () => {
-  const [exercise, setExercise] = useState<ExerciseModel>();
-  const [tests, setTests] = useState<SavedTestCaseModel[]>([]);
-  const [newTests, setNewTests] = useState<TestCaseModel[]>([]);
+  const [exercise, setExercise] = useState<SavedExercise>();
+  const [tests, setTests] = useState<SavedTestCase[]>([]);
+  const [newTests, setNewTests] = useState<NewTestCase[]>([]);
 
   const history = useHistory();
   const {exerciseId: idString} = useParams<RouteParams>();
   const exerciseId = parseInt(idString);
 
   useEffect(() => {
-    Promise.all([getExercise(exerciseId), getTestCases(exerciseId)])
-    .then(([exercise, tests]) => {
-      if (!exercise) {
-        history.push('/exercises');
+    Promise.all([getExercise(exerciseId), getTestCases(exerciseId)]).then(
+      ([exercise, tests]) => {
+        if (!exercise) {
+          history.push('/exercises');
+        }
+        setExercise(exercise);
+        setTests(displayTests(tests));
       }
-      setExercise(exercise);
-      setTests(displayTests(tests));
-    });
+    );
   }, [history, exerciseId]);
 
   if (!exercise) {
@@ -94,8 +98,9 @@ const Exercise = () => {
 
   const saveTestCases = () => {
     const testsToSave = newTests.filter(({input, output}) => input || output);
-    const testsToUpdate = tests.filter(({passed}) => !passed)
-    .map(test => ({...test, exerciseId}));
+    const testsToUpdate = tests
+      .filter(({passed}) => !passed)
+      .map(test => ({...test, exerciseId}));
 
     return Promise.all(testsToSave.concat(testsToUpdate).map(newTestCase));
   };
@@ -108,55 +113,52 @@ const Exercise = () => {
   };
 
   return (
-    <Container>
-      <div className="text-center">
-        <h1>{exercise.name}</h1>
-      </div>
-      <div className="text-center">
-        <p>{exercise.description}</p>
-      </div>
-      <div className="text-left">
-            <SyntaxHighlighter
-              language='python'
-              wrapLines={true}
-              showLineNumbers
-            >
-              {exercise.snippet}
-            </SyntaxHighlighter>
-      </div>
+    <Container className="text-center">
+      <h1>{exercise.name}</h1>
+      <p>{exercise.description}</p>
+      <SyntaxHighlighter
+        className="text-left"
+        language="python"
+        wrapLines={true}
+        showLineNumbers
+      >
+        {exercise.snippet}
+      </SyntaxHighlighter>
       <div className="row justify-content-center">
-      <TestCaseTable>
-        {tests.map(({input, output, passed}, i) => (
-          <TestCase
-            key={`test-${i}`}
-            id={i}
-            input={input}
-            setInput={editTest('input', i)}
-            output={output}
-            setOutput={editTest('output', i)}
-            deleteTestCase={deleteTest(i)}
-            passed={passed}
-          />
-        ))}
-        {newTests.map(({input, output}, i) => (
-          <TestCase
-            key={`newTest-${i}`}
-            id={i}
-            input={input}
-            setInput={editNewTest('input', i)}
-            output={output}
-            setOutput={editNewTest('output', i)}
-            deleteTestCase={deleteNewTest(i)}
-            passed={null}
-          />
-        ))}
-      </TestCaseTable>
+        <TestCaseTable>
+          {tests.map(({input, output, passed}, i) => (
+            <TestCase
+              key={`test-${i}`}
+              input={input}
+              setInput={editTest('input', i)}
+              output={output}
+              setOutput={editTest('output', i)}
+              deleteTestCase={deleteTest(i)}
+              passed={passed}
+            />
+          ))}
+          {newTests.map(({input, output}, i) => (
+            <TestCase
+              key={`newTest-${i}`}
+              id={i}
+              input={input}
+              setInput={editNewTest('input', i)}
+              output={output}
+              setOutput={editNewTest('output', i)}
+              deleteTestCase={deleteNewTest(i)}
+              passed={null}
+            />
+          ))}
+        </TestCaseTable>
       </div>
       <Button className="w-auto" onClick={newTest}>
-        <i className="fas fa-plus-square" aria-hidden="true" />  New Test
+        <i className="fas fa-plus-square" aria-hidden="true" /> New Test
       </Button>
-      <Button className="w-auto" onClick={() => saveTestCases().then(runAllTests)}>
-        <i className="fas fa-rocket" aria-hidden="true" />  Launch!
+      <Button
+        className="w-auto"
+        onClick={() => saveTestCases().then(runAllTests)}
+      >
+        <i className="fas fa-rocket" aria-hidden="true" /> Launch!
       </Button>
     </Container>
   );

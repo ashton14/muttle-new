@@ -12,4 +12,8 @@ exercises.get('/:id', async (req: Request, res: Response) =>
   res.json(await getRepository(Exercise).findOne(req.params.id))
 );
 
+exercises.post('/', async (req: Request, res: Response) =>
+  res.json(await getRepository(Exercise).save(req.body))
+);
+
 export default exercises;

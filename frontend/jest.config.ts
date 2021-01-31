@@ -3,7 +3,7 @@
  * https://jestjs.io/docs/en/configuration.html
  */
 
-export default {
+const config = {
   // All imported modules in your tests should be mocked automatically
   // automock: false,
 
@@ -199,3 +199,5 @@ export default {
   // Whether to use watchman for file crawling
   // watchman: true,
 };
+
+export default config;

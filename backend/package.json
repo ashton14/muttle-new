@@ -5,9 +5,9 @@
   "author": "Jon Lai",
   "main": "src/index.ts",
   "scripts": {
-    "start": "npm run test && ts-node src/index.ts",
+    "start": "ts-node src/index.ts",
     "start-dev": "ts-node-dev src/index.ts",
-    "build": "npm run compile",
+    "build": "npm run test && npm run compile",
     "test": "jest",
     "lint": "gts lint",
     "clean": "gts clean",

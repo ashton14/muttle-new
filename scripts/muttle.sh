@@ -7,6 +7,7 @@ BACKEND="${PACKAGE_ROOT}/backend"
 
 COMMAND=""
 DEVELOPMENT=false
+BUILD=true
 HELP=false
 
 set -e
@@ -29,14 +30,17 @@ run() {
     (cd "${FRONTEND}" && npm run start-dev) & (cd "${BACKEND}" && npm run start-dev) && fg
   else
     set -x
-    build
+    if [ ${BUILD} = true ]
+    then
+      build
+    fi
     cd "${BACKEND}" && npm run start
   fi
 }
 
 clean() {
-	cd "${FRONTEND}" && npm run clean
-	cd "${BACKEND}" && npm run clean
+	cd "${FRONTEND}" && npm run clean && rm -rf node_modules/
+	cd "${BACKEND}" && npm run clean && rm -rf node_modules/
 }
 
 clean_install() {
@@ -62,6 +66,10 @@ case $key in
     ;;
   -h|--help)
     HELP=true
+    shift
+    ;;
+  --no-build)
+    BUILD=false
     shift
     ;;
   *)

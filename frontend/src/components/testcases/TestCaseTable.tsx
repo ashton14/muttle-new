@@ -7,11 +7,7 @@ interface TestCasesTableProps {
 
 const TestCaseTable = ({children}: TestCasesTableProps) => {
   return (
-    <Table
-      className=" text-left w-auto"
-      responsive="sm"
-      size="sm"
-    >
+    <Table className=" text-left w-auto" responsive="sm" size="sm">
       <thead>
         <tr>
           <th></th>

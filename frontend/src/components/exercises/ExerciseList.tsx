@@ -1,8 +1,10 @@
 import React, {useEffect, useState} from 'react';
-import ListGroup from 'react-bootstrap/cjs/ListGroup';
+import ListGroup from 'react-bootstrap/ListGroup';
 import {getExercises} from '../../api';
 import SyntaxHighlighter from 'react-syntax-highlighter';
-import ListGroupItem from 'react-bootstrap/cjs/ListGroupItem';
+import ListGroupItem from 'react-bootstrap/ListGroupItem';
+import Button from 'react-bootstrap/Button';
+import Container from 'react-bootstrap/Container';
 
 const ExerciseList = () => {
   const [exercises, setExercises] = useState<JSX.Element[]>([]);
@@ -17,18 +19,14 @@ const ExerciseList = () => {
           href={`/exercises/${exercise.id}`}
         >
           <div className="h5">
-
-            <SyntaxHighlighter language="python" m>
+            <SyntaxHighlighter language="python">
               {exercise.snippet.split(':')[0]}
             </SyntaxHighlighter>
           </div>
           <p>
-            <strong>
-              {exercise.name}:
-            </strong>
+            <strong>{exercise.name}:</strong>
             {exercise.description}
           </p>
-
         </ListGroupItem>
       ));
 
@@ -36,7 +34,14 @@ const ExerciseList = () => {
     });
   }, []);
 
-  return <ListGroup className="w-auto">{exercises}</ListGroup>;
+  return (
+    <Container>
+      <ListGroup className="w-auto">{exercises}</ListGroup>
+      <Button action href="/exercises/new">
+        <i className="fas fa-plus-square" aria-hidden="true" /> New Exercise
+      </Button>
+    </Container>
+  );
 };
 
 export default ExerciseList;

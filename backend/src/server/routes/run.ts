@@ -34,9 +34,13 @@ run.post('/:id', async (req: Request, res: Response) => {
 
     await writeFile(SNIPPET_FILENAME, exercise.snippet);
 
-    const testSnippets = testCases.map(({input, output}, i) =>
-      buildTestSnippet(i, functionName, input, output)
-    );
+    const testSnippets = testCases.map(({input, output}, i) => {
+      const resultAsNumber = Number(output);
+      const isFloat =
+        !Number.isNaN(resultAsNumber) && !Number.isSafeInteger(resultAsNumber);
+
+      return buildTestSnippet(i, functionName, input, output, isFloat);
+    });
 
     await writeFile(TESTS_FILENAME, buildTestsFile(functionName, testSnippets));
 
