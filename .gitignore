@@ -110,3 +110,4 @@ muttle.iml
 build/
 __pycache__
 **/usr/.report.json
+backend/public/

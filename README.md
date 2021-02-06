@@ -1,5 +1,5 @@
 # muttle
-Web application to develop student software testing habits through mutation testing.
+Web application to develop student software testing habits through improved testing feedback.
 
 ## Usage:
 `muttle <command> [--dev | --no-build]` (only to be run from **project root**)

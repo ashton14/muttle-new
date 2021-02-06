@@ -1,7 +1,7 @@
 #! /bin/sh
 # Script to run muttle web application, should be run ONLY from the project root.
 # Commands:
-#  - install: Installs all dependencies via NPM for both frontend/backend.
+#  - install: Installs all dependencies via yarn for both frontend/backend.
 #  - build: Generates build artifacts for frontend/backend.
 #    - frontend: Uses react-scripts build to generate optimized static assets.
 #    - backend: Transpiles Typescript to Javscript and type declarations (not currently used, server
@@ -9,7 +9,7 @@
 # - run: Runs the application. May be used in development mode to enable live reloads on backend/
 #   frontend applications.
 # - clean: Remove build artifacts and node modules.
-# - clean-install: Runs "npm ci", which performs a clean install of node_modules for backend/frontend
+# - clean-install: Performs a clean install of node_modules for backend/frontend
 #    applications.
 # - help: Print help message.
 
@@ -27,39 +27,33 @@ HELP=false
 set -e
 
 install() {
-	cd "${FRONTEND}" && npm install
-	cd "${BACKEND}" && npm install
+	yarn run install-all
 }
 
 build() {
   install
-	cd "${FRONTEND}" && npm run build
-	cd "${BACKEND}" && npm run build
+	yarn run build
 }
 
 run() {
   if [ ${DEVELOPMENT} = true ]
   then
-    set -x
-    (cd "${FRONTEND}" && npm run start-dev) & (cd "${BACKEND}" && npm run start-dev) && fg
+    yarn run start-dev
   else
-    set -x
     if [ ${BUILD} = true ]
     then
       build
     fi
-    cd "${BACKEND}" && npm run start
+    yarn run start
   fi
 }
 
 clean() {
-	cd "${FRONTEND}" && npm run clean && rm -rf node_modules/
-	cd "${BACKEND}" && npm run clean && rm -rf node_modules/
+  yarn run clean
 }
 
 clean_install() {
-	cd "${FRONTEND}" && npm clean-install
-	cd "${BACKEND}" && npm clean-install
+	yarn run clean-install
 }
 
 help() {
@@ -107,6 +101,9 @@ then
 fi
 
 case "$COMMAND" in
+  install)
+    install
+    ;;
   run)
     run
     ;;
