@@ -18,13 +18,29 @@
 PACKAGE_ROOT=$(pwd)
 FRONTEND="${PACKAGE_ROOT}/frontend"
 BACKEND="${PACKAGE_ROOT}/backend"
+DB_SETUP="${PACKAGE_ROOT}/scripts/db-setup.sql"
 
 COMMAND=""
 DEVELOPMENT=false
 BUILD=true
 HELP=false
+ARGS=()
 
 set -e
+
+db_setup() {
+  if [ "$1" = "" ]
+  then
+    echo "muttle db-setup <admin> [password]"
+  elif [ "$2" = "" ]
+  then
+    set -x
+    mysql -u $1 < "$DB_SETUP"
+  else
+    set -x
+    mysql -u $1 -p $2 < "$DB_SETUP"
+  fi
+}
 
 install() {
 	yarn run install-all
@@ -89,7 +105,12 @@ case $key in
     shift
     ;;
   *)
-    COMMAND="$1"
+    if [ "$COMMAND" = "" ]
+    then
+      COMMAND="$1"
+    else
+      ARGS+=("$1")
+    fi
     shift
     ;;
 esac
@@ -118,6 +139,9 @@ case "$COMMAND" in
   clean-install)
     set -x
     clean_install
+    ;;
+  db-setup)
+    db_setup ${ARGS[@]}
     ;;
   "")
     help
