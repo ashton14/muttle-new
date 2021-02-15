@@ -4,7 +4,7 @@ import {getExercises} from '../../utils/api';
 import ListGroupItem from 'react-bootstrap/ListGroupItem';
 import Button from 'react-bootstrap/Button';
 import Container from 'react-bootstrap/Container';
-import SyntaxHighlighter from '../code/SyntaxHighlighter';
+import Highlighter from '../code/Highlighter';
 
 const SIGNATURE_REGEX = /(def .+\(.*\).*):/;
 
@@ -20,7 +20,7 @@ const ExerciseList = () => {
           <ListGroupItem action href={`/exercises/${exercise.id}`}>
             <strong>{exercise.name} </strong>
             <div className="h5">
-              <SyntaxHighlighter value={value} />
+              <Highlighter value={value} />
             </div>
             <p>{exercise.description}</p>
           </ListGroupItem>

@@ -19,7 +19,7 @@ import TestCase from '../testcases/TestCase';
 import TestCaseTable from '../testcases/TestCaseTable';
 import Container from 'react-bootstrap/Container';
 import {Button} from 'react-bootstrap';
-import SyntaxHighlighter from '../code/SyntaxHighlighter';
+import Highlighter from '../code/Highlighter';
 import Row from 'react-bootstrap/Row';
 
 interface RouteParams {
@@ -67,7 +67,7 @@ const Exercise = () => {
   }, [history, exerciseId, user]);
 
   if (!exercise) {
-    return <div></div>;
+    return <div />;
   }
 
   const newTest = () => {
@@ -137,9 +137,31 @@ const Exercise = () => {
     <Container>
       <h1>{exercise.name}</h1>
       <p>{exercise.description}</p>
-      <SyntaxHighlighter
+      <Highlighter
         value={exercise.snippet}
         options={{lineNumbers: true}}
+        coverage={{
+          covered: [
+            {
+              from: {line: 4, ch: 0},
+              to: {line: 4, ch: 100},
+            },
+            {
+              from: {line: 5, ch: 0},
+              to: {line: 5, ch: 100},
+            },
+            {
+              from: {line: 6, ch: 0},
+              to: {line: 6, ch: 100},
+            },
+          ],
+          uncovered: [
+            {
+              from: {line: 7, ch: 0},
+              to: {line: 7, ch: 100},
+            },
+          ],
+        }}
         className="border rounded h-auto mb-4"
       />
       <TestCaseTable>

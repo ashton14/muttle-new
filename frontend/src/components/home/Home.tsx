@@ -1,5 +1,5 @@
 import React from 'react';
-import SyntaxHighlighter from '../code/SyntaxHighlighter';
+import Highlighter from '../code/Highlighter';
 
 const CODE = `const woah = fun => fun + 1;
 const dude = woah(2) + 3;
@@ -17,7 +17,7 @@ const Home = () => {
     mode: 'javascript',
   };
 
-  return <SyntaxHighlighter value={CODE} options={options} />;
+  return <Highlighter value={CODE} options={options} />;
 };
 
 export default Home;

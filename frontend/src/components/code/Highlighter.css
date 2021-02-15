@@ -1,0 +1,8 @@
+
+.codemirror-covered {
+  background-color: rgb(230, 255, 237);
+}
+
+.codemirror-uncovered {
+  background-color: rgb(255, 238, 240);
+}
