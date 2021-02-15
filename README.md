@@ -1,7 +1,7 @@
 # muttle
 Web application to develop student software testing habits through improved testing feedback.
 
-## Initial Setup:
+## Initial Setup
 Follow these steps for initial setup
 
 1. Install and setup mySQL v8.0.22 or higher
@@ -14,7 +14,7 @@ commands from the [database setup script](/scripts/db-setup.sql) in order to cre
 credentials for the application. Alternatively, you may manually set up credentials and a database
 and then configure the database connection in the [ORM config](backend/ormconfig.json).
 
-## Usage:
+## Usage
 `muttle <command> [--dev | --no-build]` (only to be run from **project root**)
 
 Commands:

@@ -1,5 +1,5 @@
 import React from 'react';
-import Button from 'react-bootstrap/cjs/Button';
+import Button from 'react-bootstrap/Button';
 import AceEditor from 'react-ace';
 
 import 'ace-builds/src-noconflict/mode-python';

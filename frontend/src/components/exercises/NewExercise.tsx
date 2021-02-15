@@ -10,6 +10,9 @@ const NewExercise = () => {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [snippet, setSnippet] = useState('');
+  const [validated, setValidated] = useState(false);
+
+  const disabled = !name || !description || !snippet;
 
   const history = useHistory();
 
@@ -18,7 +21,6 @@ const NewExercise = () => {
     history.push(`/exercises/${savedExercise.id}`);
   };
 
-  // onSubmit={event => event.preventDefault() || (name.length && description.length && snippet.length) ? submit()}
   return (
     <Container>
       <ExerciseForm

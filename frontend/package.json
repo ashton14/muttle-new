@@ -22,13 +22,14 @@
     "ace-builds": "^1.4.12",
     "axios": "^0.21.1",
     "bootstrap": "^4.5.3",
+    "codemirror": "^5.59.2",
     "react": "^17.0.1",
     "react-ace": "^9.3.0",
     "react-bootstrap": "^1.4.3",
+    "react-codemirror2": "^7.2.1",
     "react-dom": "^17.0.1",
     "react-router-dom": "^5.2.0",
     "react-scripts": "^4.0.2",
-    "react-syntax-highlighter": "^15.4.3",
     "web-vitals": "^1.1.0"
   },
   "browserslist": {

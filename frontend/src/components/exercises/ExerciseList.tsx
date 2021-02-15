@@ -1,36 +1,31 @@
 import React, {useEffect, useState} from 'react';
 import ListGroup from 'react-bootstrap/ListGroup';
 import {getExercises} from '../../utils/api';
-import SyntaxHighlighter from 'react-syntax-highlighter';
 import ListGroupItem from 'react-bootstrap/ListGroupItem';
 import Button from 'react-bootstrap/Button';
 import Container from 'react-bootstrap/Container';
+import SyntaxHighlighter from '../code/SyntaxHighlighter';
 
-const SIGNATURE_REGEX = /def .+\(.*\).*:/;
+const SIGNATURE_REGEX = /(def .+\(.*\).*):/;
 
 const ExerciseList = () => {
   const [exercises, setExercises] = useState<JSX.Element[]>([]);
 
   useEffect(() => {
     getExercises().then(exercises => {
-      const items = exercises.map(exercise => (
-        <ListGroupItem
-          className="w-auto"
-          key={exercise.id}
-          action
-          href={`/exercises/${exercise.id}`}
-        >
-          <div className="h5">
-            <SyntaxHighlighter language="python">
-              {exercise.snippet.match(SIGNATURE_REGEX)}
-            </SyntaxHighlighter>
-          </div>
-          <p>
-            <strong>{exercise.name}: </strong>
-            {exercise.description}
-          </p>
-        </ListGroupItem>
-      ));
+      const items = exercises.map(exercise => {
+        const signatureMatch = exercise.snippet.match(SIGNATURE_REGEX);
+        const value = (signatureMatch && signatureMatch[1]) || '';
+        return (
+          <ListGroupItem action href={`/exercises/${exercise.id}`}>
+            <strong>{exercise.name} </strong>
+            <div className="h5">
+              <SyntaxHighlighter value={value} />
+            </div>
+            <p>{exercise.description}</p>
+          </ListGroupItem>
+        );
+      });
 
       setExercises(items);
     });
