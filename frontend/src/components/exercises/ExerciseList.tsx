@@ -6,6 +6,8 @@ import ListGroupItem from 'react-bootstrap/ListGroupItem';
 import Button from 'react-bootstrap/Button';
 import Container from 'react-bootstrap/Container';
 
+const SIGNATURE_REGEX = /def .+\(.*\).*:/;
+
 const ExerciseList = () => {
   const [exercises, setExercises] = useState<JSX.Element[]>([]);
 
@@ -20,11 +22,11 @@ const ExerciseList = () => {
         >
           <div className="h5">
             <SyntaxHighlighter language="python">
-              {exercise.snippet.split(':')[0]}
+              {exercise.snippet.match(SIGNATURE_REGEX)}
             </SyntaxHighlighter>
           </div>
           <p>
-            <strong>{exercise.name}:</strong>
+            <strong>{exercise.name}: </strong>
             {exercise.description}
           </p>
         </ListGroupItem>

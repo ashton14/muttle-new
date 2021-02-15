@@ -6,18 +6,17 @@
   "author": "Jon Lai",
   "main": "src/index.ts",
   "scripts": {
-    "start-dev": "PORT=3001 react-scripts start",
-    "build": "npm run test && react-scripts build",
+    "start-dev": "react-scripts start",
+    "build": "yarn run test && react-scripts build",
     "test": "jest",
     "eject": "react-scripts eject",
     "lint": "gts lint",
     "clean": "gts clean",
     "compile": "tsc",
     "fix": "gts fix",
-    "prepare": "npm run compile",
-    "pretest": "npm run compile",
-    "posttest": "npm run lint",
-    "postinstall": "patch-package"
+    "prepare": "yarn run compile",
+    "pretest": "yarn run compile",
+    "posttest": "yarn run lint"
   },
   "dependencies": {
     "axios": "^0.21.1",
@@ -26,9 +25,9 @@
     "react-bootstrap": "^1.4.3",
     "react-dom": "^17.0.1",
     "react-router-dom": "^5.2.0",
-    "react-scripts": "4.0.1",
+    "react-scripts": "^4.0.2",
     "react-syntax-highlighter": "^15.4.3",
-    "web-vitals": "^0.2.4"
+    "web-vitals": "^1.1.0"
   },
   "browserslist": {
     "production": [
@@ -43,23 +42,24 @@
     ]
   },
   "devDependencies": {
-    "@babel/preset-env": "^7.12.11",
+    "@babel/core": "^7.12.13",
+    "@babel/preset-env": "^7.12.13",
     "@babel/preset-react": "^7.12.10",
+    "@babel/preset-typescript": "^7.12.13",
     "@testing-library/jest-dom": "^5.11.9",
     "@testing-library/react": "^11.2.3",
     "@testing-library/user-event": "^12.6.2",
     "@types/jest": "^26.0.20",
     "@types/node": "^14.11.2",
-    "@types/react": "^16.14.2",
-    "@types/react-dom": "^16.9.10",
+    "@types/react": "^17.0.0",
+    "@types/react-dom": "^17.0.0",
     "@types/react-router-dom": "^5.1.7",
     "@types/react-syntax-highlighter": "^13.5.0",
+    "babel-jest": "^26.6.3",
     "gts": "^3.1.0",
     "jest-transform-stub": "^2.0.0",
-    "patch-package": "^6.2.2",
-    "postinstall-postinstall": "^2.1.0",
     "react-test-renderer": "^17.0.1",
     "ts-node": "^9.1.1",
-    "typescript": "^4.0.3"
+    "typescript": "^4.1.2"
   }
 }
