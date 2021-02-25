@@ -32,13 +32,9 @@ db_setup() {
   if [ "$1" = "" ]
   then
     echo "muttle db-setup <admin> [password]"
-  elif [ "$2" = "" ]
-  then
-    set -x
-    mysql -u $1 < "$DB_SETUP"
   else
     set -x
-    mysql -u $1 -p $2 < "$DB_SETUP"
+    mysql -u $1 -p < "$DB_SETUP"
   fi
 }
 
