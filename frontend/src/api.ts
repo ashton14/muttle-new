@@ -49,7 +49,7 @@ export const newTestCases = (data: NewTestCase[]) =>
 export const deleteTestCase = (testCaseId: number): Promise<number | null> =>
   axios
     .delete(`testCases/${testCaseId}`, config)
-    .then(res => res.data.affected);
+    .then(res => res.data);
 
 export const runTests = (exerciseId: number): Promise<SavedTestCase[]> =>
   axios.post(`run/${exerciseId}`, {}, config).then(res => res.data);

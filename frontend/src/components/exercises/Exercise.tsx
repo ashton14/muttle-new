@@ -68,12 +68,12 @@ const Exercise = () => {
 
   const deleteTest = (index: number) => async () => {
     const wasDeleted = await deleteTestCase(tests[index].id);
-    wasDeleted &&
-      setTests(prevTests =>
-        prevTests
-          .slice(0, index)
-          .concat(prevTests.slice(index + 1, prevTests.length))
+    if (wasDeleted) {
+      setTests(prevTests => prevTests
+        .slice(0, index)
+        .concat(prevTests.slice(index + 1, prevTests.length))
       );
+    }
   };
 
   const editNewTest = (key: string, index: number) => (value: string) =>

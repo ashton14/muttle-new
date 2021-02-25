@@ -73,7 +73,7 @@ testCases.delete('/:id', async (req: Request, res: Response) => {
   });
   try {
     await entityManager.save(testCase);
-    res.sendStatus(200);
+    res.status(200).json(testCase);
   } catch {
     res.sendStatus(500);
   }
