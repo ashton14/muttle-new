@@ -3,6 +3,12 @@ import {useHistory} from 'react-router-dom';
 import Form from 'react-bootstrap/Form';
 import Container from 'react-bootstrap/Container';
 import Button from 'react-bootstrap/Button';
+import AceEditor from 'react-ace';
+
+import "ace-builds/src-noconflict/mode-python";
+import "ace-builds/src-noconflict/theme-github";
+import "ace-builds/src-noconflict/ext-language_tools"
+
 import {newExercise} from '../../api';
 
 const NewExercise = () => {
@@ -47,11 +53,14 @@ const NewExercise = () => {
 
         <Form.Group>
           <Form.Label>Code</Form.Label>
-          <Form.Control
-            as="textarea"
+          <AceEditor
+            mode="python"
+            theme="github"
+            onChange={value => setSnippet(value)}
+            name="code-editor"
             value={snippet}
-            onChange={event => setSnippet(event.target.value)}
-            isInvalid={!snippet.length}
+            wrapEnabled={true}
+            fontSize={14}
           />
         </Form.Group>
       </Form>
