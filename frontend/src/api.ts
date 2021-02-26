@@ -29,7 +29,7 @@ export interface SavedTestCase extends NewTestCase {
 export const newExercise = (data: Exercise) =>
   axios.post('exercises', data, config).then(res => res.data);
 
-export const updateExercise = (exerciseId: number, data: Exercise) =>
+export const updateExercise = (exerciseId: number, data: SavedExercise) =>
   axios.put(`exercises/${exerciseId}`, data, config);
 
 export const getExercise = (exerciseId: number): Promise<SavedExercise> =>

@@ -32,8 +32,9 @@ app.use('/api', api);
 app.use((req, res) => res.sendFile(path.join(publicDir, 'index.html')));
 
 // Handler of last resort.  Send a 500 response with stacktrace as the body.
-app.use((err: any, req: Request, res: Response) =>
-  res.status(500).json(err.stack)
-);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
+app.use((err: any, req: Request, res: Response, _: Function) => {
+  res.status(500).json(err.stack);
+});
 
 export default app;

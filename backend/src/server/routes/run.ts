@@ -2,20 +2,17 @@ import express, {Request, Response} from 'express';
 import {getRepository} from 'typeorm';
 import {Exercise} from '../../entity/Exercise';
 import {spawn} from 'child_process';
-import * as fs from 'fs';
+import {writeFile, readFile, mkdir} from 'fs/promises';
 import {
   buildTestsFile,
   buildTestSnippet,
   getFunctionName,
+  ATTEMPTS_DIR,
   PYTEST_REPORT_FILENAME,
   SNIPPET_FILENAME,
   TESTS_FILENAME,
 } from '../../utils/pythonUtils';
-import * as util from 'util';
 import {TestCase} from '../../entity/TestCase';
-
-const writeFile = util.promisify(fs.writeFile);
-const readFile = util.promisify(fs.readFile);
 
 const run = express.Router();
 
@@ -32,7 +29,9 @@ run.post('/:id', async (req: Request, res: Response) => {
       res.sendStatus(500); // TODO - better error handling? Validate during creation and populate field?
     }
 
-    await writeFile(SNIPPET_FILENAME, exercise.snippet);
+    const execDir = `${ATTEMPTS_DIR}/${req.params.id}/`;
+    await mkdir(`${execDir}/src`, {recursive: true});
+    await writeFile(`${execDir}/${SNIPPET_FILENAME}`, exercise.snippet);
 
     const testSnippets = testCases.map(({input, output}, i) => {
       const resultAsNumber = Number(output);
@@ -42,10 +41,13 @@ run.post('/:id', async (req: Request, res: Response) => {
       return buildTestSnippet(i, functionName, input, output, isFloat);
     });
 
-    await writeFile(TESTS_FILENAME, buildTestsFile(functionName, testSnippets));
+    await writeFile(
+      `${execDir}/${TESTS_FILENAME}`,
+      buildTestsFile(functionName, testSnippets)
+    );
 
-    process.chdir('usr');
-    // const python = spawn('python3', ['-m', 'unittest', 'tests']);
+    const workingDir = process.cwd();
+    process.chdir(`${execDir}`);
     const python = spawn('pytest', [
       '--json-report',
       'tests.py',
@@ -68,7 +70,7 @@ run.post('/:id', async (req: Request, res: Response) => {
 
       await testRepo.save(updatedTestCases);
 
-      process.chdir('..');
+      process.chdir(`${workingDir}`);
       res.json(updatedTestCases);
     });
   } else {

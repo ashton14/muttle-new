@@ -16,8 +16,11 @@ exercises.get('/:id', async (req: Request, res: Response) =>
 exercises.put('/:id', async (req: Request, res: Response) => {
   const {name, description, snippet} = req.body;
   try {
-    await getRepository(Exercise)
-      .update(req.params.id, {name, description, snippet});
+    await getRepository(Exercise).update(req.params.id, {
+      name,
+      description,
+      snippet,
+    });
     res.sendStatus(200);
   } catch (err) {
     res.status(400).json({error: err});

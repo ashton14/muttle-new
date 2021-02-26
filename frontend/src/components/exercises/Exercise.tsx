@@ -152,7 +152,7 @@ const Exercise = () => {
           ))}
         </TestCaseTable>
       </div>
-      <Button className="w-auto" onClick={newTest}>
+      <Button className="w-auto" variant="success" onClick={newTest}>
         <i className="fas fa-plus-square" aria-hidden="true" /> New Test
       </Button>
       <Button
