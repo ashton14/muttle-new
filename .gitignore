@@ -107,3 +107,6 @@ build/
 __pycache__
 **/usr/.report.json
 backend/public/
+
+frontend/usr/
+backend/usr/

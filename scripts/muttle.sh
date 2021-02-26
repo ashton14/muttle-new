@@ -40,6 +40,7 @@ db_setup() {
 
 install() {
 	yarn run install-all
+  python3 -m pip install -r backend/requirements.txt
 }
 
 build() {
