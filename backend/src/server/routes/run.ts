@@ -22,11 +22,15 @@ run.post('/:id', async (req: Request, res: Response) => {
   });
 
   if (exercise) {
-    const testCases = exercise.testCases.filter(test => !test.fixedId);
+    // Only run failing tests that have not yet been fixed
+    const testCases = exercise.testCases.filter(
+      test => !test.passed && !test.fixedId
+    );
 
     const functionName = getFunctionName(exercise.snippet) || '';
     if (!functionName) {
-      res.sendStatus(500); // TODO - better error handling? Validate during creation and populate field?
+      // TODO - better error handling? Validate during creation and populate field?
+      res.sendStatus(500);
     }
 
     const execDir = `${ATTEMPTS_DIR}/${req.params.id}/`;
