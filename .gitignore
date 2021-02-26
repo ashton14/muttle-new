@@ -105,7 +105,6 @@ muttle.iml
 .DS_Store
 build/
 __pycache__
-**/usr/.report.json
 backend/public/
 
 frontend/usr/

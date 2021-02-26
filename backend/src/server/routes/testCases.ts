@@ -36,8 +36,8 @@ exerciseTestCases.post('/', async (req: Request, res: Response) => {
       await entityManager.save(TestCase, newTest);
     }
     res.sendStatus(200);
-  } catch (e) {
-    console.log(e.stack); // TODO - Implement better error handling
+  } catch (err) {
+    console.log(err.stack); // TODO - Implement better error handling
     res.sendStatus(500);
   }
 });
@@ -46,7 +46,12 @@ exerciseTestCases.post('/', async (req: Request, res: Response) => {
 exerciseTestCases.post('/batch', async (req: Request, res: Response) => {
   const exerciseRepo = getRepository(Exercise);
   const testCases = req.body.map(
-    ({input, output, exerciseId, fixedId}: any) => ({
+    ({
+      input,
+      output,
+      exerciseId,
+      fixedId,
+    }: TestCase & {exerciseId: number}) => ({
       input,
       output,
       fixedId,

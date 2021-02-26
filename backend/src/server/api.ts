@@ -1,7 +1,7 @@
 import express from 'express';
 import exercises from './routes/exercises';
 import testCases from './routes/testCases';
-import run from './routes/run';
+import run from './routes/run/run';
 import users from './routes/users';
 
 const api = express.Router();

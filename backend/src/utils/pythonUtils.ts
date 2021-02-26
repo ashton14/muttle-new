@@ -1,8 +1,11 @@
-export const ATTEMPTS_DIR = 'usr/attempts';
-export const SNIPPET_FILENAME = 'src/__init__.py';
+import path from 'path';
+// TODO - check filename locations and usages
+export const ATTEMPTS_DIR = path.join('usr', 'attempts');
+
+// filenames relative to the run directory
+export const SNIPPET_FILENAME = path.join('src', '__init__.py');
 export const TESTS_FILENAME = 'tests.py';
-export const PYTEST_REPORT_FILENAME = '.report.json';
-export const COVERAGE_REPORT_FILENAME = 'coverage.xml';
+export const PYTEST_RESULTS_FILENAME = path.join('reports', 'results.json');
 
 export const getFunctionName = (snippet: string): string | null => {
   const match = snippet.match(/def (.+)\(.*\).*:/);
