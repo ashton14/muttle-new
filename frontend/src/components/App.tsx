@@ -7,6 +7,7 @@ import {Nav, Navbar} from 'react-bootstrap';
 import ExerciseList from './exercises/ExerciseList';
 import Home from './home/Home';
 import NewExercise from './exercises/NewExercise';
+import EditExercise from './exercises/EditExercise';
 
 const App = () => {
   return (
@@ -22,6 +23,7 @@ const App = () => {
         <Route exact path="/" component={Home} />
         <Route exact path={'/exercises/'} component={ExerciseList} />
         <Route path="/exercises/new" component={NewExercise} />
+        <Route path="/exercises/:exerciseId/edit" component={EditExercise} />
         <Route path="/exercises/:exerciseId" component={Exercise} />
       </Switch>
     </div>

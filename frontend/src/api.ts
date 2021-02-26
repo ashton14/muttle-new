@@ -3,13 +3,13 @@ import axios, {AxiosRequestConfig} from 'axios';
 const baseURL = 'http://localhost:3000/api/';
 const config: AxiosRequestConfig = {baseURL};
 
-interface NewExercise {
+interface Exercise {
   name: string;
   description: string;
   snippet: string;
 }
 
-export interface SavedExercise extends NewExercise {
+export interface SavedExercise extends Exercise {
   id: number;
 }
 
@@ -26,8 +26,11 @@ export interface SavedTestCase extends NewTestCase {
   passed?: boolean;
 }
 
-export const newExercise = (data: NewExercise) =>
+export const newExercise = (data: Exercise) =>
   axios.post('exercises', data, config).then(res => res.data);
+
+export const updateExercise = (exerciseId: number, data: Exercise) =>
+  axios.put(`exercises/${exerciseId}`, data, config);
 
 export const getExercise = (exerciseId: number): Promise<SavedExercise> =>
   axios.get(`exercises/${exerciseId}`, config).then(exercise => {
@@ -47,9 +50,7 @@ export const newTestCases = (data: NewTestCase[]) =>
   axios.post('testCases/batch', data, config).then(res => res.data);
 
 export const deleteTestCase = (testCaseId: number): Promise<number | null> =>
-  axios
-    .delete(`testCases/${testCaseId}`, config)
-    .then(res => res.data);
+  axios.delete(`testCases/${testCaseId}`, config).then(res => res.data);
 
 export const runTests = (exerciseId: number): Promise<SavedTestCase[]> =>
   axios.post(`run/${exerciseId}`, {}, config).then(res => res.data);
