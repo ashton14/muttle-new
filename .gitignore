@@ -110,3 +110,6 @@ backend/public/
 
 frontend/usr/
 backend/usr/
+
+.vscode
+.tags

@@ -1,12 +1,12 @@
 import React, {useState, useEffect} from 'react';
-import {useHistory,useParams} from 'react-router-dom';
-import {Button,Container} from 'react-bootstrap';
+import {useHistory, useParams} from 'react-router-dom';
+import {Button, Container} from 'react-bootstrap';
 
 import ExerciseForm from './ExerciseForm';
 import {getExercise, updateExercise} from '../../api';
 
 interface RouteParams {
-  exerciseId: string
+  exerciseId: string;
 }
 
 const EditExercise = () => {
@@ -30,7 +30,12 @@ const EditExercise = () => {
   }, [exerciseId]);
 
   const submit = async () => {
-    const res = await updateExercise(exerciseId, {id: exerciseId, name, description, snippet});
+    const res = await updateExercise(exerciseId, {
+      id: exerciseId,
+      name,
+      description,
+      snippet,
+    });
     if (res.status === 200) {
       history.push(`/exercises/${exerciseId}`);
     } else if (res.data.error) {

@@ -13,7 +13,7 @@ const TestCaseTable = ({children}: TestCasesTableProps) => {
           <th></th>
           <th>Input</th>
           <th>Output</th>
-          <th>Results</th>
+          <th>Result</th>
         </tr>
       </thead>
       <tbody>{children}</tbody>

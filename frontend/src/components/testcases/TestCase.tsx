@@ -1,11 +1,17 @@
 import React from 'react';
 import Button from 'react-bootstrap/cjs/Button';
-import Form from 'react-bootstrap/Form';
+import AceEditor from 'react-ace';
+
+import 'ace-builds/src-noconflict/mode-python';
+import 'ace-builds/src-noconflict/theme-github';
+import 'ace-builds/src-noconflict/ext-language_tools';
 
 const GREEN_CHECK = String.fromCodePoint(0x2705);
 const CROSS_MARK = String.fromCodePoint(0x274c);
 
 interface TestCaseProps {
+  key?: string;
+  id?: number;
   input: string;
   setInput: (input: string) => void;
   output: string;
@@ -28,7 +34,7 @@ const TestCase = ({
   if (errorMessage) {
     results = errorMessage;
   } else {
-    results = passed ? GREEN_CHECK : CROSS_MARK;
+    results = passed === null ? '' : passed ? GREEN_CHECK : CROSS_MARK;
   }
 
   return (
@@ -39,22 +45,42 @@ const TestCase = ({
         </Button>
       </td>
       <td>
-        <Form.Control
-          size="sm"
+        <AceEditor
+          mode="python"
+          theme="github"
+          onChange={value => setInput(value)}
+          name="input-field"
           value={input}
-          onChange={event => setInput(event.target.value)}
+          width="20ch"
+          height="2em"
+          maxLines={Infinity}
+          showGutter={false}
+          fontSize={16}
+          highlightActiveLine={false}
           readOnly={passed}
         />
       </td>
       <td>
-        <Form.Control
-          size="sm"
+        <AceEditor
+          mode="python"
+          theme="github"
+          onChange={value => setOutput(value)}
+          name="input-field"
           value={output}
-          onChange={event => setOutput(event.target.value)}
+          width="20ch"
+          height="2em"
+          maxLines={Infinity}
+          showGutter={false}
+          fontSize={16}
+          highlightActiveLine={false}
           readOnly={passed}
         />
       </td>
-      <td className={`${errorMessage ? 'error-message' : ''} text-center`}>
+      <td
+        className={`${
+          errorMessage ? 'error-message' : ''
+        } align-middle text-center`}
+      >
         {results}
       </td>
     </tr>
