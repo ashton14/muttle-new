@@ -66,11 +66,14 @@ run.post('/:id', async (req: Request, res: Response) => {
 
       const testRepo = getRepository(TestCase);
 
-      const updatedTestCases = testCases.map((test, i) =>
-        testRepo.merge(test, {
-          passed: testResults[i].outcome === 'passed',
-        })
-      );
+      const updatedTestCases = testCases.map((test, i) => {
+        const {outcome, call} = testResults[i];
+        const errorMessage = call.crash ? call.crash.message : null;
+        return testRepo.merge(test, {
+          passed: outcome === 'passed',
+          errorMessage: errorMessage,
+        });
+      });
 
       await testRepo.save(updatedTestCases);
 

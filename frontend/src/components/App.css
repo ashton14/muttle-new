@@ -40,3 +40,8 @@
 #code-editor {
   margin: auto;
 }
+
+.error-message {
+  color: rgb(184, 7, 7);
+  font-weight: bold;
+}

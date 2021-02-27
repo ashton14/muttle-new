@@ -12,6 +12,7 @@ interface TestCaseProps {
   setOutput: (output: string) => void;
   passed: boolean | null;
   deleteTestCase: () => void;
+  errorMessage?: string | null;
 }
 
 const TestCase = ({
@@ -21,8 +22,14 @@ const TestCase = ({
   setOutput,
   passed,
   deleteTestCase,
+  errorMessage,
 }: TestCaseProps) => {
-  const results = passed === null ? '' : passed ? GREEN_CHECK : CROSS_MARK;
+  let results: string;
+  if (errorMessage) {
+    results = errorMessage;
+  } else {
+    results = passed ? GREEN_CHECK : CROSS_MARK;
+  }
 
   return (
     <tr>
@@ -47,7 +54,9 @@ const TestCase = ({
           readOnly={passed}
         />
       </td>
-      <td className="text-center">{results}</td>
+      <td className={`${errorMessage ? 'error-message' : ''} text-center`}>
+        {results}
+      </td>
     </tr>
   );
 };

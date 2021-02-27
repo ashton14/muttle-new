@@ -35,7 +35,7 @@ export class TestCase {
   visible!: boolean;
 
   @Column({nullable: true})
-  errorMessage?: boolean;
+  errorMessage?: string;
 
   @CreateDateColumn({type: 'timestamp'})
   created!: Date;

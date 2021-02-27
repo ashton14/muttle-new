@@ -127,7 +127,7 @@ const Exercise = () => {
       </SyntaxHighlighter>
       <div className="row justify-content-center">
         <TestCaseTable>
-          {tests.map(({input, output, passed}, i) => (
+          {tests.map(({input, output, passed, errorMessage}, i) => (
             <TestCase
               key={`test-${i}`}
               input={input}
@@ -136,6 +136,7 @@ const Exercise = () => {
               setOutput={editTest('output', i)}
               deleteTestCase={deleteTest(i)}
               passed={passed}
+              errorMessage={errorMessage}
             />
           ))}
           {newTests.map(({input, output}, i) => (
