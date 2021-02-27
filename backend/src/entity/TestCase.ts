@@ -6,6 +6,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import {CoverageOutcome} from './CoverageOutcome';
 import {Exercise} from './Exercise';
 
 @Entity('TestCase')
@@ -21,6 +22,12 @@ export class TestCase {
 
   @ManyToOne(() => Exercise, exercise => exercise.testCases)
   exercise!: Exercise;
+
+  @ManyToOne(
+    () => CoverageOutcome,
+    coverageOutcome => coverageOutcome.testCases
+  )
+  coverageOutcome!: CoverageOutcome;
 
   @Column({nullable: true})
   fixedId?: number;

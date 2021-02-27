@@ -11,6 +11,7 @@
   "migrationsTableName": "migration_table",
   "migrations": ["migrations/*.ts"],
   "cli": {
-    "migrationsDir": "migrations"
+    "migrationsDir": "migrations",
+    "entitiesDir": "src/entity"
   }
 }

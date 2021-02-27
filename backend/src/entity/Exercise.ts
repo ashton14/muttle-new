@@ -6,6 +6,7 @@ import {
   UpdateDateColumn,
   OneToMany,
 } from 'typeorm';
+import {CoverageOutcome} from './CoverageOutcome';
 import {TestCase} from './TestCase';
 
 @Entity('Exercise')
@@ -30,4 +31,7 @@ export class Exercise {
 
   @OneToMany(() => TestCase, testCase => testCase.exercise)
   testCases!: TestCase[];
+
+  @OneToMany(() => CoverageOutcome, coverageOutcome => coverageOutcome.exercise)
+  coverageOutcomes!: CoverageOutcome[];
 }
