@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import ListGroup from 'react-bootstrap/ListGroup';
-import {getExercises} from '../../api';
+import {getExercises} from '../../utils/api';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import ListGroupItem from 'react-bootstrap/ListGroupItem';
 import Button from 'react-bootstrap/Button';

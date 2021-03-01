@@ -3,11 +3,12 @@ import {
   CreateDateColumn,
   Entity,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import {CoverageOutcome} from './CoverageOutcome';
 import {Exercise} from './Exercise';
+import {User} from './User';
 
 @Entity('TestCase')
 export class TestCase {
@@ -23,11 +24,8 @@ export class TestCase {
   @ManyToOne(() => Exercise, exercise => exercise.testCases)
   exercise!: Exercise;
 
-  @ManyToOne(
-    () => CoverageOutcome,
-    coverageOutcome => coverageOutcome.testCases
-  )
-  coverageOutcome!: CoverageOutcome;
+  @ManyToOne(() => User, user => user.testCases)
+  user!: User;
 
   @Column({nullable: true})
   fixedId?: number;

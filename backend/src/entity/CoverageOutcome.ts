@@ -3,12 +3,11 @@ import {
   CreateDateColumn,
   Entity,
   ManyToOne,
-  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import {Exercise} from './Exercise';
-import {TestCase} from './TestCase';
+import {User} from './User';
 
 @Entity('CoverageOutcome')
 export class CoverageOutcome {
@@ -18,8 +17,8 @@ export class CoverageOutcome {
   @ManyToOne(() => Exercise, exercise => exercise.coverageOutcomes)
   exercise!: Exercise;
 
-  @OneToMany(() => TestCase, testCase => testCase.coverageOutcome)
-  testCases!: TestCase[];
+  @ManyToOne(() => User, user => user.coverageOutcomes)
+  user!: User;
 
   @Column()
   lineNo!: number;
@@ -32,9 +31,6 @@ export class CoverageOutcome {
 
   @Column({default: 0})
   branchesCovered!: number;
-
-  @Column({type: 'varchar', unique: true})
-  sessionId!: string;
 
   @CreateDateColumn({type: 'timestamp'})
   created!: Date;

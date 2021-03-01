@@ -2,15 +2,17 @@ import express, {Request, Response} from 'express';
 import {getManager, getRepository} from 'typeorm';
 import {Exercise} from '../../entity/Exercise';
 import {TestCase} from '../../entity/TestCase';
+import {User} from '../../entity/User';
 
 const testCases = express.Router();
 
 testCases.post('/', async (req: Request, res: Response) => {
   const entityManager = getManager();
-  const {id, input, output, exerciseId} = req.body;
+  const {id, input, output, exerciseId, userId: sessionId} = req.body;
 
   const exercise = entityManager.create(Exercise, {id: exerciseId});
-  const newTest = {input, output, exercise};
+  const user = entityManager.create(User, {sessionId});
+  const newTest = {input, output, exercise, user};
 
   try {
     if (id) {

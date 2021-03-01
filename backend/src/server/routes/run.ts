@@ -33,6 +33,7 @@ run.post('/:id', async (req: Request, res: Response) => {
       res.sendStatus(500);
     }
 
+    // TODO: Most of this should go to ../../utils/pythonUtils.js
     const execDir = `${ATTEMPTS_DIR}/${req.params.id}/`;
     await mkdir(`${execDir}/src`, {recursive: true});
     await writeFile(`${execDir}/${SNIPPET_FILENAME}`, exercise.snippet);

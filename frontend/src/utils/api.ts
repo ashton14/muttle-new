@@ -18,15 +18,32 @@ export interface NewTestCase {
   output: string;
   exerciseId: number;
   visible: boolean;
+  userId: number;
 }
 
 export interface SavedTestCase extends NewTestCase {
   id: number;
   fixedId?: number;
   passed?: boolean;
+  errorMessage?: string;
 }
 
-export const newExercise = (data: Exercise) =>
+export interface User {
+  id: number;
+  sessionId: string;
+}
+
+export const getUserBySessionId = async (sessionId: string): Promise<User> => {
+  const encodedSessionId = encodeURI(sessionId);
+  return axios
+    .get(`users?sessionId=${encodedSessionId}`, config)
+    .then(user => user.data);
+};
+
+export const createUser = (sessionId: string): Promise<User> =>
+  axios.post('users/', {sessionId}, config).then(user => user.data);
+
+export const createExercise = (data: Exercise) =>
   axios.post('exercises', data, config).then(res => res.data);
 
 export const updateExercise = (exerciseId: number, data: SavedExercise) =>
@@ -43,14 +60,17 @@ export const getExercises = (): Promise<SavedExercise[]> =>
 export const getTestCases = (exerciseId: number): Promise<SavedTestCase[]> =>
   axios.get(`testCases?exerciseId=${exerciseId}`, config).then(res => res.data);
 
-export const newTestCase = (data: NewTestCase) =>
+export const createTestCase = (data: NewTestCase) =>
   axios.post('testCases', data, config).then(res => res.data);
 
-export const newTestCases = (data: NewTestCase[]) =>
+export const createTestCases = (data: NewTestCase[]) =>
   axios.post('testCases/batch', data, config).then(res => res.data);
 
 export const deleteTestCase = (testCaseId: number): Promise<number | null> =>
   axios.delete(`testCases/${testCaseId}`, config).then(res => res.data);
 
-export const runTests = (exerciseId: number): Promise<SavedTestCase[]> =>
-  axios.post(`run/${exerciseId}`, {}, config).then(res => res.data);
+export const runTests = (
+  exerciseId: number,
+  userId: number
+): Promise<SavedTestCase[]> =>
+  axios.post(`run/${exerciseId}`, {userId}, config).then(res => res.data);

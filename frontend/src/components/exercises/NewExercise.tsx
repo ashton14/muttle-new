@@ -4,7 +4,7 @@ import Container from 'react-bootstrap/Container';
 import Button from 'react-bootstrap/Button';
 
 import ExerciseForm from './ExerciseForm';
-import {newExercise} from '../../api';
+import {createExercise} from '../../utils/api';
 
 const NewExercise = () => {
   const [name, setName] = useState('');
@@ -14,7 +14,7 @@ const NewExercise = () => {
   const history = useHistory();
 
   const submit = async () => {
-    const savedExercise = await newExercise({name, description, snippet});
+    const savedExercise = await createExercise({name, description, snippet});
     history.push(`/exercises/${savedExercise.id}`);
   };
 

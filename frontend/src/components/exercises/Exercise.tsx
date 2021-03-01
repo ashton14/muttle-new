@@ -1,21 +1,23 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useContext} from 'react';
 import {useHistory, useParams} from 'react-router-dom';
 import SyntaxHighlighter from 'react-syntax-highlighter';
+import Container from 'react-bootstrap/cjs/Container';
+import {Button} from 'react-bootstrap';
 
 import {
   deleteTestCase,
   SavedExercise,
   getExercise,
   getTestCases,
-  newTestCase,
+  createTestCase,
   runTests,
   SavedTestCase,
   NewTestCase,
-} from '../../api';
+  User,
+} from '../../utils/api';
 import TestCase from '../testcases/TestCase';
 import TestCaseTable from '../testcases/TestCaseTable';
-import Container from 'react-bootstrap/cjs/Container';
-import {Button} from 'react-bootstrap';
+import {UserContext} from '../App';
 
 interface RouteParams {
   exerciseId: string;
@@ -37,6 +39,8 @@ const Exercise = () => {
   const {exerciseId: idString} = useParams<RouteParams>();
   const exerciseId = parseInt(idString);
 
+  const user: User = useContext(UserContext);
+
   useEffect(() => {
     Promise.all([getExercise(exerciseId), getTestCases(exerciseId)]).then(
       ([exercise, tests]) => {
@@ -55,7 +59,9 @@ const Exercise = () => {
 
   const newTest = () => {
     setNewTests(prevTests =>
-      prevTests.concat([{input: '', output: '', exerciseId, visible: true}])
+      prevTests.concat([
+        {input: '', output: '', exerciseId, visible: true, userId: user.id},
+      ])
     );
   };
 
@@ -103,11 +109,11 @@ const Exercise = () => {
       .filter(({passed}) => !passed)
       .map(test => ({...test, exerciseId}));
 
-    return Promise.all(testsToSave.concat(testsToUpdate).map(newTestCase));
+    return Promise.all(testsToSave.concat(testsToUpdate).map(createTestCase));
   };
 
   const runAllTests = async () => {
-    await runTests(exerciseId);
+    await runTests(exerciseId, user.id);
     const tests = await getTestCases(exerciseId);
     setTests(displayTests(tests));
     setNewTests([]);
