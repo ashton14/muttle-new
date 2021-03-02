@@ -31,10 +31,10 @@ const ExerciseForm = ({
           Name of the exercise (separate from function name)
         </Form.Text>
         <Form.Control
+          required
           placeholder="Function"
           value={name}
           onChange={event => setName(event.target.value)}
-          isInvalid={!name || !name.length}
         />
       </Form.Group>
 
@@ -42,10 +42,10 @@ const ExerciseForm = ({
         <Form.Label>Description</Form.Label>
         <Form.Text>Short description of the exercise</Form.Text>
         <Form.Control
+          required
           placeholder="What this function does"
           value={description}
           onChange={event => setDescription(event.target.value)}
-          isInvalid={!description || !description.length}
         />
       </Form.Group>
 

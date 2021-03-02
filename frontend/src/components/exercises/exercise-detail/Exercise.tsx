@@ -1,26 +1,27 @@
 import React, {useEffect, useState, useContext} from 'react';
 import {useHistory, useParams} from 'react-router-dom';
+import {UserContext} from '../../App';
+
 import {
+  CoverageOutcome,
+  createTestCase,
   deleteTestCase,
-  SavedExercise,
+  getCoverageOutcomes,
   getExercise,
   getTestCases,
-  createTestCase,
-  runTests,
-  SavedTestCase,
+  Mutant,
   NewTestCase,
+  runTests as runTestCases,
+  SavedExercise,
+  SavedTestCase,
   User,
-  CoverageOutcome,
-  getCoverageOutcomes,
-} from '../../utils/api';
-import {UserContext} from '../App';
-
-import TestCase from '../testcases/TestCase';
-import TestCaseTable from '../testcases/TestCaseTable';
+} from '../../../lib/api';
+import TestCaseTable from '../../testcases/TestCaseTable';
 import Container from 'react-bootstrap/Container';
-import {Button} from 'react-bootstrap';
-import Highlighter from '../code/Highlighter';
+import Highlighter from '../../code/Highlighter';
 import Row from 'react-bootstrap/Row';
+import FeedbackTable from '../../feedback/FeedbackTable';
+import ExerciseFooter from './ExerciseFooter';
 
 interface RouteParams {
   exerciseId: string;
@@ -40,6 +41,8 @@ const Exercise = () => {
   const [coverageOutcomes, setCoverageOutcomes] = useState<CoverageOutcome[]>(
     []
   );
+  const [mutants, setMutants] = useState<Mutant[]>([]);
+  const [running, setRunning] = useState<boolean>(false);
 
   const history = useHistory();
   const {exerciseId: idString} = useParams<RouteParams>();
@@ -70,7 +73,7 @@ const Exercise = () => {
     return <div />;
   }
 
-  const newTest = () => {
+  const createNewTest = () => {
     setNewTests(prevTests =>
       prevTests.concat([
         {input: '', output: '', exerciseId, visible: true, userId: user.id},
@@ -85,7 +88,7 @@ const Exercise = () => {
         .concat(prevTests.slice(index + 1, prevTests.length))
     );
 
-  const deleteTest = (index: number) => async () => {
+  const deleteSavedTest = (index: number) => async () => {
     const wasDeleted = await deleteTestCase(tests[index]);
     if (wasDeleted) {
       setTests(prevTests =>
@@ -98,7 +101,7 @@ const Exercise = () => {
 
   const editNewTest = (key: string, index: number) => (value: string) =>
     setNewTests(prevTests => {
-      const updatedTest = {...prevTests[index], [key]: value};
+      const updatedTest = {...prevTests[index], [key]: replaceSmartKeys(value)};
       return [
         ...prevTests.slice(0, index),
         updatedTest,
@@ -106,9 +109,9 @@ const Exercise = () => {
       ];
     });
 
-  const editTest = (key: string, index: number) => (value: string) =>
+  const editSavedTest = (key: string, index: number) => (value: string) =>
     setTests(prevTests => {
-      const updatedTest = {...prevTests[index], [key]: value};
+      const updatedTest = {...prevTests[index], [key]: replaceSmartKeys(value)};
       return [
         ...prevTests.slice(0, index),
         updatedTest,
@@ -116,7 +119,7 @@ const Exercise = () => {
       ];
     });
 
-  const saveTestCases = () => {
+  const saveTests = () => {
     const testsToSave = newTests.filter(({input, output}) => input || output);
     const testsToUpdate = tests
       .filter(({passed}) => !passed)
@@ -125,12 +128,16 @@ const Exercise = () => {
     return Promise.all(testsToSave.concat(testsToUpdate).map(createTestCase));
   };
 
-  const runAllTests = async () => {
-    const {coverageOutcomes} = await runTests(exerciseId, user.id);
+  const runTests = async () => {
+    setRunning(true);
+    const {coverageOutcomes, mutants} = await runTestCases(exerciseId, user.id);
+
     const tests = await getTestCases(exerciseId, user.id);
     setTests(displayTests(tests));
     setNewTests([]);
+    setMutants(mutants);
     setCoverageOutcomes(coverageOutcomes);
+    setRunning(false);
   };
 
   return (
@@ -139,68 +146,52 @@ const Exercise = () => {
       <p>{exercise.description}</p>
       <Highlighter
         value={exercise.snippet}
-        options={{lineNumbers: true}}
-        coverage={{
-          covered: [
-            {
-              from: {line: 4, ch: 0},
-              to: {line: 4, ch: 100},
-            },
-            {
-              from: {line: 5, ch: 0},
-              to: {line: 5, ch: 100},
-            },
-            {
-              from: {line: 6, ch: 0},
-              to: {line: 6, ch: 100},
-            },
-          ],
-          uncovered: [
-            {
-              from: {line: 7, ch: 0},
-              to: {line: 7, ch: 100},
-            },
-          ],
+        options={{
+          lineNumbers: true,
+          gutters: ['CodeMirror-linenumbers', 'coverage-gutter'],
         }}
+        coverageOutcomes={coverageOutcomes}
         className="border rounded h-auto mb-4"
       />
-      <TestCaseTable>
-        {tests.map(({input, output, passed}, i) => (
-          <TestCase
-            key={`test-${i}`}
-            input={input}
-            setInput={editTest('input', i)}
-            output={output}
-            setOutput={editTest('output', i)}
-            deleteTestCase={deleteTest(i)}
-            passed={passed}
-          />
-        ))}
-        {newTests.map(({input, output}, i) => (
-          <TestCase
-            key={`newTest-${i}`}
-            input={input}
-            setInput={editNewTest('input', i)}
-            output={output}
-            setOutput={editNewTest('output', i)}
-            deleteTestCase={deleteNewTest(i)}
-            passed={null}
-          />
-        ))}
-      </TestCaseTable>
-      <Row className="w-50 justify-content-center">
-        <Button className="w-auto m-2" onClick={newTest}>
-          <i className="fas fa-plus-square" aria-hidden="true" /> New Test
-        </Button>
-        <Button
-          className="w-auto m-2"
-          onClick={() => saveTestCases().then(runAllTests)}
-        >
-          <i className="fas fa-rocket" aria-hidden="true" /> Launch!
-        </Button>
+      <Row>
+        <TestCaseTable
+          savedTests={tests}
+          editSavedTest={editSavedTest}
+          deleteSavedTest={deleteSavedTest}
+          newTests={newTests}
+          createNewTest={createNewTest}
+          editNewTest={editNewTest}
+          deleteNewTest={deleteNewTest}
+          running={running}
+        />
+        <FeedbackTable mutation={mutants} />
       </Row>
+      <ExerciseFooter
+        disabled={running || (!tests.length && !newTests.length)}
+        running={running}
+        saveTests={saveTests}
+        runTests={runTests}
+      />
     </Container>
   );
 };
+
+const smartKeyReplacements = new Map<string, string>([
+  ['‘', "'"],
+  ['’', "'"],
+  ['“', '"'],
+  ['”', '"'],
+]);
+
+const smarkKeysRegex = new RegExp(
+  Array.from(smartKeyReplacements.keys()).join('|'),
+  'gi'
+);
+
+const replaceSmartKeys = (str: string) =>
+  str.replace(smarkKeysRegex, smartKey => {
+    const replacement = smartKeyReplacements.get(smartKey);
+    return replacement !== undefined ? replacement : smartKey;
+  });
 
 export default Exercise;

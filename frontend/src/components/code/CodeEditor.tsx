@@ -2,7 +2,7 @@ import React from 'react';
 
 import {Controlled as CodeMirror} from 'react-codemirror2';
 import codemirror from 'codemirror';
-import {LANGUAGE} from './codeMirrorSetup';
+import {LANGUAGE} from '../../lib/codeMirrorSetup';
 
 const baseOptions: Partial<codemirror.EditorConfiguration> = {
   mode: LANGUAGE,

@@ -1,54 +1,50 @@
-import React from 'react';
+import React, {useEffect, useRef} from 'react';
 
 import {Controlled as CodeMirror} from 'react-codemirror2';
 import codemirror from 'codemirror';
-import {LANGUAGE} from './codeMirrorSetup';
+import {LANGUAGE} from '../../lib/codeMirrorSetup';
 
 import './Highlighter.css';
+import {CoverageOutcome, Mutant} from '../../lib/api';
+import _ from 'lodash';
 
 const baseOptions: Partial<codemirror.EditorConfiguration> = {
-  readOnly: true,
+  readOnly: 'nocursor',
   mode: LANGUAGE,
 };
-
-interface Coverable {
-  from: CodeMirror.Position;
-  to: CodeMirror.Position;
-}
 
 interface HighlighterProps {
   value: string;
   options?: Partial<codemirror.EditorConfiguration>;
-  coverage?: {
-    covered: Coverable[];
-    uncovered: Coverable[];
-  };
+  coverageOutcomes?: CoverageOutcome[];
+  mutants?: Mutant[];
   className?: string;
+}
+
+interface CodeMirrorWithEditor extends CodeMirror {
+  editor: codemirror.Editor;
 }
 
 const Highlighter = ({
   value,
   options,
-  coverage,
+  coverageOutcomes,
+
   className,
 }: HighlighterProps) => {
-  const codeMirrorRef = React.useRef();
+  const codeMirrorRef = useRef<CodeMirrorWithEditor>(null);
 
-  React.useEffect(() => {
-    const editor = codeMirrorRef.current.editor;
+  useEffect(() => {
+    const editor = codeMirrorRef.current?.editor;
 
-    editor.display.wrapper.style.height = 'auto';
+    if (editor) {
+      editor.clearGutter('coverage-gutter');
 
-    if (coverage) {
-      const {covered, uncovered} = coverage;
-      covered.forEach(({from, to}) => {
-        editor.markText(from, to, {className: 'codemirror-covered'});
-      });
-      uncovered.forEach(({from, to}) => {
-        editor.markText(from, to, {className: 'codemirror-uncovered'});
-      });
+      if (coverageOutcomes) {
+        highlightCoverage(editor, coverageOutcomes);
+      }
     }
-  }, [coverage]);
+  }, [coverageOutcomes]);
 
   return (
     <CodeMirror
@@ -58,8 +54,69 @@ const Highlighter = ({
       options={{...baseOptions, ...options}}
       onBeforeChange={() => {}} // No-op
       onChange={() => {}} // No-op
+      editorDidMount={editor => responsiveEditorHeight(editor)}
     />
   );
+};
+
+const responsiveEditorHeight = (editor: codemirror.Editor) =>
+  editor.setSize(null, 'auto');
+
+const getCoverageGutter = (className: string) => {
+  const div: HTMLElement = document.createElement('div');
+  div.className = className;
+  div.innerHTML = '&nbsp;';
+  return div;
+};
+
+const highlightCoverage = (
+  editor: codemirror.Editor,
+  coverageOutcomes: CoverageOutcome[]
+) => {
+  const {
+    covered = [],
+    partial = [],
+    uncovered = [],
+  } = _.groupBy<CoverageOutcome>(coverageOutcomes, getOutcome);
+  return [
+    ...covered.map((coverageOutcome: CoverageOutcome) =>
+      editor.setGutterMarker(
+        coverageOutcome.lineNo - 1,
+        'coverage-gutter',
+        getCoverageGutter('coverage-covered')
+      )
+    ),
+    ...partial.map((coverageOutcome: CoverageOutcome) =>
+      editor.setGutterMarker(
+        coverageOutcome.lineNo - 1,
+        'coverage-gutter',
+        getCoverageGutter('coverage-partial')
+      )
+    ),
+    ...uncovered.map((coverageOutcome: CoverageOutcome) =>
+      editor.setGutterMarker(
+        coverageOutcome.lineNo - 1,
+        'coverage-gutter',
+        getCoverageGutter('coverage-uncovered')
+      )
+    ),
+  ];
+};
+
+enum CoverageResult {
+  UNCOVERED = 'uncovered',
+  PARTIAL = 'partial',
+  COVERED = 'covered',
+}
+
+const getOutcome = (coverageOutcome: CoverageOutcome) => {
+  if (!coverageOutcome.lineCovered) {
+    return CoverageResult.UNCOVERED;
+  }
+
+  return coverageOutcome.conditions > coverageOutcome.conditionsCovered
+    ? CoverageResult.PARTIAL
+    : CoverageResult.COVERED;
 };
 
 export default Highlighter;

@@ -59,6 +59,11 @@ export const runMutationAnalysis = (rootDir: string) => {
         reject(err);
       }
     });
+
+    python.on('error', (err: Error) => {
+      console.log(err);
+      reject(err);
+    });
   });
 };
 

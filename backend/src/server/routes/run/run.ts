@@ -69,12 +69,12 @@ run.post('/:id', async (req: Request, res: Response) => {
       if (allPassed) {
         await runMutationAnalysis(rootDir);
 
-        const [coverage, mutation] = await Promise.all([
+        const [coverageOutcomes, mutants] = await Promise.all([
           getCoverageData(rootDir, user, exercise),
           getMutationData(rootDir),
         ]);
 
-        res.json({coverage, mutation});
+        res.json({coverageOutcomes, mutants});
       } else {
         res.json({});
       }
@@ -82,6 +82,7 @@ run.post('/:id', async (req: Request, res: Response) => {
       res.sendStatus(404);
     }
   } catch (err) {
+    console.log(err);
     res.sendStatus(500);
   } finally {
     // console.log('Deleting files...');
@@ -103,10 +104,10 @@ run.post('/:id', async (req: Request, res: Response) => {
  * @returns the root director of the workspace
  */
 const createWorkspace = async (
-  userId: string,
+  userId: number,
   exerciseId: string
 ): Promise<string> => {
-  const rootDir = path.join(ATTEMPTS_DIR, userId, exerciseId);
+  const rootDir = path.join(ATTEMPTS_DIR, userId.toString(), exerciseId);
   await Promise.all([
     mkdir(path.join(rootDir, 'src'), {recursive: true}),
     mkdir(path.join(rootDir, 'reports'), {recursive: true}),
@@ -153,7 +154,7 @@ const writeTestFile = async (
       return buildTestSnippet(i, functionName, input, output, isFloat);
     });
 
-    await writeFile(TESTS_FILENAME, buildTestsFile(functionName, testSnippets));
+    await writeFile(filename, buildTestsFile(functionName, testSnippets));
   } catch (err) {
     console.log(`Unable to write tests file: ${filename}`);
     throw err;
@@ -177,12 +178,17 @@ const runTests = (rootDir: string, testCases: TestCase[]) => {
 
     python.on('close', async () => {
       try {
-        const testResults = await getTestResultData();
+        const testResults = await getTestResultData(rootDir);
         await updateTestCases(testCases, testResults);
         resolve(_.every(testResults, isPassed));
       } catch (err) {
         reject(err);
       }
+    });
+
+    python.on('error', (err: Error) => {
+      console.log(err);
+      reject(err);
     });
   });
 };
@@ -197,9 +203,12 @@ interface TestResult {
   };
 }
 
-const getTestResultData = async (): Promise<TestResult[]> => {
+const getTestResultData = async (rootDir: string): Promise<TestResult[]> => {
   try {
-    const resultsData = await readFile(PYTEST_RESULTS_FILENAME, 'utf-8');
+    const resultsData = await readFile(
+      path.join(rootDir, PYTEST_RESULTS_FILENAME),
+      'utf-8'
+    );
     return JSON.parse(resultsData).tests;
   } catch (err) {
     console.log(`Unable to read test results file: ${PYTEST_RESULTS_FILENAME}`);
