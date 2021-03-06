@@ -73,7 +73,7 @@ const Exercise = () => {
     );
 
   const deleteTest = (index: number) => async () => {
-    const wasDeleted = await deleteTestCase(tests[index].id);
+    const wasDeleted = await deleteTestCase(tests[index]);
     if (wasDeleted) {
       setTests(prevTests =>
         prevTests

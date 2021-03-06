@@ -58,16 +58,22 @@ export const getExercises = (): Promise<SavedExercise[]> =>
   axios.get('exercises', config).then(res => res.data);
 
 export const getTestCases = (exerciseId: number): Promise<SavedTestCase[]> =>
-  axios.get(`testCases?exerciseId=${exerciseId}`, config).then(res => res.data);
+  axios.get(`exercises/${exerciseId}/testCases`, config).then(res => res.data);
 
 export const createTestCase = (data: NewTestCase) =>
-  axios.post('testCases', data, config).then(res => res.data);
+  axios
+    .post(`exercises/${data.exerciseId}/testCases`, data, config)
+    .then(res => res.data);
 
 export const createTestCases = (data: NewTestCase[]) =>
   axios.post('testCases/batch', data, config).then(res => res.data);
 
-export const deleteTestCase = (testCaseId: number): Promise<number | null> =>
-  axios.delete(`testCases/${testCaseId}`, config).then(res => res.data);
+export const deleteTestCase = (
+  testCase: SavedTestCase
+): Promise<number | null> =>
+  axios
+    .delete(`exercises/${testCase.exerciseId}/testCases/${testCase.id}`, config)
+    .then(res => res.data);
 
 export const runTests = (
   exerciseId: number,

@@ -2,6 +2,7 @@ export const ATTEMPTS_DIR = 'usr/attempts';
 export const SNIPPET_FILENAME = 'src/__init__.py';
 export const TESTS_FILENAME = 'tests.py';
 export const PYTEST_REPORT_FILENAME = '.report.json';
+export const COVERAGE_REPORT_FILENAME = 'coverage.xml';
 
 export const getFunctionName = (snippet: string): string | null => {
   const match = snippet.match(/def (.+)\(.*\).*:/);

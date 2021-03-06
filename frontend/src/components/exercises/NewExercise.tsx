@@ -22,8 +22,11 @@ const NewExercise = () => {
   return (
     <Container>
       <ExerciseForm
+        name={name}
         setName={setName}
+        description={description}
         setDescription={setDescription}
+        snippet={snippet}
         setSnippet={setSnippet}
       />
       <Button onClick={submit}>Create Exercise</Button>

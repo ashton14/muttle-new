@@ -4,14 +4,15 @@ import {Exercise} from '../../entity/Exercise';
 import {TestCase} from '../../entity/TestCase';
 import {User} from '../../entity/User';
 
-const testCases = express.Router();
+const exerciseTestCases = express.Router({mergeParams: true});
 
-testCases.post('/', async (req: Request, res: Response) => {
+exerciseTestCases.post('/', async (req: Request, res: Response) => {
   const entityManager = getManager();
-  const {id, input, output, exerciseId, userId: sessionId} = req.body;
+  const {id, input, output, exerciseId, userId} = req.body;
 
   const exercise = entityManager.create(Exercise, {id: exerciseId});
-  const user = entityManager.create(User, {sessionId});
+  const user = entityManager.create(User, {id: userId});
+  console.log(user);
   const newTest = {input, output, exercise, user};
 
   try {
@@ -42,7 +43,7 @@ testCases.post('/', async (req: Request, res: Response) => {
 });
 
 // TODO - Needs to be fixed with new model for inserting (
-testCases.post('/batch', async (req: Request, res: Response) => {
+exerciseTestCases.post('/batch', async (req: Request, res: Response) => {
   const exerciseRepo = getRepository(Exercise);
   const testCases = req.body.map(
     ({input, output, exerciseId, fixedId}: any) => ({
@@ -55,19 +56,15 @@ testCases.post('/batch', async (req: Request, res: Response) => {
   res.json(await getManager().save(TestCase, testCases));
 });
 
-testCases.get('/', async (req: Request, res: Response) =>
-  res.json(
+exerciseTestCases.get('/', async (req: Request, res: Response) => {
+  return res.json(
     await getManager().find(TestCase, {
-      where: {exercise: {id: req.query.exerciseId}},
+      where: {exercise: {id: req.params.exerciseId}},
     })
-  )
-);
+  );
+});
 
-testCases.get('/:id', async (req: Request, res: Response) =>
-  res.json(await getManager().findOne(TestCase, req.params.id))
-);
-
-testCases.delete('/:id', async (req: Request, res: Response) => {
+exerciseTestCases.delete('/:id', async (req: Request, res: Response) => {
   const entityManager = getManager();
   const testCase = entityManager.create(TestCase, {
     id: parseInt(req.params.id),
@@ -81,4 +78,8 @@ testCases.delete('/:id', async (req: Request, res: Response) => {
   }
 });
 
-export default testCases;
+exerciseTestCases.get('/:id', async (req: Request, res: Response) =>
+  res.json(await getManager().findOne(TestCase, req.params.id))
+);
+
+export default exerciseTestCases;

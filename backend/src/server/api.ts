@@ -7,7 +7,7 @@ import users from './routes/users';
 const api = express.Router();
 
 api.use('/exercises', exercises);
-api.use('/testCases', testCases);
+exercises.use('/:exerciseId/testCases', testCases);
 api.use('/users/', users);
 api.use('/run', run);
 

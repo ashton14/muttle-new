@@ -1,8 +1,10 @@
 import express, {Request, Response} from 'express';
-import {getRepository} from 'typeorm';
+import {getManager, getRepository} from 'typeorm';
 import {Exercise} from '../../entity/Exercise';
+import {CoverageOutcome} from '../../entity/CoverageOutcome';
 import {spawn} from 'child_process';
 import {writeFile, readFile, mkdir} from 'fs/promises';
+import {Parser} from 'xml2js';
 import {
   buildTestsFile,
   buildTestSnippet,
@@ -11,20 +13,31 @@ import {
   PYTEST_REPORT_FILENAME,
   SNIPPET_FILENAME,
   TESTS_FILENAME,
+  COVERAGE_REPORT_FILENAME,
 } from '../../utils/pythonUtils';
 import {TestCase} from '../../entity/TestCase';
+import {User} from '../../entity/User';
 
 const run = express.Router();
 
 run.post('/:id', async (req: Request, res: Response) => {
-  const exercise = await getRepository(Exercise).findOne(req.params.id, {
-    relations: ['testCases'],
-  });
+  const {userId} = req.body;
+  const entityManager = getManager();
+
+  const exercise = await entityManager
+    .createQueryBuilder(Exercise, 'exercise')
+    .leftJoinAndSelect(
+      'exercise.testCases',
+      'testCase',
+      'testCase.userId = :userId',
+      {userId}
+    )
+    .getOne();
 
   if (exercise) {
     // Only run failing tests that have not yet been fixed
     const testCases = exercise.testCases.filter(
-      test => !test.passed && !test.fixedId
+      test => test.visible && !test.fixedId
     );
 
     const functionName = getFunctionName(exercise.snippet) || '';
@@ -59,6 +72,10 @@ run.post('/:id', async (req: Request, res: Response) => {
       '--json-report-omit',
       'keywords',
       'collectors',
+      '--cov=src/',
+      '--cov-branch',
+      '--cov-report',
+      'xml',
     ]);
 
     python.on('close', async () => {
@@ -67,6 +84,7 @@ run.post('/:id', async (req: Request, res: Response) => {
 
       const testRepo = getRepository(TestCase);
 
+      // Record test outcomes.
       const updatedTestCases = testCases.map((test, i) => {
         const {outcome, call} = testResults[i];
         const errorMessage = call.crash ? call.crash.message : null;
@@ -77,6 +95,52 @@ run.post('/:id', async (req: Request, res: Response) => {
       });
 
       await testRepo.save(updatedTestCases);
+
+      // Record coverage outcomes.
+      const coverageData = await readFile(COVERAGE_REPORT_FILENAME);
+      const xmlParser = new Parser();
+      const coverageResults = await xmlParser.parseStringPromise(coverageData);
+      const lines =
+        coverageResults.coverage.packages[0].package[0].classes[0].class[0]
+          .lines[0].line;
+
+      const coverageRepo = await getRepository(CoverageOutcome);
+      type covLine = {
+        $: {
+          number: string;
+          hits: string;
+          branch?: string;
+          'condition-coverage': string;
+          'missing-branches': string;
+        };
+      };
+
+      // TODO: Need to not replicate exercise/user/lineNo triplets.
+      const coverageOutcomes = lines.map(async (line: covLine) => {
+        const lineNo = parseInt(line.$.number);
+        const lineCovered = parseInt(line.$.hits) > 0;
+        let conditions = 0;
+        let conditionsCovered = 0;
+        if (line.$.branch) {
+          const conditionCoverage: string = line.$['condition-coverage'];
+          const conditionStr: number[] = conditionCoverage
+            .split(/\s/)[1]
+            .split(/\//)
+            .map((cond: string) => parseInt(cond.replace(/[^\d]/g, '')));
+          conditions = conditionStr[0];
+          conditionsCovered = conditionStr[1];
+        }
+
+        const coverageOutcomes = {
+          lineNo,
+          lineCovered,
+          conditions,
+          conditionsCovered,
+          exercise,
+          userId,
+        };
+        return await coverageRepo.save(coverageOutcomes);
+      });
 
       process.chdir(`${workingDir}`);
       res.json(updatedTestCases);

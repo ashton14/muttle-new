@@ -27,10 +27,10 @@ export class CoverageOutcome {
   lineCovered!: boolean;
 
   @Column({default: 0})
-  branches!: number;
+  conditions!: number;
 
   @Column({default: 0})
-  branchesCovered!: number;
+  conditionsCovered!: number;
 
   @CreateDateColumn({type: 'timestamp'})
   created!: Date;
