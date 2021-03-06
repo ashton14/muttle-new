@@ -28,6 +28,16 @@ export interface SavedTestCase extends NewTestCase {
   errorMessage?: string;
 }
 
+export interface CoverageOutcome {
+  id: number;
+  exerciseId: number;
+  userId: number;
+  lineNo: number;
+  lineCovered: boolean;
+  conditions: number;
+  conditionsCovered: number;
+}
+
 export interface User {
   id: number;
   sessionId: string;
@@ -78,5 +88,7 @@ export const deleteTestCase = (
 export const runTests = (
   exerciseId: number,
   userId: number
-): Promise<SavedTestCase[]> =>
-  axios.post(`run/${exerciseId}`, {userId}, config).then(res => res.data);
+): Promise<{
+  updatedTestCases: SavedTestCase[];
+  coverageOutcomes: CoverageOutcome[];
+}> => axios.post(`run/${exerciseId}`, {userId}, config).then(res => res.data);

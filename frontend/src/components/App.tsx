@@ -21,7 +21,6 @@ const App = () => {
       let sessionId = getCookie('muttle-session-id');
       let user: User;
       if (sessionId) {
-        console.log(sessionId);
         user = await getUserBySessionId(sessionId);
         if (user) {
           setCurrentUser(user);

@@ -16,7 +16,6 @@ import {
   COVERAGE_REPORT_FILENAME,
 } from '../../utils/pythonUtils';
 import {TestCase} from '../../entity/TestCase';
-import {User} from '../../entity/User';
 
 const run = express.Router();
 
@@ -115,8 +114,8 @@ run.post('/:id', async (req: Request, res: Response) => {
         };
       };
 
-      // TODO: Need to not replicate exercise/user/lineNo triplets.
-      const coverageOutcomes = lines.map(async (line: covLine) => {
+      // TODO: Do we want to void replicating exercise/user/lineNo triplets?
+      let coverageOutcomes = lines.map((line: covLine) => {
         const lineNo = parseInt(line.$.number);
         const lineCovered = parseInt(line.$.hits) > 0;
         let conditions = 0;
@@ -127,23 +126,26 @@ run.post('/:id', async (req: Request, res: Response) => {
             .split(/\s/)[1]
             .split(/\//)
             .map((cond: string) => parseInt(cond.replace(/[^\d]/g, '')));
-          conditions = conditionStr[0];
-          conditionsCovered = conditionStr[1];
+          conditionsCovered = conditionStr[0];
+          conditions = conditionStr[1];
         }
 
-        const coverageOutcomes = {
+        const coverageOutcome = {
           lineNo,
           lineCovered,
           conditions,
           conditionsCovered,
-          exercise,
+          exerciseId: exercise.id,
           userId,
         };
-        return await coverageRepo.save(coverageOutcomes);
+
+        return coverageOutcome;
       });
 
+      coverageOutcomes = await coverageRepo.save(coverageOutcomes);
+
       process.chdir(`${workingDir}`);
-      res.json(updatedTestCases);
+      res.json({updatedTestCases, coverageOutcomes});
     });
   } else {
     res.sendStatus(404);

@@ -14,6 +14,7 @@ import {
   SavedTestCase,
   NewTestCase,
   User,
+  CoverageOutcome,
 } from '../../utils/api';
 import TestCase from '../testcases/TestCase';
 import TestCaseTable from '../testcases/TestCaseTable';
@@ -34,6 +35,9 @@ const Exercise = () => {
   const [exercise, setExercise] = useState<SavedExercise>();
   const [tests, setTests] = useState<SavedTestCase[]>([]);
   const [newTests, setNewTests] = useState<NewTestCase[]>([]);
+  const [coverageOutcomes, setCoverageOutcomes] = useState<CoverageOutcome[]>(
+    []
+  );
 
   const history = useHistory();
   const {exerciseId: idString} = useParams<RouteParams>();
@@ -113,10 +117,11 @@ const Exercise = () => {
   };
 
   const runAllTests = async () => {
-    await runTests(exerciseId, user.id);
+    const {coverageOutcomes} = await runTests(exerciseId, user.id);
     const tests = await getTestCases(exerciseId);
     setTests(displayTests(tests));
     setNewTests([]);
+    setCoverageOutcomes(coverageOutcomes);
   };
 
   return (
@@ -128,6 +133,25 @@ const Exercise = () => {
         language="python"
         wrapLines={true}
         showLineNumbers
+        lineProps={lineNumber => {
+          const style: {display: string; backgroundColor?: string} = {
+            display: 'block',
+          };
+
+          const line = coverageOutcomes.find(
+            outcome => outcome.lineNo === lineNumber
+          );
+
+          if (line) {
+            if (line.lineCovered) {
+              style.backgroundColor = '#dbffdb';
+            } else {
+              style.backgroundColor = '#ffecec';
+            }
+          }
+
+          return {style};
+        }}
       >
         {exercise.snippet}
       </SyntaxHighlighter>
