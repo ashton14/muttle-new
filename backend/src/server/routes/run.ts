@@ -16,12 +16,14 @@ import {
   COVERAGE_REPORT_FILENAME,
 } from '../../utils/pythonUtils';
 import {TestCase} from '../../entity/TestCase';
+import {User} from '../../entity/User';
 
 const run = express.Router();
 
 run.post('/:id', async (req: Request, res: Response) => {
-  const {userId} = req.body;
   const entityManager = getManager();
+
+  const user = entityManager.create(User, {id: req.body.userId});
 
   const exercise = await entityManager
     .createQueryBuilder(Exercise, 'exercise')
@@ -29,7 +31,7 @@ run.post('/:id', async (req: Request, res: Response) => {
       'exercise.testCases',
       'testCase',
       'testCase.userId = :userId',
-      {userId}
+      {userId: user.id}
     )
     .getOne();
 
@@ -135,8 +137,8 @@ run.post('/:id', async (req: Request, res: Response) => {
           lineCovered,
           conditions,
           conditionsCovered,
-          exerciseId: exercise.id,
-          userId,
+          exercise,
+          user,
         };
 
         return coverageOutcome;

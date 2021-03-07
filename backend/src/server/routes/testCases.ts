@@ -59,7 +59,10 @@ exerciseTestCases.post('/batch', async (req: Request, res: Response) => {
 exerciseTestCases.get('/', async (req: Request, res: Response) => {
   return res.json(
     await getManager().find(TestCase, {
-      where: {exercise: {id: req.params.exerciseId}},
+      where: {
+        exercise: {id: req.params.exerciseId},
+        user: {id: req.params.userId},
+      },
     })
   );
 });

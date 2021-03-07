@@ -15,6 +15,7 @@ import {
   NewTestCase,
   User,
   CoverageOutcome,
+  getCoverageOutcomes,
 } from '../../utils/api';
 import TestCase from '../testcases/TestCase';
 import TestCaseTable from '../testcases/TestCaseTable';
@@ -46,16 +47,23 @@ const Exercise = () => {
   const user: User = useContext(UserContext);
 
   useEffect(() => {
-    Promise.all([getExercise(exerciseId), getTestCases(exerciseId)]).then(
-      ([exercise, tests]) => {
+    if (user) {
+      Promise.all([
+        getExercise(exerciseId),
+        getTestCases(exerciseId, user.id),
+        getCoverageOutcomes(exerciseId, user.id),
+      ]).then(([exercise, tests, coverageOutcomes]) => {
         if (!exercise) {
           history.push('/exercises');
         }
         setExercise(exercise);
         setTests(displayTests(tests));
-      }
-    );
-  }, [history, exerciseId]);
+        setCoverageOutcomes(coverageOutcomes);
+      });
+    } else {
+      return;
+    }
+  }, [history, exerciseId, user]);
 
   if (!exercise) {
     return <div></div>;

@@ -1,5 +1,6 @@
 import express, {Request, Response} from 'express';
-import {getRepository} from 'typeorm';
+import {getManager, getRepository} from 'typeorm';
+import {CoverageOutcome} from '../../entity/CoverageOutcome';
 import {Exercise} from '../../entity/Exercise';
 
 const exercises = express.Router();
@@ -30,5 +31,24 @@ exercises.put('/:id', async (req: Request, res: Response) => {
 exercises.post('/', async (req: Request, res: Response) =>
   res.json(await getRepository(Exercise).save(req.body))
 );
+
+exercises.get('/:id/coverageOutcomes', async (req: Request, res: Response) => {
+  const {userId} = req.query;
+  const {id} = req.params;
+
+  const results = await getRepository(CoverageOutcome)
+    .createQueryBuilder('coverageOutcome')
+    .where(
+      'coverageOutcome.userId = :userId and coverageOutcome.exerciseId = :id',
+      {userId: userId, id: id}
+    )
+    .distinctOn([
+      'coverageOutcome.userId',
+      'coverageOutcome.exerciseId',
+      'coverageOutcome.lineNo',
+    ])
+    .getMany();
+  res.json(results);
+});
 
 export default exercises;

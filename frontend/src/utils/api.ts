@@ -67,8 +67,13 @@ export const getExercise = (exerciseId: number): Promise<SavedExercise> =>
 export const getExercises = (): Promise<SavedExercise[]> =>
   axios.get('exercises', config).then(res => res.data);
 
-export const getTestCases = (exerciseId: number): Promise<SavedTestCase[]> =>
-  axios.get(`exercises/${exerciseId}/testCases`, config).then(res => res.data);
+export const getTestCases = (
+  exerciseId: number,
+  userId: number
+): Promise<SavedTestCase[]> =>
+  axios
+    .get(`exercises/${exerciseId}/testCases?userId=${userId}`, config)
+    .then(res => res.data);
 
 export const createTestCase = (data: NewTestCase) =>
   axios
@@ -92,3 +97,11 @@ export const runTests = (
   updatedTestCases: SavedTestCase[];
   coverageOutcomes: CoverageOutcome[];
 }> => axios.post(`run/${exerciseId}`, {userId}, config).then(res => res.data);
+
+export const getCoverageOutcomes = (
+  exerciseId: number,
+  userId: number
+): Promise<CoverageOutcome[]> =>
+  axios
+    .get(`exercises/${exerciseId}/coverageOutcomes?userId=${userId}`, config)
+    .then(res => res.data);
