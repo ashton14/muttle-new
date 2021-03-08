@@ -62,14 +62,23 @@ exerciseTestCases.post('/batch', async (req: Request, res: Response) => {
 });
 
 exerciseTestCases.get('/', async (req: Request, res: Response) => {
-  return res.json(
-    await getManager().find(TestCase, {
-      where: {
-        exercise: {id: req.params.exerciseId},
-        user: {id: req.query.userId},
-      },
-    })
-  );
+  const {
+    params: {exerciseId},
+    query: {userId, actual},
+  } = req;
+
+  const testCases = await getManager().find(TestCase, {
+    where: {
+      exercise: {id: exerciseId},
+      user: {id: userId},
+    },
+  });
+
+  if (actual !== 'true') {
+    testCases.forEach(test => delete test.actual);
+  }
+
+  return res.json(testCases);
 });
 
 exerciseTestCases.delete('/:id', async (req: Request, res: Response) => {

@@ -178,9 +178,13 @@ const runTests = (rootDir: string, testCases: TestCase[]) => {
 
     python.on('close', async () => {
       try {
-        const testResults = await getTestResultData(rootDir);
-        await updateTestCases(testCases, testResults);
-        resolve(_.every(testResults, isPassed));
+        const {exitcode, summary, tests} = await getTestResultData(rootDir);
+        if (exitcode === 0 || exitcode === 1) {
+          await updateTestCases(testCases, tests);
+          resolve(summary.passed === summary.total);
+        } else {
+          reject('Unable to run test cases');
+        }
       } catch (err) {
         reject(err);
       }
@@ -193,6 +197,17 @@ const runTests = (rootDir: string, testCases: TestCase[]) => {
   });
 };
 
+interface TestReport {
+  exitcode: number;
+  tests: TestResult[];
+  summary: {
+    passed: number;
+    failed: number;
+    total: number;
+    collected: number;
+  };
+}
+
 interface TestResult {
   outcome: string;
   call: {
@@ -203,13 +218,13 @@ interface TestResult {
   };
 }
 
-const getTestResultData = async (rootDir: string): Promise<TestResult[]> => {
+const getTestResultData = async (rootDir: string): Promise<TestReport> => {
   try {
     const resultsData = await readFile(
       path.join(rootDir, PYTEST_RESULTS_FILENAME),
       'utf-8'
     );
-    return JSON.parse(resultsData).tests;
+    return JSON.parse(resultsData);
   } catch (err) {
     console.log(`Unable to read test results file: ${PYTEST_RESULTS_FILENAME}`);
     throw err;
@@ -241,6 +256,7 @@ const updateTestCases = async (
     await testRepo.save(updatedTestCases);
   } catch (err) {
     console.log('Unable to update test cases');
+    console.log(err.stack);
     throw err;
   }
 };
