@@ -1,6 +1,6 @@
 import React, {createContext, useEffect, useState} from 'react';
 
-import Exercise from './exercises/exercise-detail/Exercise';
+import Exercise from '../exercises/exercise-detail/Exercise';
 import {
   Switch,
   Route,
@@ -9,13 +9,13 @@ import {
   useLocation,
 } from 'react-router-dom';
 import {Nav, Navbar} from 'react-bootstrap';
-import ExerciseList from './exercises/exercise-list/ExerciseList';
-import Home from './home/Home';
-import NewExercise from './exercises/new-exercise/NewExercise';
-import EditExercise from './exercises/EditExercise';
-import {Help} from './home/Help';
-import {getUserBySessionId, createUser, User} from '../utils/api';
-import {getCookie, setCookie, stringToUUID} from '../lib/helper';
+import ExerciseList from '../exercises/exercise-list/ExerciseList';
+import Home from '../home/Home';
+import NewExercise from '../exercises/new-exercise/NewExercise';
+import EditExercise from '../exercises/EditExercise';
+import {Help} from '../home/Help';
+import {getUserBySessionId, createUser, User} from '../../lib/api';
+import {getCookie, setCookie, stringToUUID} from '../../lib/helper';
 
 export const UserContext = createContext(null);
 

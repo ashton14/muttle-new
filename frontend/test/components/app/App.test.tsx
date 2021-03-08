@@ -1,6 +1,6 @@
 import React from 'react';
 import {render, screen} from '@testing-library/react';
-import App from '../../src/components/App';
+import App from '../../../src/components/app/App';
 import {BrowserRouter} from 'react-router-dom';
 
 test('renders home screen with muttle title', () => {

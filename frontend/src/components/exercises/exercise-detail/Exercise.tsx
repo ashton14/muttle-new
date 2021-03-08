@@ -1,6 +1,6 @@
 import React, {useEffect, useState, useContext} from 'react';
 import {useHistory, useParams} from 'react-router-dom';
-import {UserContext} from '../../App';
+import {UserContext} from '../../app/App';
 
 import {
   CoverageOutcome,
@@ -22,6 +22,8 @@ import Highlighter from '../../code/Highlighter';
 import Row from 'react-bootstrap/Row';
 import FeedbackTable from '../../feedback/FeedbackTable';
 import ExerciseFooter from './ExerciseFooter';
+
+const SHOW_ACTUAL = true;
 
 interface RouteParams {
   exerciseId: string;
@@ -132,7 +134,7 @@ const Exercise = () => {
     setRunning(true);
     const {coverageOutcomes, mutants} = await runTestCases(exerciseId, user.id);
 
-    const tests = await getTestCases(exerciseId, user.id);
+    const tests = await getTestCases(exerciseId, user.id, SHOW_ACTUAL);
     setTests(displayTests(tests));
     setNewTests([]);
     setMutants(mutants);

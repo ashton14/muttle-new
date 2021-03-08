@@ -32,21 +32,22 @@ const TestCaseRow = React.forwardRef<HTMLInputElement, TestCaseProps>(
     let results;
     if (passed === true) {
       results = <Success />;
-    } else if (passed === false && actual) {
-      results = <Failure actual={actual} />;
     } else if (passed === false && errorMessage) {
       results = <Error errorMessage={errorMessage} />;
+    } else if (passed === false) {
+      results = <Failure actual={actual} />;
     }
     const readOnly = passed || false;
     return (
       <tr>
         <td>
           <Button size="sm" variant="danger" onClick={deleteTestCase}>
-            <i className="fas fa-trash-alt" aria-hidden="true" />
+            <i className="fas fa-trash-alt" aria-label="delete" />
           </Button>
         </td>
         <td>
           <AceEditor
+            aria-label="test-input"
             ref={ref}
             mode="python"
             theme="github"
@@ -64,6 +65,7 @@ const TestCaseRow = React.forwardRef<HTMLInputElement, TestCaseProps>(
         </td>
         <td>
           <AceEditor
+            aria-label="test-output"
             mode="python"
             theme="github"
             onChange={value => setOutput(value)}
@@ -90,10 +92,10 @@ const Success = () => (
   </div>
 );
 
-const Failure = ({actual}: {actual: string}) => (
-  <div className="text-left">
-    <i className="text-danger fas fa-ban" aria-hidden="true" /> Expected:{' '}
-    {actual}
+const Failure = ({actual}: {actual?: string | null}) => (
+  <div className={actual ? 'text-left' : 'text-center'}>
+    <i className="text-danger fas fa-ban" aria-hidden="true" />
+    {actual ? <span> Expected: {actual}</span> : null}
   </div>
 );
 

@@ -105,10 +105,14 @@ export const getExercises = (): Promise<SavedExercise[]> =>
 
 export const getTestCases = (
   exerciseId: number,
-  userId: number
+  userId: number,
+  actual = false
 ): Promise<SavedTestCase[]> =>
   axios
-    .get(`exercises/${exerciseId}/testCases`, {...config, params: {userId}})
+    .get(`exercises/${exerciseId}/testCases`, {
+      ...config,
+      params: {userId, actual},
+    })
     .then(res => res.data);
 
 export const createTestCase = (data: NewTestCase): Promise<SavedTestCase> =>
