@@ -31,7 +31,7 @@ const TestCase = ({
   errorMessage,
 }: TestCaseProps) => {
   let results: string;
-  if (errorMessage) {
+  if (errorMessage && !errorMessage.includes('AssertionError')) {
     results = errorMessage;
   } else {
     results = passed === null ? '' : passed ? GREEN_CHECK : CROSS_MARK;

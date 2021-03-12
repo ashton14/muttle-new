@@ -1,5 +1,5 @@
 import express, {Request, Response} from 'express';
-import {getManager, getRepository} from 'typeorm';
+import {getRepository} from 'typeorm';
 import {CoverageOutcome} from '../../entity/CoverageOutcome';
 import {Exercise} from '../../entity/Exercise';
 

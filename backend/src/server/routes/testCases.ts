@@ -61,7 +61,7 @@ exerciseTestCases.get('/', async (req: Request, res: Response) => {
     await getManager().find(TestCase, {
       where: {
         exercise: {id: req.params.exerciseId},
-        user: {id: req.params.userId},
+        user: {id: req.query.userId},
       },
     })
   );

@@ -1,9 +1,7 @@
 import React, {useEffect, useState, useContext} from 'react';
 import {useHistory, useParams} from 'react-router-dom';
+import {Button, Container} from 'react-bootstrap';
 import SyntaxHighlighter from 'react-syntax-highlighter';
-import Container from 'react-bootstrap/cjs/Container';
-import {Button} from 'react-bootstrap';
-
 import {
   deleteTestCase,
   SavedExercise,
@@ -119,14 +117,14 @@ const Exercise = () => {
     const testsToSave = newTests.filter(({input, output}) => input || output);
     const testsToUpdate = tests
       .filter(({passed}) => !passed)
-      .map(test => ({...test, exerciseId}));
+      .map(test => ({...test, exerciseId, userId: user.id}));
 
     return Promise.all(testsToSave.concat(testsToUpdate).map(createTestCase));
   };
 
   const runAllTests = async () => {
     const {coverageOutcomes} = await runTests(exerciseId, user.id);
-    const tests = await getTestCases(exerciseId);
+    const tests = await getTestCases(exerciseId, user.id);
     setTests(displayTests(tests));
     setNewTests([]);
     setCoverageOutcomes(coverageOutcomes);

@@ -1,4 +1,4 @@
-import {MigrationInterface, QueryRunner} from "typeorm";
+import {MigrationInterface, QueryRunner} from 'typeorm';
 
 export class ChangeTestCaseErrorMessageToString1614388826445
   implements MigrationInterface {
