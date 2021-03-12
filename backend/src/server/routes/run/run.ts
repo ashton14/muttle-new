@@ -21,7 +21,6 @@ import {
   runMutationAnalysis,
 } from './mutation';
 import {COVERAGE_RESULTS_FILENAME, getCoverageData} from './coverage';
-import _ from 'lodash';
 import {User} from '../../../entity/User';
 import {mkdir, readFile, writeFile} from 'fs/promises';
 import path from 'path';
@@ -163,7 +162,9 @@ const writeTestFile = async (
 
 const runTests = (rootDir: string, testCases: TestCase[]) => {
   return new Promise<boolean>((resolve, reject) => {
-    const python = spawn('pytest', [
+    const python = spawn('python', [
+      '-m',
+      'pytest',
       path.join(rootDir, TESTS_FILENAME),
       `--cov=${path.join(rootDir, 'src')}`,
       '--cov-branch',

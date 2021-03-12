@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 # Script to run muttle web application, should be run ONLY from the project root.
 # Commands:
 #  - install: Installs all dependencies via yarn for both frontend/backend.
@@ -11,13 +11,13 @@
 # - clean: Remove build artifacts and node modules.
 # - clean-install: Performs a clean install of node_modules for backend/frontend
 #    applications.
+# - setup db: Given mySQL database credentials, setups up the db for use with the backend application.
+# - setup python: Sets up an isolated python virtual environment (using virtualenv) and installs python dependencies.
 # - help: Print help message.
 
 # TODO - Design a more robust method of determining package root (currrently reliant on running from
 #  the package root). Possibly replace shell script completely.
 PACKAGE_ROOT=$(pwd)
-FRONTEND="${PACKAGE_ROOT}/frontend"
-BACKEND="${PACKAGE_ROOT}/backend"
 DB_SETUP="${PACKAGE_ROOT}/scripts/db-setup.sql"
 
 COMMAND=""
@@ -28,15 +28,37 @@ ARGS=()
 
 set -e
 
+
 db_setup() {
   if [ "$1" = "" ]
   then
-    echo "muttle db-setup <admin> [password]"
+    echo "muttle db-setup <admin>"
   else
     set -x
-    mysql -u $1 -p < "$DB_SETUP"
+    mysql -u "$1" -p < "$DB_SETUP"
   fi
 }
+
+python_setup() {
+  set -xe
+  cd backend
+  python3 -m virtualenv venv
+  source venv/bin/activate
+  pip install -r requirements.txt
+  ln -s "${VIRTUAL_ENV}/bin/mut.py" .
+}
+
+setup() {
+  if [ "$1" = "db" ]
+  then
+    shift
+    db_setup "${ARGS[@]}"
+  elif [ "$1" = "python" ]
+  then
+    python_setup
+  fi
+}
+
 
 install() {
 	yarn run install-all
@@ -49,6 +71,7 @@ build() {
 }
 
 run() {
+  source backend/venv/bin/activate
   if [ ${DEVELOPMENT} = true ]
   then
     yarn run start-dev
@@ -137,8 +160,8 @@ case "$COMMAND" in
     set -x
     clean_install
     ;;
-  db-setup)
-    db_setup ${ARGS[@]}
+  setup)
+    setup "${ARGS[@]}"
     ;;
   "")
     help

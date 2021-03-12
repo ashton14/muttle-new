@@ -40,8 +40,9 @@ interface Mutation {
 
 export const runMutationAnalysis = (rootDir: string) => {
   return new Promise<void>((resolve, reject) => {
-    const python = spawn('python3', [
-      './venv/bin/mut.py',
+    // python mut.py --target usr/src --unit-test usr/tests.py --coverage --show-mutants -r usr/reports/mutation.yaml
+    const python = spawn('python', [
+      'mut.py',
       '--target',
       path.join(rootDir, SNIPPET_FILENAME),
       '--unit-test',
