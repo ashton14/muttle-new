@@ -3,7 +3,7 @@ import {useHistory} from 'react-router-dom';
 import Container from 'react-bootstrap/Container';
 import Button from 'react-bootstrap/Button';
 
-import ExerciseForm from '..//ExerciseForm';
+import ExerciseForm from './ExerciseForm';
 import {createExercise} from '../../../lib/api';
 
 const NewExercise = () => {

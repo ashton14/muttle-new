@@ -2,14 +2,20 @@ import React, {useEffect, useRef} from 'react';
 
 import {Controlled as CodeMirror} from 'react-codemirror2';
 import codemirror from 'codemirror';
-import {LANGUAGE} from '../../lib/codeMirrorSetup';
+import {
+  LANGUAGE,
+  responsiveEditorHeight,
+  THEME,
+} from '../../lib/codeMirrorSetup';
 
 import './Highlighter.css';
 import {CoverageOutcome, Mutant} from '../../lib/api';
 import _ from 'lodash';
 
 const baseOptions: Partial<codemirror.EditorConfiguration> = {
-  readOnly: 'nocursor',
+  readOnly: true,
+  cursorHeight: 0,
+  theme: THEME,
   mode: LANGUAGE,
 };
 
@@ -21,10 +27,6 @@ interface HighlighterProps {
   className?: string;
 }
 
-interface CodeMirrorWithEditor extends CodeMirror {
-  editor: codemirror.Editor;
-}
-
 const Highlighter = ({
   value,
   options,
@@ -32,7 +34,7 @@ const Highlighter = ({
 
   className,
 }: HighlighterProps) => {
-  const codeMirrorRef = useRef<CodeMirrorWithEditor>(null);
+  const codeMirrorRef = useRef<CodeMirror & {editor: codemirror.Editor}>(null);
 
   useEffect(() => {
     const editor = codeMirrorRef.current?.editor;
@@ -54,13 +56,10 @@ const Highlighter = ({
       options={{...baseOptions, ...options}}
       onBeforeChange={() => {}} // No-op
       onChange={() => {}} // No-op
-      editorDidMount={editor => responsiveEditorHeight(editor)}
+      editorDidMount={responsiveEditorHeight}
     />
   );
 };
-
-const responsiveEditorHeight = (editor: codemirror.Editor) =>
-  editor.setSize(null, 'auto');
 
 const getCoverageGutter = (className: string) => {
   const div: HTMLElement = document.createElement('div');

@@ -3,7 +3,7 @@ import {useHistory, useParams} from 'react-router-dom';
 import {Button, Container} from 'react-bootstrap';
 
 import ExerciseForm from './ExerciseForm';
-import {getExercise, updateExercise} from '../../lib/api';
+import {getExercise, updateExercise} from '../../../lib/api';
 
 interface RouteParams {
   exerciseId: string;

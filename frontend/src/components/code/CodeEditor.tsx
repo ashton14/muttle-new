@@ -2,11 +2,12 @@ import React from 'react';
 
 import {Controlled as CodeMirror} from 'react-codemirror2';
 import codemirror from 'codemirror';
-import {LANGUAGE} from '../../lib/codeMirrorSetup';
+import {LANGUAGE, THEME} from '../../lib/codeMirrorSetup';
 
 const baseOptions: Partial<codemirror.EditorConfiguration> = {
   mode: LANGUAGE,
   lineNumbers: true,
+  theme: THEME,
 };
 
 interface CodeEditorProps {

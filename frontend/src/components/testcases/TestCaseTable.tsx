@@ -4,7 +4,8 @@ import TestCaseRow from './TestCaseRow';
 import {NewTestCase, SavedTestCase} from '../../lib/api';
 import TestCaseTableHeader from './TestCaseTableHeader';
 import NewTestRow from './NewTestRow';
-import ReactAce from 'react-ace';
+import {Controlled as CodeMirror} from 'react-codemirror2';
+import codemirror from 'codemirror';
 
 interface TestCasesTableProps {
   savedTests: SavedTestCase[];
@@ -27,11 +28,11 @@ const TestCaseTable = ({
   deleteNewTest,
   running,
 }: TestCasesTableProps) => {
-  const reactAceRef = useRef<ReactAce>(null);
+  const codeMirrorRef = useRef<CodeMirror & {editor: codemirror.Editor}>(null);
 
   useEffect(() => {
-    const {current} = reactAceRef;
-    current && current.refEditor.focus();
+    const {current} = codeMirrorRef;
+    current && current.editor.focus();
   }, [newTests.length]);
 
   const savedTestRows = savedTests.map((test, i) => (
@@ -47,7 +48,7 @@ const TestCaseTable = ({
   const newTestRows = newTests.map((test, i) => (
     <TestCaseRow
       {...test}
-      ref={i === newTests.length - 1 ? reactAceRef : undefined}
+      ref={i === newTests.length - 1 ? codeMirrorRef : undefined}
       key={`newTest-${i}`}
       setInput={editNewTest('input', i)}
       setOutput={editNewTest('output', i)}

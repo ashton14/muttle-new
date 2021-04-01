@@ -11,8 +11,8 @@ import {
 import {Nav, Navbar} from 'react-bootstrap';
 import ExerciseList from '../exercises/exercise-list/ExerciseList';
 import Home from '../home/Home';
-import NewExercise from '../exercises/new-exercise/NewExercise';
-import EditExercise from '../exercises/EditExercise';
+import NewExercise from '../exercises/exercise-forms/NewExercise';
+import EditExercise from '../exercises/exercise-forms/EditExercise';
 import {Help} from '../home/Help';
 import {getUserBySessionId, createUser, User} from '../../lib/api';
 import {getCookie, setCookie, stringToUUID} from '../../lib/helper';

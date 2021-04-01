@@ -1,6 +1,6 @@
 import React from 'react';
 import Button from 'react-bootstrap/Button';
-import AceEditor from 'react-ace';
+import InlineEditor from '../code/InlineEditor';
 
 interface TestCaseProps {
   input: string;
@@ -46,38 +46,20 @@ const TestCaseRow = React.forwardRef<HTMLInputElement, TestCaseProps>(
           </Button>
         </td>
         <td>
-          <AceEditor
-            aria-label="test-input"
+          <InlineEditor
             ref={ref}
-            mode="python"
-            theme="github"
-            onChange={value => setInput(value)}
-            name="input-field"
             value={input}
-            width="20ch"
-            height="2em"
-            maxLines={Infinity}
-            showGutter={false}
-            fontSize={16}
-            highlightActiveLine={false}
+            onChange={value => setInput(value)}
             readOnly={readOnly}
+            options={{screenReaderLabel: 'test-input'}}
           />
         </td>
         <td>
-          <AceEditor
-            aria-label="test-output"
-            mode="python"
-            theme="github"
-            onChange={value => setOutput(value)}
-            name="input-field"
+          <InlineEditor
             value={output}
-            width="20ch"
-            height="2em"
-            maxLines={Infinity}
-            showGutter={false}
-            fontSize={16}
-            highlightActiveLine={false}
+            onChange={value => setOutput(value)}
             readOnly={readOnly}
+            options={{screenReaderLabel: 'test-output'}}
           />
         </td>
         <td>{results}</td>

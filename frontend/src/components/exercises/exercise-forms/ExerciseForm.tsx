@@ -1,10 +1,6 @@
 import React from 'react';
 import Form from 'react-bootstrap/Form';
-import AceEditor from 'react-ace';
-
-import 'ace-builds/src-noconflict/mode-python';
-import 'ace-builds/src-noconflict/theme-github';
-import 'ace-builds/src-noconflict/ext-language_tools';
+import CodeEditor from '../../code/CodeEditor';
 
 interface ExerciseFormProps {
   name?: string;
@@ -51,15 +47,7 @@ const ExerciseForm = ({
 
       <Form.Group>
         <Form.Label>Code</Form.Label>
-        <AceEditor
-          mode="python"
-          theme="github"
-          onChange={value => setSnippet(value)}
-          name="code-editor"
-          value={snippet}
-          wrapEnabled={true}
-          fontSize={14}
-        />
+        <CodeEditor value={snippet} onChange={value => setSnippet(value)} />
       </Form.Group>
     </Form>
   );
