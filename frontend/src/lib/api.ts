@@ -35,7 +35,7 @@ export interface SavedTestCase extends NewTestCase {
 interface TestingFeedback {
   results: SavedTestCase[];
   coverageOutcomes?: CoverageOutcome[];
-  mutants?: Mutant[];
+  mutationOutcomes?: MutationOutcome[];
 }
 
 export interface CoverageOutcome {
@@ -48,10 +48,10 @@ export interface CoverageOutcome {
   conditionsCovered: number;
 }
 
-export interface Mutant {
+export interface MutationOutcome {
   exception_traceback: string;
   killer: string;
-  mutations: {
+  mutations?: {
     lineno: number;
     operator: string;
   }[];
@@ -59,19 +59,6 @@ export interface Mutant {
   status: string;
   tests_run: number;
   time: number;
-}
-
-export interface MutationData {
-  survived: Mutant[];
-  timeout: Mutant[];
-  incompetent: Mutant[];
-  killed: Mutant[];
-}
-
-export interface CoverageData {
-  covered: number[];
-  partial: number[];
-  uncovered: number[];
 }
 
 export interface User {
@@ -146,4 +133,12 @@ export const getCoverageOutcomes = (
     .get(`exercises/${exerciseId}/coverageOutcomes?userId=${userId}`, config)
     .then(res => res.data);
 
-// TODO - getMutationOutcomes? getFeedback?
+export const getMutationOutcomes = (
+  exerciseId: number,
+  userId: number
+): Promise<MutationOutcome[]> =>
+  axios
+    .get(`exercises/${exerciseId}/mutationOutcomes?userId=${userId}`, config)
+    .then(res => res.data);
+
+// TODO - getAllFeedback?

@@ -1,10 +1,14 @@
 import {spawn} from 'child_process';
 import yaml from 'js-yaml';
-import _ from 'lodash';
 
 import {SNIPPET_FILENAME, TESTS_FILENAME} from '../../../utils/pythonUtils';
 import path from 'path';
 import {readFile} from 'fs/promises';
+import {User} from '../../../entity/User';
+import {Exercise} from '../../../entity/Exercise';
+import {MutationOutcome} from '../../../entity/MutationOutcome';
+import {DeepPartial} from 'typeorm/common/DeepPartial';
+import {getRepository} from 'typeorm';
 
 const ModuleType = new yaml.Type('tag:yaml.org,2002:python/module:__init__', {
   kind: 'scalar',
@@ -13,7 +17,7 @@ const SCHEMA = yaml.DEFAULT_SCHEMA.extend(ModuleType);
 
 export const MUTATION_RESULTS_FILENAME = path.join('reports', 'mutation.yaml');
 
-enum MutationStatus {
+export enum MutationStatus {
   SURVIVED = 'survived',
   TIMEOUT = 'timeout',
   INCOMPETENT = 'incompetent',
@@ -21,26 +25,11 @@ enum MutationStatus {
 }
 
 interface MutationReport {
-  mutations: Mutation[];
-}
-
-interface Mutation {
-  exception_traceback?: string;
-  killer?: string;
-  module?: string;
-  mutations: {
-    lineno: number;
-    operator: string;
-  }[];
-  number: number;
-  status: MutationStatus;
-  tests_run: number;
-  time: number;
+  mutations: DeepPartial<MutationOutcome>[];
 }
 
 export const runMutationAnalysis = (rootDir: string) => {
   return new Promise<void>((resolve, reject) => {
-    // python mut.py --target usr/src --unit-test usr/tests.py --coverage --show-mutants -r usr/reports/mutation.yaml
     const python = spawn('python', [
       'mut.py',
       '--target',
@@ -68,16 +57,11 @@ export const runMutationAnalysis = (rootDir: string) => {
   });
 };
 
-interface MutationData {
-  survived: Mutation[];
-  timeout: Mutation[];
-  incompetent: Mutation[];
-  killed: Mutation[];
-}
-
 export const getMutationData = async (
-  rootDir: string
-): Promise<MutationData> => {
+  rootDir: string,
+  user: User,
+  exercise: Exercise
+): Promise<MutationOutcome[]> => {
   try {
     const resultsData = await readFile(
       path.join(rootDir, MUTATION_RESULTS_FILENAME),
@@ -85,14 +69,11 @@ export const getMutationData = async (
     );
     const doc = yaml.load(resultsData, {schema: SCHEMA}) as MutationReport;
 
-    const {
-      survived = [],
-      timeout = [],
-      incompetent = [],
-      killed = [],
-    } = _.groupBy(doc.mutations, mutation => mutation.status);
+    const mutationOutcomes = doc.mutations.map(
+      (outcome): DeepPartial<MutationOutcome> => ({...outcome, user, exercise})
+    );
 
-    return {survived, timeout, incompetent, killed};
+    return await getRepository(MutationOutcome).save(mutationOutcomes);
   } catch (err) {
     console.log('Unable to read mutation analysis report');
     throw err;

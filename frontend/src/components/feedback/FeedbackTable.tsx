@@ -1,6 +1,6 @@
 import React from 'react';
 import {Col, Table} from 'react-bootstrap';
-import {Mutant, MutationData} from '../../lib/api';
+import {MutationOutcome} from '../../lib/api';
 
 import _ from 'lodash';
 import MutantBadge, {Outcome, sortOutcomes} from './Mutant';
@@ -8,21 +8,21 @@ import FeedbackTableHeader from './FeedbackTableHeader';
 import FeedbackRow from './FeedbackRow';
 
 interface FeedbackTableProps {
-  mutation?: MutationData;
+  mutationOutcomes?: MutationOutcome[];
 }
 
-const FeedbackTable = ({mutation}: FeedbackTableProps) => (
+const FeedbackTable = ({mutationOutcomes}: FeedbackTableProps) => (
   <Col className="d-flex flex-column">
     <div className="h5">Feedback</div>
     <Table className="text-left" responsive="sm" size="sm">
       <FeedbackTableHeader />
-      <tbody>{mutantsToRows(mutation)}</tbody>
+      <tbody>{mutantsToRows(mutationOutcomes)}</tbody>
     </Table>
   </Col>
 );
 
-const mutantsToRows = (mutation?: MutationData) => {
-  const mutantsByLine = _.groupBy(parseMutationData(mutation), 'line');
+const mutantsToRows = (mutationOutcomes?: MutationOutcome[]) => {
+  const mutantsByLine = _.groupBy(parseMutationData(mutationOutcomes), 'line');
 
   return Object.entries(
     _.mapValues(mutantsByLine, mutants =>
@@ -41,15 +41,15 @@ interface MutationResult {
   outcome: Outcome;
 }
 
-const parseMutationData = (mutation?: MutationData): MutationResult[] =>
-  Object.entries(mutation || {}).flatMap(([outcome, mutants]) =>
-    mutants.flatMap((mutant: Mutant) =>
-      mutant.mutations.map(mutation => ({
-        line: mutation.lineno,
-        operator: mutation.operator,
-        outcome: outcome as Outcome,
-      }))
-    )
+const parseMutationData = (
+  mutationOutcomes?: MutationOutcome[]
+): MutationResult[] =>
+  (mutationOutcomes || []).flatMap(mutationOutcome =>
+    (mutationOutcome.mutations || []).map(mutation => ({
+      line: mutation.lineno,
+      operator: mutation.operator,
+      outcome: mutationOutcome.status as Outcome,
+    }))
   );
 
 export default React.memo(FeedbackTable);

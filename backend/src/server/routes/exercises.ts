@@ -2,6 +2,8 @@ import express, {Request, Response} from 'express';
 import {getRepository} from 'typeorm';
 import {CoverageOutcome} from '../../entity/CoverageOutcome';
 import {Exercise} from '../../entity/Exercise';
+import {MutationOutcome} from '../../entity/MutationOutcome';
+import _ from 'lodash';
 
 const exercises = express.Router();
 
@@ -49,6 +51,26 @@ exercises.get('/:id/coverageOutcomes', async (req: Request, res: Response) => {
     ])
     .getMany();
   res.json(results);
+});
+
+exercises.get('/:id/mutationOutcomes', async (req: Request, res: Response) => {
+  const {userId} = req.query;
+  const {id} = req.params;
+
+  const results = await getRepository(MutationOutcome).find({
+    where: {user: userId, exercise: id},
+    relations: ['user', 'exercise', 'mutations'],
+  });
+  // TODO - Use TypeOrm for uniqueness and/or put outcomes under another entity
+  const uniqueResults = _.uniqWith(
+    results,
+    (o1, o2) =>
+      o1.exercise.id === o2.exercise.id &&
+      o1.user.id === o2.user.id &&
+      o1.number === o2.number
+  );
+
+  res.json(uniqueResults);
 });
 
 export default exercises;

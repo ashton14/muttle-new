@@ -8,8 +8,9 @@ import {
   deleteTestCase,
   getCoverageOutcomes,
   getExercise,
+  getMutationOutcomes,
   getTestCases,
-  Mutant,
+  MutationOutcome,
   NewTestCase,
   runTests as runTestCases,
   SavedExercise,
@@ -43,7 +44,9 @@ const Exercise = () => {
   const [coverageOutcomes, setCoverageOutcomes] = useState<CoverageOutcome[]>(
     []
   );
-  const [mutants, setMutants] = useState<Mutant[]>([]);
+  const [mutationOutcomes, setMutationOutcomes] = useState<MutationOutcome[]>(
+    []
+  );
   const [running, setRunning] = useState<boolean>(false);
 
   const history = useHistory();
@@ -58,13 +61,15 @@ const Exercise = () => {
         getExercise(exerciseId),
         getTestCases(exerciseId, user.id),
         getCoverageOutcomes(exerciseId, user.id),
-      ]).then(([exercise, tests, coverageOutcomes]) => {
+        getMutationOutcomes(exerciseId, user.id),
+      ]).then(([exercise, tests, coverageOutcomes, mutationOutcomes]) => {
         if (!exercise) {
           history.push('/exercises');
         }
         setExercise(exercise);
         setTests(displayTests(tests));
         setCoverageOutcomes(coverageOutcomes);
+        setMutationOutcomes(mutationOutcomes);
       });
     } else {
       return;
@@ -132,12 +137,15 @@ const Exercise = () => {
 
   const runTests = async () => {
     setRunning(true);
-    const {coverageOutcomes, mutants} = await runTestCases(exerciseId, user.id);
+    const {coverageOutcomes, mutationOutcomes} = await runTestCases(
+      exerciseId,
+      user.id
+    );
 
     const tests = await getTestCases(exerciseId, user.id, SHOW_ACTUAL);
     setTests(displayTests(tests));
     setNewTests([]);
-    setMutants(mutants);
+    setMutationOutcomes(mutationOutcomes);
     setCoverageOutcomes(coverageOutcomes);
     setRunning(false);
   };
@@ -166,7 +174,7 @@ const Exercise = () => {
           deleteNewTest={deleteNewTest}
           running={running}
         />
-        <FeedbackTable mutation={mutants} />
+        <FeedbackTable mutationOutcomes={mutationOutcomes} />
       </Row>
       <ExerciseFooter
         disabled={running || (!tests.length && !newTests.length)}

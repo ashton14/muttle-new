@@ -9,7 +9,7 @@ import {
 } from '../../lib/codeMirrorSetup';
 
 import './Highlighter.css';
-import {CoverageOutcome, Mutant} from '../../lib/api';
+import {CoverageOutcome, MutationOutcome} from '../../lib/api';
 import _ from 'lodash';
 
 const baseOptions: Partial<codemirror.EditorConfiguration> = {
@@ -23,7 +23,7 @@ interface HighlighterProps {
   value: string;
   options?: Partial<codemirror.EditorConfiguration>;
   coverageOutcomes?: CoverageOutcome[];
-  mutants?: Mutant[];
+  mutants?: MutationOutcome[];
   className?: string;
 }
 

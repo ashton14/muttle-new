@@ -68,12 +68,12 @@ run.post('/:id', async (req: Request, res: Response) => {
       if (allPassed) {
         await runMutationAnalysis(rootDir);
 
-        const [coverageOutcomes, mutants] = await Promise.all([
+        const [coverageOutcomes, mutationOutcomes] = await Promise.all([
           getCoverageData(rootDir, user, exercise),
-          getMutationData(rootDir),
+          getMutationData(rootDir, user, exercise),
         ]);
 
-        res.json({coverageOutcomes, mutants});
+        res.json({coverageOutcomes, mutationOutcomes});
       } else {
         res.json({});
       }
