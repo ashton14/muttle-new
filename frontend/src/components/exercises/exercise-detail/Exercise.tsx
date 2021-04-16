@@ -3,14 +3,12 @@ import {useHistory, useParams} from 'react-router-dom';
 import {UserContext} from '../../app/App';
 
 import {
-  CoverageOutcome,
+  AttemptFeedback,
   createTestCase,
   deleteTestCase,
-  getCoverageOutcomes,
   getExercise,
-  getMutationOutcomes,
+  getLatestAttempt,
   getTestCases,
-  MutationOutcome,
   NewTestCase,
   runTests as runTestCases,
   SavedExercise,
@@ -41,12 +39,7 @@ const Exercise = () => {
   const [exercise, setExercise] = useState<SavedExercise>();
   const [tests, setTests] = useState<SavedTestCase[]>([]);
   const [newTests, setNewTests] = useState<NewTestCase[]>([]);
-  const [coverageOutcomes, setCoverageOutcomes] = useState<CoverageOutcome[]>(
-    []
-  );
-  const [mutationOutcomes, setMutationOutcomes] = useState<MutationOutcome[]>(
-    []
-  );
+  const [attemptFeedback, setAttemptFeedback] = useState<AttemptFeedback>();
   const [running, setRunning] = useState<boolean>(false);
 
   const history = useHistory();
@@ -60,16 +53,14 @@ const Exercise = () => {
       Promise.all([
         getExercise(exerciseId),
         getTestCases(exerciseId, user.id),
-        getCoverageOutcomes(exerciseId, user.id),
-        getMutationOutcomes(exerciseId, user.id),
-      ]).then(([exercise, tests, coverageOutcomes, mutationOutcomes]) => {
+        getLatestAttempt(exerciseId, user.id),
+      ]).then(([exercise, tests, attempt]) => {
         if (!exercise) {
           history.push('/exercises');
         }
         setExercise(exercise);
         setTests(displayTests(tests));
-        setCoverageOutcomes(coverageOutcomes);
-        setMutationOutcomes(mutationOutcomes);
+        setAttemptFeedback(attempt);
       });
     } else {
       return;
@@ -137,17 +128,19 @@ const Exercise = () => {
 
   const runTests = async () => {
     setRunning(true);
-    const {coverageOutcomes, mutationOutcomes} = await runTestCases(
-      exerciseId,
-      user.id
-    );
-
+    const attempt = await runTestCases(exerciseId, user.id);
     const tests = await getTestCases(exerciseId, user.id, SHOW_ACTUAL);
     setTests(displayTests(tests));
     setNewTests([]);
-    setMutationOutcomes(mutationOutcomes);
-    setCoverageOutcomes(coverageOutcomes);
+
+    setAttemptFeedback(attempt);
     setRunning(false);
+  };
+
+  const {coverageOutcomes, mutationOutcomes} = attemptFeedback || {
+    results: [],
+    coverageOutcomes: [],
+    mutationOutcomes: [],
   };
 
   return (

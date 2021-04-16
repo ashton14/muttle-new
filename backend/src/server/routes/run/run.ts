@@ -24,6 +24,7 @@ import {COVERAGE_RESULTS_FILENAME, getCoverageData} from './coverage';
 import {User} from '../../../entity/User';
 import {mkdir, readFile, writeFile} from 'fs/promises';
 import path from 'path';
+import {Attempt} from '../../../entity/Attempt';
 
 const run = express.Router();
 
@@ -48,11 +49,17 @@ run.post('/:id', async (req: Request, res: Response) => {
       )
       .getOne();
 
-    if (exercise) {
+    if (user && exercise) {
       // Only run failing tests that have not yet been fixed
       const testCases = exercise.testCases.filter(
         test => test.visible && !test.fixedId
       );
+
+      const attempt = entityManager.create(Attempt, {
+        user,
+        exercise,
+        testCases,
+      });
 
       const functionName = getFunctionName(exercise.snippet) || '';
       if (!functionName) {
@@ -69,11 +76,19 @@ run.post('/:id', async (req: Request, res: Response) => {
         await runMutationAnalysis(rootDir);
 
         const [coverageOutcomes, mutationOutcomes] = await Promise.all([
-          getCoverageData(rootDir, user, exercise),
-          getMutationData(rootDir, user, exercise),
+          getCoverageData(rootDir),
+          getMutationData(rootDir),
         ]);
 
-        res.json({coverageOutcomes, mutationOutcomes});
+        const savedAttempt = await entityManager.save(
+          Attempt,
+          entityManager.merge(Attempt, attempt, {
+            coverageOutcomes,
+            mutationOutcomes,
+          })
+        );
+
+        res.json({...savedAttempt});
       } else {
         res.json({});
       }
@@ -176,6 +191,9 @@ const runTests = (rootDir: string, testCases: TestCase[]) => {
       'keywords',
       'collectors',
     ]);
+
+    python.stderr.on('data', chunk => console.log(chunk.toString()));
+    python.stdout.on('data', chunk => console.log(chunk.toString()));
 
     python.on('close', async () => {
       try {

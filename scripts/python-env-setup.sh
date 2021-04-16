@@ -7,4 +7,5 @@ cd backend
 python3 -m virtualenv venv
 source venv/bin/activate
 pip install -r requirements.txt
+unlink mut.py
 ln -s "$VIRTUAL_ENV/bin/mut.py" .

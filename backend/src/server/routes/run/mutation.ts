@@ -4,11 +4,8 @@ import yaml from 'js-yaml';
 import {SNIPPET_FILENAME, TESTS_FILENAME} from '../../../utils/pythonUtils';
 import path from 'path';
 import {readFile} from 'fs/promises';
-import {User} from '../../../entity/User';
-import {Exercise} from '../../../entity/Exercise';
 import {MutationOutcome} from '../../../entity/MutationOutcome';
 import {DeepPartial} from 'typeorm/common/DeepPartial';
-import {getRepository} from 'typeorm';
 
 const ModuleType = new yaml.Type('tag:yaml.org,2002:python/module:__init__', {
   kind: 'scalar',
@@ -42,6 +39,9 @@ export const runMutationAnalysis = (rootDir: string) => {
       path.join(rootDir, MUTATION_RESULTS_FILENAME),
     ]);
 
+    python.stderr.on('data', chunk => console.log(chunk.toString()));
+    python.stdout.on('data', chunk => console.log(chunk.toString()));
+
     python.on('close', async () => {
       try {
         resolve();
@@ -58,10 +58,8 @@ export const runMutationAnalysis = (rootDir: string) => {
 };
 
 export const getMutationData = async (
-  rootDir: string,
-  user: User,
-  exercise: Exercise
-): Promise<MutationOutcome[]> => {
+  rootDir: string
+): Promise<DeepPartial<MutationOutcome>[]> => {
   try {
     const resultsData = await readFile(
       path.join(rootDir, MUTATION_RESULTS_FILENAME),
@@ -69,11 +67,11 @@ export const getMutationData = async (
     );
     const doc = yaml.load(resultsData, {schema: SCHEMA}) as MutationReport;
 
-    const mutationOutcomes = doc.mutations.map(
-      (outcome): DeepPartial<MutationOutcome> => ({...outcome, user, exercise})
+    return doc.mutations.map(
+      (outcome): DeepPartial<MutationOutcome> => ({
+        ...outcome,
+      })
     );
-
-    return await getRepository(MutationOutcome).save(mutationOutcomes);
   } catch (err) {
     console.log('Unable to read mutation analysis report');
     throw err;

@@ -32,7 +32,7 @@ export interface SavedTestCase extends NewTestCase {
   errorMessage?: string;
 }
 
-interface TestingFeedback {
+export interface AttemptFeedback {
   results: SavedTestCase[];
   coverageOutcomes?: CoverageOutcome[];
   mutationOutcomes?: MutationOutcome[];
@@ -122,23 +122,13 @@ export const deleteTestCase = (
 export const runTests = (
   exerciseId: number,
   userId: number
-): Promise<TestingFeedback> =>
+): Promise<AttemptFeedback> =>
   axios.post(`run/${exerciseId}`, {userId}, config).then(res => res.data);
 
-export const getCoverageOutcomes = (
+export const getLatestAttempt = (
   exerciseId: number,
   userId: number
-): Promise<CoverageOutcome[]> =>
+): Promise<AttemptFeedback> =>
   axios
-    .get(`exercises/${exerciseId}/coverageOutcomes?userId=${userId}`, config)
+    .get(`exercises/${exerciseId}/attempts/latest?userId=${userId}`, config)
     .then(res => res.data);
-
-export const getMutationOutcomes = (
-  exerciseId: number,
-  userId: number
-): Promise<MutationOutcome[]> =>
-  axios
-    .get(`exercises/${exerciseId}/mutationOutcomes?userId=${userId}`, config)
-    .then(res => res.data);
-
-// TODO - getAllFeedback?

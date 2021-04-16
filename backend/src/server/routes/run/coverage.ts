@@ -1,9 +1,6 @@
 import xml2js from 'xml2js';
 import {parseBooleans, parseNumbers} from 'xml2js/lib/processors';
-
-import {User} from '../../../entity/User';
-import {Exercise} from '../../../entity/Exercise';
-import {getRepository} from 'typeorm';
+import {DeepPartial} from 'typeorm';
 import {CoverageOutcome} from '../../../entity/CoverageOutcome';
 import path from 'path';
 import {readFile} from 'fs/promises';
@@ -49,10 +46,8 @@ const parseBranch = (value: string, name: string) => {
 };
 
 export const getCoverageData = async (
-  rootDir: string,
-  user: User,
-  exercise: Exercise
-): Promise<CoverageOutcome[]> => {
+  rootDir: string
+): Promise<DeepPartial<CoverageOutcome>[]> => {
   try {
     const coverageData = await readFile(
       path.join(rootDir, COVERAGE_RESULTS_FILENAME),
@@ -66,8 +61,7 @@ export const getCoverageData = async (
     );
     const lines = getAllLines(covReport);
 
-    // TODO: Do we want to void replicating exercise/user/lineNo triplets?
-    const coverageOutcomes = lines.map((line: CovLine) => {
+    return lines.map((line: CovLine) => {
       const [conditionsCovered, conditions]: number[] = getBranchCoverage(line);
 
       return {
@@ -75,12 +69,8 @@ export const getCoverageData = async (
         lineCovered: line.hits > 0,
         conditions,
         conditionsCovered,
-        exercise,
-        user,
       };
     });
-
-    return await getRepository(CoverageOutcome).save(coverageOutcomes);
   } catch (err) {
     console.log(
       `Unable to read coverage results file: ${COVERAGE_RESULTS_FILENAME}`

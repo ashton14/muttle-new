@@ -1,7 +1,6 @@
 import {Column, Entity, OneToMany, PrimaryGeneratedColumn} from 'typeorm';
-import {CoverageOutcome} from './CoverageOutcome';
 import {TestCase} from './TestCase';
-import {MutationOutcome} from './MutationOutcome';
+import {Attempt} from './Attempt';
 
 @Entity('User')
 export class User {
@@ -14,9 +13,6 @@ export class User {
   @OneToMany(() => TestCase, testCase => testCase.user)
   testCases!: TestCase[];
 
-  @OneToMany(() => CoverageOutcome, coverageOutcome => coverageOutcome.user)
-  coverageOutcomes!: CoverageOutcome[];
-
-  @OneToMany(() => MutationOutcome, mutationOutcome => mutationOutcome.user)
-  mutationOutcomes!: MutationOutcome[];
+  @OneToMany(() => Attempt, attempts => attempts.exercise)
+  attempts!: Attempt[];
 }

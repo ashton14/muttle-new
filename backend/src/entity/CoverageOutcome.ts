@@ -6,19 +6,15 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import {Exercise} from './Exercise';
-import {User} from './User';
+import {Attempt} from './Attempt';
 
 @Entity('CoverageOutcome')
 export class CoverageOutcome {
   @PrimaryGeneratedColumn('increment')
   id!: number;
 
-  @ManyToOne(() => Exercise, exercise => exercise.coverageOutcomes)
-  exercise!: Exercise;
-
-  @ManyToOne(() => User, user => user.coverageOutcomes)
-  user!: User;
+  @ManyToOne(() => Attempt, attempt => attempt.coverageOutcomes)
+  attempt!: Attempt;
 
   @Column()
   lineNo!: number;

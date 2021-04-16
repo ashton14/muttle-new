@@ -2,28 +2,26 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  ManyToOne, OneToMany,
+  ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import {Exercise} from './Exercise';
-import {User} from './User';
 import {Mutation} from './Mutation';
 import {MutationStatus} from '../server/routes/run/mutation';
+import {Attempt} from './Attempt';
 
 @Entity('MutationOutcome')
 export class MutationOutcome {
   @PrimaryGeneratedColumn('increment')
   id!: number;
 
-  @ManyToOne(() => Exercise, exercise => exercise.mutationOutcomes)
-  exercise!: Exercise;
-
-  @ManyToOne(() => User, user => user.mutationOutcomes)
-  user!: User;
+  @ManyToOne(() => Attempt, attempt => attempt.mutationOutcomes)
+  attempt!: Attempt;
 
   @OneToMany(() => Mutation, mutation => mutation.mutationOutcome, {
     cascade: true,
+    eager: true,
   })
   mutations!: Mutation[];
 

@@ -6,8 +6,6 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import {Exercise} from './Exercise';
-import {User} from './User';
 import {MutationOutcome} from './MutationOutcome';
 
 @Entity('Mutation')
