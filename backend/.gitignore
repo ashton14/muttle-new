@@ -2,3 +2,4 @@ usr/
 .coverage
 mut.py
 venv/
+.env
