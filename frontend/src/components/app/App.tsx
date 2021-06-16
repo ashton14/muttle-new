@@ -1,84 +1,144 @@
-import React, {createContext, useEffect, useState} from 'react';
-
-import Exercise from '../exercises/exercise-detail/Exercise';
+import React, {Suspense} from 'react';
 import {
-  Switch,
+  BrowserRouter as Router,
   Route,
-  withRouter,
+  Switch,
   Redirect,
-  useLocation,
 } from 'react-router-dom';
-import {Nav, Navbar} from 'react-bootstrap';
-import ExerciseList from '../exercises/exercise-list/ExerciseList';
+
+import {AuthProvider, useAuth} from '../../lib/context/AuthContext';
+
 import Home from '../home/Home';
+import Login from '../home/login/Login';
+import Signup from '../home/signup/Signup';
+import Landing from '../landing/Landing';
+import ExerciseList from '../exercises/exercise-list/ExerciseList';
+import {RouteProps} from 'react-router-dom';
 import NewExercise from '../exercises/exercise-forms/NewExercise';
 import EditExercise from '../exercises/exercise-forms/EditExercise';
-import {Help} from '../home/Help';
-import {getUserBySessionId, createUser, User} from '../../lib/api';
-import {getCookie, setCookie, stringToUUID} from '../../lib/helper';
+import Exercise from '../exercises/exercise-detail/Exercise';
+import Navbar from './Navbar';
+import {AuthenticatedApiProvider} from '../../lib/context/AuthenticatedApiContext';
 
-export const UserContext = createContext(null);
+const LoadingFallback = () => <div className="p-4">Loading...</div>;
 
-const App = () => {
-  const {pathname} = useLocation();
-  const [currentUser, setCurrentUser] = useState(null);
+const UnauthenticatedRoutes = () => (
+  <Switch>
+    <Route path="/login">
+      <Login />
+    </Route>
+    <Route path="/signup">
+      <Signup />
+    </Route>
+    <Route exact path="/">
+      <Landing />
+    </Route>
+    <Route render={() => <Redirect to="/" />} />
+  </Switch>
+);
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      let sessionId = getCookie('muttle-session-id');
-      let user: User;
-      if (sessionId) {
-        user = await getUserBySessionId(sessionId);
-        if (user) {
-          setCurrentUser(user);
-          return;
-        }
-      }
+const AuthenticatedRoutes = () => (
+  <Switch>
+    <AuthenticatedRoute path="/exercises/:exerciseId">
+      <Exercise />
+    </AuthenticatedRoute>
+    <AuthenticatedRoute path="/exercises">
+      <ExerciseList />
+    </AuthenticatedRoute>
+    <AuthenticatedRoute path="/home">
+      <Home />
+    </AuthenticatedRoute>
+  </Switch>
+);
 
-      if (!user) {
-        sessionId = stringToUUID();
-        setCookie('muttle-session-id', sessionId, 30);
-        setCurrentUser(await createUser(sessionId));
-        return;
-      }
-    };
+const AdminRoutes = () => (
+  <Switch>
+    <AdminRoute path="/exercises/new">
+      <NewExercise />
+    </AdminRoute>
+    <AdminRoute path="/exercises/:exerciseId/edit">
+      <EditExercise />
+    </AdminRoute>
+  </Switch>
+);
 
-    fetchUser();
-  }, []);
-
+const AuthenticatedRoute = ({children, ...rest}: RouteProps) => {
+  const auth = useAuth();
   return (
-    <UserContext.Provider value={currentUser}>
-      <div className="text-left">
-        <Navbar bg="dark" variant="dark">
-          <Navbar.Brand href="/">Muttle</Navbar.Brand>
-          <Nav className="mr-auto">
-            <Nav.Link href="/" active={pathname === '/'}>
-              Home
-            </Nav.Link>
-            <Nav.Link
-              href="/exercises"
-              active={pathname.startsWith('/exercises')}
-            >
-              Exercises
-            </Nav.Link>
-          </Nav>
-          <Nav>
-            <Nav.Item>
-              <Help />
-            </Nav.Item>
-          </Nav>
-        </Navbar>
-        <Switch>
-          <Route exact path="/" component={Home} />
-          <Route exact path={'/exercises/'} component={ExerciseList} />
-          <Route path="/exercises/new" component={NewExercise} />
-          <Route path="/exercises/:exerciseId/edit" component={EditExercise} />
-          <Route path="/exercises/:exerciseId" component={Exercise} />
-          <Route render={() => <Redirect to="/" />} />
-        </Switch>
-      </div>
-    </UserContext.Provider>
+    <Route
+      {...rest}
+      render={() =>
+        auth.isAuthenticated() ? (
+          <AuthenticatedApiProvider>{children}</AuthenticatedApiProvider>
+        ) : (
+          <Redirect to="/" />
+        )
+      }
+    />
   );
 };
 
-export default withRouter(App);
+const AdminRoute = ({children, ...rest}: RouteProps) => {
+  const auth = useAuth();
+  return (
+    <Route
+      {...rest}
+      render={() =>
+        auth.isAuthenticated() && auth.isAdmin() ? (
+          <AuthenticatedApiProvider>{children}</AuthenticatedApiProvider>
+        ) : (
+          <Redirect to="/" />
+        )
+      }
+    />
+  );
+};
+
+const AppRoutes = () => {
+  return (
+    <>
+      <Suspense fallback={<LoadingFallback />}>
+        <Switch>
+          <AdminRoute path="/exercises/new">
+            <NewExercise />
+          </AdminRoute>
+          <AdminRoute path="/exercises/:exerciseId/edit">
+            <EditExercise />
+          </AdminRoute>
+          <AuthenticatedRoute path="/exercises/:exerciseId">
+            <Exercise />
+          </AuthenticatedRoute>
+          <AuthenticatedRoute path="/exercises">
+            <ExerciseList />
+          </AuthenticatedRoute>
+          <AuthenticatedRoute path="/home">
+            <Home />
+          </AuthenticatedRoute>
+          {/*TODO - Debug issues with Admin/AuthenticatedRoutes components */}
+          {/*<AdminRoutes />*/}
+          {/*<AuthenticatedRoutes />*/}
+          <UnauthenticatedRoutes />
+        </Switch>
+      </Suspense>
+    </>
+  );
+};
+
+const App = () => (
+  <Router>
+    <AuthProvider>
+      <Navbar />
+      <div
+        className="min-vh-100"
+        style={{
+          backgroundColor: '#F7FCFA',
+          overflow: 'auto',
+        }}
+      >
+        <AppRoutes />
+      </div>
+    </AuthProvider>
+  </Router>
+);
+
+export default App;
