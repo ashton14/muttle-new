@@ -39,6 +39,7 @@ const ExerciseForm = ({
         <Form.Text>Short description of the exercise</Form.Text>
         <Form.Control
           required
+          as="textarea"
           placeholder="What this function does"
           value={description}
           onChange={event => setDescription(event.target.value)}
