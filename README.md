@@ -8,6 +8,8 @@ Follow these steps for initial setup
 2. Clone the repository: `git clone git@github.com:jlai12/muttle.git && cd muttle`
 3. Run `muttle setup db <admin>` with admin username for your mysql database*
 4. Run `muttle setup python`
+  - Ensure that your `python3` version is 3.7.x; mut.py does not supprt python 3.8+
+  - It is recommended to use [pyenv](https://github.com/pyenv/pyenv) to manage multiple python versions
 5. Execute any of the [usage commands](#usage)!
 
 [*] Should you run into issues using the `muttle db-setup` command, you may need to execute the

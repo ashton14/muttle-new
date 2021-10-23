@@ -35,6 +35,7 @@ db_setup() {
     echo "muttle db-setup <admin>"
   else
     set -x
+    echo "$1"
     mysql -u "$1" -p < "$DB_SETUP"
   fi
 }
@@ -52,7 +53,7 @@ setup() {
   if [ "$1" = "db" ]
   then
     shift
-    db_setup "${ARGS[@]}"
+    db_setup "$2"
   elif [ "$1" = "python" ]
   then
     python_setup
@@ -129,7 +130,7 @@ case $key in
     then
       COMMAND="$1"
     else
-      ARGS+=("$1")
+      ARGS+=("$@")
     fi
     shift
     ;;
