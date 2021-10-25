@@ -54,6 +54,7 @@ export interface MutationOutcome {
   mutations?: {
     lineno: number;
     operator: string;
+    mutatedLine: string;
   }[];
   number: number;
   status: string;

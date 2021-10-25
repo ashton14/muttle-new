@@ -154,6 +154,7 @@ const Exercise = () => {
           gutters: ['CodeMirror-linenumbers', 'coverage-gutter'],
         }}
         coverageOutcomes={coverageOutcomes}
+        mutationOutcomes={mutationOutcomes}
         className="border rounded h-auto mb-4"
       />
       <Row>

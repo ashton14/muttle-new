@@ -41,13 +41,14 @@ interface MutationResult {
   outcome: Outcome;
 }
 
-const parseMutationData = (
+export const parseMutationData = (
   mutationOutcomes?: MutationOutcome[]
 ): MutationResult[] =>
   (mutationOutcomes || []).flatMap(mutationOutcome =>
     (mutationOutcome.mutations || []).map(mutation => ({
       line: mutation.lineno,
       operator: mutation.operator,
+      mutatedLine: mutation.mutatedLine,
       outcome: mutationOutcome.status as Outcome,
     }))
   );

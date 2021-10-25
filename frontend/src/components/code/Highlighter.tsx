@@ -1,4 +1,5 @@
-import React, {useEffect, useRef} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
+import {renderToString} from 'react-dom/server';
 
 import {Controlled as CodeMirror} from 'react-codemirror2';
 import codemirror from 'codemirror';
@@ -10,6 +11,8 @@ import {
 
 import './Highlighter.css';
 import {CoverageOutcome, MutationOutcome} from '../../lib/api';
+import MutantBadge, {Outcome, sortOutcomes} from '../feedback/Mutant';
+import {parseMutationData} from '../feedback/FeedbackTable';
 import _ from 'lodash';
 
 const baseOptions: Partial<codemirror.EditorConfiguration> = {
@@ -23,7 +26,7 @@ interface HighlighterProps {
   value: string;
   options?: Partial<codemirror.EditorConfiguration>;
   coverageOutcomes?: CoverageOutcome[];
-  mutants?: MutationOutcome[];
+  mutationOutcomes?: MutationOutcome[];
   className?: string;
 }
 
@@ -31,10 +34,13 @@ const Highlighter = ({
   value,
   options,
   coverageOutcomes,
-
+  mutationOutcomes,
   className,
 }: HighlighterProps) => {
   const codeMirrorRef = useRef<CodeMirror & {editor: codemirror.Editor}>(null);
+
+  // This is needed so that mutation feedback widgets are not re-drawn on each render.
+  const [showingMutationOutcomes, setShowingMutationOutcomes] = useState(false);
 
   useEffect(() => {
     const editor = codeMirrorRef.current?.editor;
@@ -45,8 +51,13 @@ const Highlighter = ({
       if (coverageOutcomes) {
         highlightCoverage(editor, coverageOutcomes);
       }
+
+      if (mutationOutcomes && !showingMutationOutcomes) {
+        displayMutationCoverage(editor, mutationOutcomes);
+        setShowingMutationOutcomes(true);
+      }
     }
-  }, [coverageOutcomes]);
+  }, [coverageOutcomes, mutationOutcomes, showingMutationOutcomes]);
 
   return (
     <CodeMirror
@@ -66,6 +77,29 @@ const getCoverageGutter = (className: string) => {
   div.className = className;
   div.innerHTML = '&nbsp;';
   return div;
+};
+
+const displayMutationCoverage = (
+  editor: codemirror.Editor,
+  mutationOutcomes: MutationOutcome[]
+) => {
+  const mutantsByLine = _.groupBy(parseMutationData(mutationOutcomes), 'line');
+
+  Object.entries(
+    _.mapValues(mutantsByLine, mutants =>
+      mutants
+        .sort(({outcome: o1}, {outcome: o2}) => sortOutcomes(o1, o2))
+        .map(({outcome, operator}) => {
+          return <MutantBadge outcome={outcome} operator={operator} />;
+        })
+    )
+  ).forEach(([line, mutants]) => {
+    const div: HTMLElement = document.createElement('div');
+    const badges = mutants.map(m => renderToString(m)).join('');
+    div.innerHTML = badges;
+    const lineInt = parseInt(line) - 1;
+    editor.addLineWidget(lineInt, div, {above: true});
+  });
 };
 
 const highlightCoverage = (
