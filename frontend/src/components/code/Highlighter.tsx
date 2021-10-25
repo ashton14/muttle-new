@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useRef} from 'react';
 import {renderToString} from 'react-dom/server';
 
 import {Controlled as CodeMirror} from 'react-codemirror2';
@@ -38,9 +38,7 @@ const Highlighter = ({
   className,
 }: HighlighterProps) => {
   const codeMirrorRef = useRef<CodeMirror & {editor: codemirror.Editor}>(null);
-
-  // This is needed so that mutation feedback widgets are not re-drawn on each render.
-  const [showingMutationOutcomes, setShowingMutationOutcomes] = useState(false);
+  const widgetsRef = useRef<codemirror.LineWidget[]>([]);
 
   useEffect(() => {
     const editor = codeMirrorRef.current?.editor;
@@ -52,12 +50,12 @@ const Highlighter = ({
         highlightCoverage(editor, coverageOutcomes);
       }
 
-      if (mutationOutcomes && !showingMutationOutcomes) {
-        displayMutationCoverage(editor, mutationOutcomes);
-        setShowingMutationOutcomes(true);
+      if (mutationOutcomes?.length) {
+        widgetsRef.current?.forEach(w => w.clear());
+        widgetsRef.current = displayMutationCoverage(editor, mutationOutcomes);
       }
     }
-  }, [coverageOutcomes, mutationOutcomes, showingMutationOutcomes]);
+  }, [coverageOutcomes, mutationOutcomes]);
 
   return (
     <CodeMirror
@@ -85,6 +83,8 @@ const displayMutationCoverage = (
 ) => {
   const mutantsByLine = _.groupBy(parseMutationData(mutationOutcomes), 'line');
 
+  const newWidgets: codemirror.LineWidget[] = [];
+
   Object.entries(
     _.mapValues(mutantsByLine, mutants =>
       mutants
@@ -98,8 +98,11 @@ const displayMutationCoverage = (
     const badges = mutants.map(m => renderToString(m)).join('');
     div.innerHTML = badges;
     const lineInt = parseInt(line) - 1;
-    editor.addLineWidget(lineInt, div, {above: true});
+    const widget = editor.addLineWidget(lineInt, div, {above: true});
+    newWidgets.push(widget);
   });
+
+  return newWidgets;
 };
 
 const highlightCoverage = (
