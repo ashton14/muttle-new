@@ -8,8 +8,14 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import {Mutation} from './Mutation';
-import {MutationStatus} from '../server/routes/run/mutation';
 import {Attempt} from './Attempt';
+
+export enum MutationStatus {
+  SURVIVED = 'survived',
+  TIMEOUT = 'timeout',
+  INCOMPETENT = 'incompetent',
+  KILLED = 'killed',
+}
 
 @Entity('MutationOutcome')
 export class MutationOutcome {

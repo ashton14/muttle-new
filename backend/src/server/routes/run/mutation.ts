@@ -14,19 +14,22 @@ const SCHEMA = yaml.DEFAULT_SCHEMA.extend(ModuleType);
 
 export const MUTATION_RESULTS_FILENAME = path.join('reports', 'mutation.yaml');
 
-export enum MutationStatus {
-  SURVIVED = 'survived',
-  TIMEOUT = 'timeout',
-  INCOMPETENT = 'incompetent',
-  KILLED = 'killed',
-}
-
 interface MutationReport {
   mutations: DeepPartial<MutationOutcome>[];
 }
 
+/**
+ * Format in which mutated source code is extraced from stdout.
+ */
+interface Mutant {
+  operator?: string;
+  num?: number;
+  lineNo?: number;
+  mutant?: string;
+}
+
 export const runMutationAnalysis = (rootDir: string) => {
-  return new Promise<void>((resolve, reject) => {
+  return new Promise<[Mutant]>((resolve, reject) => {
     const python = spawn('python', [
       'mut.py',
       '--target',
@@ -39,12 +42,16 @@ export const runMutationAnalysis = (rootDir: string) => {
       path.join(rootDir, MUTATION_RESULTS_FILENAME),
     ]);
 
+    let output = '';
     python.stderr.on('data', chunk => console.log(chunk.toString()));
-    python.stdout.on('data', chunk => console.log(chunk.toString()));
+    python.stdout.on('data', chunk => {
+      output = output + chunk;
+    });
 
     python.on('close', async () => {
       try {
-        resolve();
+        const mutatedSources = getMutatedSource(output);
+        resolve(mutatedSources);
       } catch (err) {
         reject(err);
       }
@@ -76,4 +83,28 @@ export const getMutationData = async (
     console.log('Unable to read mutation analysis report');
     throw err;
   }
+};
+
+const getMutatedSource = (output: string): [Mutant] => {
+  const reOperator = /^\s+-\s\[#\s+(\d+)\] (\w+)/g;
+  const reMutatedLine = /^.*\+\s+(\d+):(.+)$/g;
+  const mutants: [Mutant] = [{}];
+  let current = 0;
+  output.split(/\n|\r/).forEach(l => {
+    const opMatches = reOperator.exec(l);
+    if (opMatches) {
+      if (!mutants[current]) {
+        mutants.push({});
+      }
+      mutants[current]['operator'] = opMatches[2];
+      mutants[current]['num'] = parseInt(opMatches[1]);
+    }
+    const mutantMatches = reMutatedLine.exec(l);
+    if (mutantMatches) {
+      mutants[current]['lineNo'] = parseInt(mutantMatches[1]);
+      mutants[current]['mutant'] = mutantMatches[2];
+      current++;
+    }
+  });
+  return mutants;
 };
