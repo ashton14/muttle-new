@@ -23,9 +23,8 @@ interface MutationReport {
  */
 interface Mutant {
   operator?: string;
-  num?: number;
-  lineNo?: number;
-  mutant?: string;
+  number?: number;
+  mutatedLine?: string;
 }
 
 export const runMutationAnalysis = (rootDir: string) => {
@@ -45,6 +44,7 @@ export const runMutationAnalysis = (rootDir: string) => {
     let output = '';
     python.stderr.on('data', chunk => console.log(chunk.toString()));
     python.stdout.on('data', chunk => {
+      console.log(chunk.toString());
       output = output + chunk;
     });
 
@@ -87,7 +87,7 @@ export const getMutationData = async (
 
 const getMutatedSource = (output: string): [Mutant] => {
   const reOperator = /^\s+-\s\[#\s+(\d+)\] (\w+)/g;
-  const reMutatedLine = /^.*\+\s+(\d+):(.+)$/g;
+  const reMutatedLine = /^.*\+\s+\d+:(.+)$/g;
   const mutants: [Mutant] = [{}];
   let current = 0;
   output.split(/\n|\r/).forEach(l => {
@@ -97,12 +97,11 @@ const getMutatedSource = (output: string): [Mutant] => {
         mutants.push({});
       }
       mutants[current]['operator'] = opMatches[2];
-      mutants[current]['num'] = parseInt(opMatches[1]);
+      mutants[current]['number'] = parseInt(opMatches[1]);
     }
     const mutantMatches = reMutatedLine.exec(l);
     if (mutantMatches) {
-      mutants[current]['lineNo'] = parseInt(mutantMatches[1]);
-      mutants[current]['mutant'] = mutantMatches[2];
+      mutants[current]['mutatedLine'] = mutantMatches[1];
       current++;
     }
   });

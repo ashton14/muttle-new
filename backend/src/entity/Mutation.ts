@@ -25,6 +25,9 @@ export class Mutation {
   @Column()
   operator!: string;
 
+  @Column()
+  mutatedLine!: string;
+
   @CreateDateColumn({type: 'timestamp'})
   created!: Date;
 

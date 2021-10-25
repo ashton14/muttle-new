@@ -73,12 +73,23 @@ run.post('/:id', async (req: Request, res: Response) => {
       const allPassed = await runTests(rootDir, testCases);
 
       if (allPassed) {
-        await runMutationAnalysis(rootDir);
+        const mutatedSources = await runMutationAnalysis(rootDir);
 
         const [coverageOutcomes, mutationOutcomes] = await Promise.all([
           getCoverageData(rootDir),
           getMutationData(rootDir),
         ]);
+
+        // Add the mutatedLine field to the `mutations` in `mutationOutcomes
+        mutationOutcomes.forEach(outcome => {
+          const mutant = mutatedSources.find(m => m.number === outcome.number);
+          if (mutant) {
+            const mutations = outcome.mutations;
+            // @ts-expect-error The `mutations` object is a DeepPartial it is not
+            // fully initialised until the next line.
+            mutations[0] = {...mutations[0], mutatedLine: mutant.mutatedLine};
+          }
+        });
 
         const savedAttempt = await entityManager.save(
           Attempt,
