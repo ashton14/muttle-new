@@ -1,7 +1,9 @@
 import React, {useEffect, useState, useContext} from 'react';
 import {useHistory, useParams} from 'react-router-dom';
-import {UserContext} from '../../app/App';
+import Row from 'react-bootstrap/Row';
+import Container from 'react-bootstrap/Container';
 
+import {UserContext} from '../../app/App';
 import {
   AttemptFeedback,
   createTestCase,
@@ -16,9 +18,7 @@ import {
   User,
 } from '../../../lib/api';
 import TestCaseTable from '../../testcases/TestCaseTable';
-import Container from 'react-bootstrap/Container';
 import Highlighter from '../../code/Highlighter';
-import Row from 'react-bootstrap/Row';
 import ExerciseFooter from './ExerciseFooter';
 
 const SHOW_ACTUAL = true;
@@ -167,7 +167,6 @@ const Exercise = () => {
           deleteNewTest={deleteNewTest}
           running={running}
         />
-        {/* <FeedbackTable mutationOutcomes={mutationOutcomes} /> */}
       </Row>
       <ExerciseFooter
         disabled={running || (!tests.length && !newTests.length)}

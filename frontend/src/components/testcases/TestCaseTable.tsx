@@ -57,7 +57,7 @@ const TestCaseTable = ({
   ));
 
   return (
-    <Col className="d-flex flex-column border-right">
+    <Col className="d-flex flex-column">
       <div className="h5">Test Cases</div>
       <Table className="text-left" responsive="sm" size="sm">
         <TestCaseTableHeader />

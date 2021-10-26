@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useCallback, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {render} from 'react-dom';
 
 import {Controlled as CodeMirror} from 'react-codemirror2';
@@ -49,41 +49,31 @@ const Highlighter = (props: HighlighterProps) => {
   const [selectedMutant, setSelectedMutant] = useState<MutationResult>(null);
   const [value, setValue] = useState<string>(initialValue);
 
-  const getNewEditorValue = useCallback(() => {
+  /**
+   * If the selectedMutant changes, update the value so that the
+   * CodeMirror editor displays the new selectedMutant, if any.
+   */
+  useEffect(() => {
     if (selectedMutant) {
       const {line, mutatedLine} = selectedMutant;
       const editorLines = initialValue.split(/\n/);
       editorLines[line - 1] = `${editorLines[line - 1]} ${mutatedLine.trim()}`;
-      return editorLines.join('\n');
+      setValue(editorLines.join('\n'));
     } else {
-      return initialValue;
+      setValue(initialValue);
     }
-  }, [initialValue, selectedMutant]);
+  }, [selectedMutant, initialValue]);
 
-  const handleMutantSelect = useCallback(
-    (mutant: MutationResult) => {
-      if (_.isEqual(mutant, selectedMutant)) {
-        setSelectedMutant(null);
-      } else {
-        setSelectedMutant(mutant);
-      }
-    },
-    [selectedMutant]
-  );
-
-  useEffect(() => {
-    const newValue = getNewEditorValue();
-    setValue(newValue);
-  }, [selectedMutant, getNewEditorValue]);
-
+  // If the editor contents change, redraw the struck-out text indicating
+  // code that has been mutated. If there is a selectedMutant, the original
+  // line is struck out. If there is no selectedMutant, the strikeout is cleared.
   useEffect(() => {
     const editor = codeMirrorRef.current?.editor;
     if (selectedMutant) {
-      const {mutatedLine} = selectedMutant;
       const line = selectedMutant.line - 1;
-      const textAtLine = value.split(/\n/)[line];
+      const textAtLine = initialValue.split(/\n/)[line];
       const fromChar = /\w/.exec(textAtLine).index;
-      const toChar = textAtLine.length - mutatedLine.trim().length - 1;
+      const toChar = textAtLine.length;
       markRef.current?.clear();
       markRef.current = editor.markText(
         {line: line, ch: fromChar},
@@ -93,9 +83,35 @@ const Highlighter = (props: HighlighterProps) => {
     } else {
       markRef.current?.clear();
     }
+    // value must be included in the dep array because this effect must run AFTER
+    // the editor contents have changed. CodeMirror clears TextMarkers if the
+    // value is changed.
   }, [value, initialValue, selectedMutant]);
 
+  // If the mutationOutcomes change, unset the selectedMutant and re-set the editor
+  // contents back to the original value.
   useEffect(() => {
+    setSelectedMutant(null);
+    setValue(initialValue);
+  }, [mutationOutcomes, initialValue]);
+
+  // If the editor value, mutationOutcomes, or selectedMutant change,
+  // re-draw the mutation coverage feedback.
+  useEffect(() => {
+    /**
+     * If the specified mutant is different from selectedMutant, sets
+     * it as the selectedMutant. If they are the same, sets selectedMutant
+     * to null.
+     * @param mutant The MutationResult to be set as the selectedMutant.
+     */
+    const handleMutantSelect = (mutant: MutationResult) => {
+      if (_.isEqual(mutant, selectedMutant)) {
+        setSelectedMutant(null);
+      } else {
+        setSelectedMutant(mutant);
+      }
+    };
+
     if (mutationOutcomes?.length) {
       const editor = codeMirrorRef.current?.editor;
       widgetsRef.current?.forEach(w => w.clear());
@@ -106,8 +122,9 @@ const Highlighter = (props: HighlighterProps) => {
         handleMutantSelect
       );
     }
-  }, [value, mutationOutcomes, handleMutantSelect, selectedMutant]);
+  }, [value, mutationOutcomes, selectedMutant]);
 
+  // If the coverageOutcomes change, redraw condition coverage feedback.
   useEffect(() => {
     const editor = codeMirrorRef.current?.editor;
 
