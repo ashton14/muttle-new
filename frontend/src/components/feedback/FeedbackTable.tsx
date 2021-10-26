@@ -34,23 +34,3 @@ const mutantsToRows = (mutationOutcomes?: MutationOutcome[]) => {
     )
   ).map(([line, mutants]) => <FeedbackRow line={line} feedback={mutants} />);
 };
-
-interface MutationResult {
-  line: number;
-  operator: string;
-  outcome: Outcome;
-}
-
-export const parseMutationData = (
-  mutationOutcomes?: MutationOutcome[]
-): MutationResult[] =>
-  (mutationOutcomes || []).flatMap(mutationOutcome =>
-    (mutationOutcome.mutations || []).map(mutation => ({
-      line: mutation.lineno,
-      operator: mutation.operator,
-      mutatedLine: mutation.mutatedLine,
-      outcome: mutationOutcome.status as Outcome,
-    }))
-  );
-
-export default React.memo(FeedbackTable);

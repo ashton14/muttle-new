@@ -1,5 +1,8 @@
-import Badge from 'react-bootstrap/Badge';
 import React from 'react';
+import Badge from 'react-bootstrap/Badge';
+import {MutationOutcome} from '../../lib/api';
+
+import '../../styles/feedback/Mutant.css';
 
 export enum Outcome {
   KILLED = 'killed',
@@ -25,17 +28,50 @@ const DEFAULT_VARIANT = 'primary';
 const MutantBadge = ({
   outcome,
   operator,
+  mutatedLine,
+  isSelected,
+  handleClick,
 }: {
   outcome: Outcome;
   operator: string;
-}) => (
-  <Badge
-    className="mr-1"
-    pill
-    variant={VARIANTS_BY_OUTCOME.get(outcome) || DEFAULT_VARIANT}
-  >
-    {operator}
-  </Badge>
-);
+  mutatedLine: string;
+  isSelected: boolean;
+  handleClick: Function;
+}) => {
+  const performClick = () => {
+    handleClick(mutatedLine);
+  };
+
+  return (
+    <Badge
+      className={`mr-1 ${isSelected ? 'active' : ''}`}
+      pill
+      role="button"
+      variant={VARIANTS_BY_OUTCOME.get(outcome) || DEFAULT_VARIANT}
+      onClick={performClick}
+    >
+      {operator}
+    </Badge>
+  );
+};
+
+export interface MutationResult {
+  line: number;
+  operator: string;
+  mutatedLine: string;
+  outcome: Outcome;
+}
+
+export const parseMutationData = (
+  mutationOutcomes?: MutationOutcome[]
+): MutationResult[] =>
+  (mutationOutcomes || []).flatMap(mutationOutcome =>
+    (mutationOutcome.mutations || []).map(mutation => ({
+      line: mutation.lineno,
+      operator: mutation.operator,
+      mutatedLine: mutation.mutatedLine,
+      outcome: mutationOutcome.status as Outcome,
+    }))
+  );
 
 export default React.memo(MutantBadge);

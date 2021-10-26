@@ -19,7 +19,6 @@ import TestCaseTable from '../../testcases/TestCaseTable';
 import Container from 'react-bootstrap/Container';
 import Highlighter from '../../code/Highlighter';
 import Row from 'react-bootstrap/Row';
-import FeedbackTable from '../../feedback/FeedbackTable';
 import ExerciseFooter from './ExerciseFooter';
 
 const SHOW_ACTUAL = true;
@@ -168,7 +167,7 @@ const Exercise = () => {
           deleteNewTest={deleteNewTest}
           running={running}
         />
-        <FeedbackTable mutationOutcomes={mutationOutcomes} />
+        {/* <FeedbackTable mutationOutcomes={mutationOutcomes} /> */}
       </Row>
       <ExerciseFooter
         disabled={running || (!tests.length && !newTests.length)}

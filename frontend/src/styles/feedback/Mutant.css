@@ -1,0 +1,7 @@
+.active {
+  opacity: 0.8;
+}
+
+.strike {
+  text-decoration: line-through;
+}

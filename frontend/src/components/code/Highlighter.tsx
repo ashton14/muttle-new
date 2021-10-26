@@ -1,5 +1,5 @@
-import React, {useEffect, useRef} from 'react';
-import {renderToString} from 'react-dom/server';
+import React, {useEffect, useRef, useCallback, useState} from 'react';
+import {render} from 'react-dom';
 
 import {Controlled as CodeMirror} from 'react-codemirror2';
 import codemirror from 'codemirror';
@@ -11,8 +11,11 @@ import {
 
 import './Highlighter.css';
 import {CoverageOutcome, MutationOutcome} from '../../lib/api';
-import MutantBadge, {Outcome, sortOutcomes} from '../feedback/Mutant';
-import {parseMutationData} from '../feedback/FeedbackTable';
+import MutantBadge, {
+  sortOutcomes,
+  parseMutationData,
+  MutationResult,
+} from '../feedback/Mutant';
 import _ from 'lodash';
 
 const baseOptions: Partial<codemirror.EditorConfiguration> = {
@@ -30,15 +33,80 @@ interface HighlighterProps {
   className?: string;
 }
 
-const Highlighter = ({
-  value,
-  options,
-  coverageOutcomes,
-  mutationOutcomes,
-  className,
-}: HighlighterProps) => {
+const Highlighter = (props: HighlighterProps) => {
   const codeMirrorRef = useRef<CodeMirror & {editor: codemirror.Editor}>(null);
   const widgetsRef = useRef<codemirror.LineWidget[]>([]);
+  const markRef = useRef<codemirror.TextMarker>(null);
+
+  const {
+    value: initialValue,
+    options,
+    coverageOutcomes,
+    mutationOutcomes,
+    className,
+  } = props;
+
+  const [selectedMutant, setSelectedMutant] = useState<MutationResult>(null);
+  const [value, setValue] = useState<string>(initialValue);
+
+  const getNewEditorValue = useCallback(() => {
+    if (selectedMutant) {
+      const {line, mutatedLine} = selectedMutant;
+      const editorLines = initialValue.split(/\n/);
+      editorLines[line - 1] = `${editorLines[line - 1]} ${mutatedLine.trim()}`;
+      return editorLines.join('\n');
+    } else {
+      return initialValue;
+    }
+  }, [initialValue, selectedMutant]);
+
+  const handleMutantSelect = useCallback(
+    (mutant: MutationResult) => {
+      if (_.isEqual(mutant, selectedMutant)) {
+        setSelectedMutant(null);
+      } else {
+        setSelectedMutant(mutant);
+      }
+    },
+    [selectedMutant]
+  );
+
+  useEffect(() => {
+    const newValue = getNewEditorValue();
+    setValue(newValue);
+  }, [selectedMutant, getNewEditorValue]);
+
+  useEffect(() => {
+    const editor = codeMirrorRef.current?.editor;
+    if (selectedMutant) {
+      const {mutatedLine} = selectedMutant;
+      const line = selectedMutant.line - 1;
+      const textAtLine = value.split(/\n/)[line];
+      const fromChar = /\w/.exec(textAtLine).index;
+      const toChar = textAtLine.length - mutatedLine.trim().length - 1;
+      markRef.current?.clear();
+      markRef.current = editor.markText(
+        {line: line, ch: fromChar},
+        {line: line, ch: toChar},
+        {className: 'strike', inclusiveRight: false}
+      );
+    } else {
+      markRef.current?.clear();
+    }
+  }, [value, initialValue, selectedMutant]);
+
+  useEffect(() => {
+    if (mutationOutcomes?.length) {
+      const editor = codeMirrorRef.current?.editor;
+      widgetsRef.current?.forEach(w => w.clear());
+      widgetsRef.current = displayMutationCoverage(
+        editor,
+        mutationOutcomes,
+        selectedMutant,
+        handleMutantSelect
+      );
+    }
+  }, [value, mutationOutcomes, handleMutantSelect, selectedMutant]);
 
   useEffect(() => {
     const editor = codeMirrorRef.current?.editor;
@@ -49,13 +117,8 @@ const Highlighter = ({
       if (coverageOutcomes) {
         highlightCoverage(editor, coverageOutcomes);
       }
-
-      if (mutationOutcomes?.length) {
-        widgetsRef.current?.forEach(w => w.clear());
-        widgetsRef.current = displayMutationCoverage(editor, mutationOutcomes);
-      }
     }
-  }, [coverageOutcomes, mutationOutcomes]);
+  }, [coverageOutcomes]);
 
   return (
     <CodeMirror
@@ -79,7 +142,9 @@ const getCoverageGutter = (className: string) => {
 
 const displayMutationCoverage = (
   editor: codemirror.Editor,
-  mutationOutcomes: MutationOutcome[]
+  mutationOutcomes: MutationOutcome[],
+  selectedMutant: MutationResult,
+  handleMutantClick: Function
 ) => {
   const mutantsByLine = _.groupBy(parseMutationData(mutationOutcomes), 'line');
 
@@ -89,19 +154,30 @@ const displayMutationCoverage = (
     _.mapValues(mutantsByLine, mutants =>
       mutants
         .sort(({outcome: o1}, {outcome: o2}) => sortOutcomes(o1, o2))
-        .map(({outcome, operator}) => {
-          return <MutantBadge outcome={outcome} operator={operator} />;
+        .map(mutationResult => {
+          const {outcome, operator, mutatedLine} = mutationResult;
+          const isSelected = _.isEqual(mutationResult, selectedMutant);
+          return (
+            <MutantBadge
+              outcome={outcome}
+              operator={operator}
+              mutatedLine={mutatedLine}
+              isSelected={isSelected}
+              handleClick={() => handleMutantClick(mutationResult)}
+            />
+          );
         })
     )
   ).forEach(([line, mutants]) => {
     const div: HTMLElement = document.createElement('div');
-    const badges = mutants.map(m => renderToString(m)).join('');
-    div.innerHTML = badges;
+    render(mutants, div);
     const lineInt = parseInt(line) - 1;
-    const widget = editor.addLineWidget(lineInt, div, {above: true});
+    const widget = editor.addLineWidget(lineInt, div, {
+      above: true,
+      handleMouseEvents: true,
+    });
     newWidgets.push(widget);
   });
-
   return newWidgets;
 };
 
