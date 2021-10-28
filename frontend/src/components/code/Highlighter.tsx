@@ -125,6 +125,8 @@ const Highlighter = (props: HighlighterProps) => {
   }, [value, mutationOutcomes, selectedMutant]);
 
   // If the coverageOutcomes change, redraw condition coverage feedback.
+  // Also redraw if the editor contents change, because CodeMirror clears
+  // the gutter markers on change.
   useEffect(() => {
     const editor = codeMirrorRef.current?.editor;
 
@@ -135,7 +137,7 @@ const Highlighter = (props: HighlighterProps) => {
         highlightCoverage(editor, coverageOutcomes);
       }
     }
-  }, [coverageOutcomes]);
+  }, [value, coverageOutcomes]);
 
   return (
     <CodeMirror
