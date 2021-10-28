@@ -42,15 +42,17 @@ const MutantBadge = ({
     handleClick(mutatedLine);
   };
 
+  const bugClassName = `bug ${isSelected ? 'bi-bug' : 'bi-bug-fill'}`;
+
   return (
     <Badge
-      className={`mr-1 ${isSelected ? 'active' : ''}`}
+      className="mr-1"
       pill
       role="button"
       variant={VARIANTS_BY_OUTCOME.get(outcome) || DEFAULT_VARIANT}
       onClick={performClick}
     >
-      {operator}
+      <i className={`bi ${bugClassName}`}></i>
     </Badge>
   );
 };
