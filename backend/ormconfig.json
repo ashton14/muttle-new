@@ -13,5 +13,7 @@
   "cli": {
     "migrationsDir": "migrations",
     "entitiesDir": "src/entity"
-  }
+  },
+  "seeds": ["src/seeds/**/*{.ts,.js}"],
+  "factories": ["src/factories/**/*{.ts,.js"]
 }
