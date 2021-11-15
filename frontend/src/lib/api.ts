@@ -48,13 +48,18 @@ export interface CoverageOutcome {
   conditionsCovered: number;
 }
 
+export interface MutatedLine {
+  lineNo: number;
+  mutatedSource: string;
+}
+
 export interface MutationOutcome {
   exception_traceback: string;
   killer: string;
   mutations?: {
     lineno: number;
     operator: string;
-    mutatedLine: string;
+    mutatedLines: MutatedLine[];
   }[];
   number: number;
   status: string;
