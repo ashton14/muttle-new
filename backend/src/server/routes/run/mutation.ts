@@ -80,7 +80,6 @@ export const getMutationData = async (
       'utf-8'
     );
     const doc = yaml.load(resultsData, {schema: SCHEMA}) as MutationReport;
-
     return doc.mutations.map(
       (outcome): DeepPartial<MutationOutcome> => ({
         ...outcome,
@@ -93,10 +92,14 @@ export const getMutationData = async (
 };
 
 const getMutatedSource = (output: string): Mutant[] => {
+  // Group 1: mutant number, Group 2: operator
   const reOperator = /^\s+-\s\[#\s+(\d+)\] (\w+)/g;
-  const reMutatedLine = /^.*(\+|-)\s+(\d+:.+)$/g;
+  // Group 1: + or -, Group 2: line number, Group 3: source 
+  const reMutatedLine = /^.*(\+|-)\s+(\d+):\s+(.+)$/g;
+
   const mutants: Mutant[] = [];
   let current = -1;
+
   output.split(/\n|\r/).forEach(l => {
     const opMatches = reOperator.exec(l);
     if (opMatches) {
@@ -109,18 +112,24 @@ const getMutatedSource = (output: string): Mutant[] => {
         removedLines: [],
       };
     }
+
     const mutantMatches = reMutatedLine.exec(l);
     if (mutantMatches) {
-      const addedOrRemoved = mutantMatches[0];
+      const addedOrRemoved: string = mutantMatches[1];
+      const lineNumber: string  = mutantMatches[2];
+      const lineSource: string = mutantMatches[3];
+      
+      let newMutatedLine: MutatedLine = {
+        lineNo: Number(lineNumber),
+        line: lineSource
+      };
+
+      const currentMutant: Mutant = mutants[current];
+
       if (addedOrRemoved === '+') {
-        let addedSource = mutants[current]['mutatedLines']?.addedSource || '';
-        addedSource += mutantMatches[1];
-        mutants[current]['mutatedLines']['addedSource'] = addedSource;
+        currentMutant.addedLines.push(newMutatedLine);
       } else if (addedOrRemoved === '-') {
-        let removedSource =
-          mutants[current]['mutatedLines']?.removedSource || '';
-        removedSource += mutantMatches[1];
-        mutants[current]['mutatedLines']['removedSource'] = removedSource;
+        currentMutant.removedLines.push(newMutatedLine);
       }
     }
   });
