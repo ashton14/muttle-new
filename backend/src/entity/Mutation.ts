@@ -3,10 +3,12 @@ import {
   CreateDateColumn,
   Entity,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import {MutationOutcome} from './MutationOutcome';
+import {MutatedLine} from './MutatedLine';
 
 @Entity('Mutation')
 export class Mutation {
@@ -18,9 +20,12 @@ export class Mutation {
     mutationOutcome => mutationOutcome.mutations
   )
   mutationOutcome!: MutationOutcome;
-
-  @Column()
-  lineno!: number;
+  
+  @OneToMany(
+    () => MutatedLine,
+    mutatedLine => mutatedLine
+  )
+  mutatedLines!: MutatedLine[];
 
   @Column()
   operator!: string;
