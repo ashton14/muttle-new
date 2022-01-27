@@ -1,26 +1,17 @@
-import {
-    Column,
-    Entity,
-    JoinColumn,
-    ManyToOne,
-    PrimaryGeneratedColumn,
-  } from 'typeorm';
-  import {Mutation} from './Mutation';
-  
-  @Entity('MutatedLine')
-  export class MutatedLine {
-    @PrimaryGeneratedColumn('increment')
-    id!: number;
+import {Column, Entity, ManyToOne, PrimaryGeneratedColumn} from 'typeorm';
+import {Mutation} from './Mutation';
 
-    @ManyToOne(
-      () => Mutation,
-      mutation => mutation.mutatedLines
-    )
-    mutation!: Mutation;
+@Entity('MutatedLine')
+export class MutatedLine {
+  @PrimaryGeneratedColumn('increment')
+  id!: number;
 
-    @Column()
-    lineNo!: number;
+  @ManyToOne(() => Mutation, mutation => mutation.mutatedLines)
+  mutation!: Mutation;
 
-    @Column()
-    line!: string;
-  }
+  @Column()
+  lineNo!: number;
+
+  @Column()
+  mutatedSource!: string;
+}

@@ -23,7 +23,7 @@ interface MutationReport {
  */
 interface MutatedLine {
   lineNo: number;
-  line: string;
+  mutatedSource: string;
 }
 
 interface Mutant {
@@ -121,7 +121,7 @@ const getMutatedSource = (output: string): Mutant[] => {
 
       const newMutatedLine: MutatedLine = {
         lineNo: Number(lineNumber),
-        line: lineSource,
+        mutatedSource: lineSource,
       };
 
       const currentMutant: Mutant = mutants[current];

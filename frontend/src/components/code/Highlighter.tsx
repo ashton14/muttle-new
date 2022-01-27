@@ -74,11 +74,11 @@ const Highlighter = (props: HighlighterProps) => {
   useEffect(() => {
     const editor = codeMirrorRef.current?.editor;
     if (selectedMutant) {
+      markRef.current?.clear();
       selectedMutant.mutatedLines.forEach(({lineNo}) => {
         const textAtLine = initialValue.split(/\n/)[lineNo - 1];
         const fromChar = /\w/.exec(textAtLine)?.index || 0;
         const toChar = textAtLine.length;
-        markRef.current?.clear();
         markRef.current = editor.markText(
           {line: lineNo - 1, ch: fromChar},
           {line: lineNo - 1, ch: toChar},
