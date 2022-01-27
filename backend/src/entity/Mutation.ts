@@ -20,11 +20,11 @@ export class Mutation {
     mutationOutcome => mutationOutcome.mutations
   )
   mutationOutcome!: MutationOutcome;
-  
-  @OneToMany(
-    () => MutatedLine,
-    mutatedLine => mutatedLine
-  )
+
+  @OneToMany(() => MutatedLine, mutatedLine => mutatedLine.mutation, {
+    cascade: true,
+    eager: true,
+  })
   mutatedLines!: MutatedLine[];
 
   @Column()

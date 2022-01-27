@@ -1,7 +1,8 @@
 import {
     Column,
     Entity,
-    OneToMany,
+    JoinColumn,
+    ManyToOne,
     PrimaryGeneratedColumn,
   } from 'typeorm';
   import {Mutation} from './Mutation';
@@ -11,15 +12,15 @@ import {
     @PrimaryGeneratedColumn('increment')
     id!: number;
 
-    @OneToMany(
-    () => Mutation,
+    @ManyToOne(
+      () => Mutation,
       mutation => mutation.mutatedLines
     )
     mutation!: Mutation;
 
     @Column()
-    lineno!: number;
+    lineNo!: number;
 
     @Column()
-    operator!: string;
+    line!: string;
   }

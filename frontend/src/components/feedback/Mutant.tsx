@@ -69,7 +69,7 @@ export const parseMutationData = (
 ): MutationResult[] =>
   (mutationOutcomes || []).flatMap(mutationOutcome =>
     (mutationOutcome.mutations || []).map(mutation => ({
-      line: mutation.lineno,
+      line: mutation.lineNo,
       operator: mutation.operator,
       mutatedLines: mutation.mutatedLines,
       outcome: mutationOutcome.status as Outcome,

@@ -57,7 +57,7 @@ export interface MutationOutcome {
   exception_traceback: string;
   killer: string;
   mutations?: {
-    lineno: number;
+    lineNo: number;
     operator: string;
     mutatedLines: MutatedLine[];
   }[];
