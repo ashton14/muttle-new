@@ -15,6 +15,7 @@ import MutantBadge, {
   sortOutcomes,
   parseMutationData,
   MutationResult,
+  Outcome,
 } from '../feedback/Mutant';
 import _ from 'lodash';
 
@@ -181,6 +182,7 @@ const displayMutationCoverage = (
   Object.entries(
     _.mapValues(mutationResultsByLine, mutants =>
       mutants
+        .filter(mutationResult => mutationResult.outcome != Outcome.KILLED)
         .sort(({outcome: o1}, {outcome: o2}) => sortOutcomes(o1, o2))
         .map(mutationResult => {
           const {outcome, operator, mutatedLines} = mutationResult;
