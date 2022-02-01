@@ -179,10 +179,22 @@ const displayMutationCoverage = (
 
   const newWidgets: codemirror.LineWidget[] = [];
 
+  const struckLinesSet: Set<string> = new Set<string>();
+  if (selectedMutant !== null) {
+    selectedMutant.mutatedLines.forEach(mutatedLine =>
+      struckLinesSet.add(mutatedLine.lineNo.toString())
+    );
+  }
+
   Object.entries(
-    _.mapValues(mutationResultsByLine, mutants =>
+    _.mapValues(mutationResultsByLine, (mutants, lineNo, _object) =>
       mutants
-        .filter(mutationResult => mutationResult.outcome != Outcome.KILLED)
+        .filter(mutationResult => mutationResult.outcome !== Outcome.KILLED)
+        .filter(
+          mutationResult =>
+            _.isEqual(mutationResult, selectedMutant) ||
+            !struckLinesSet.has(lineNo)
+        )
         .sort(({outcome: o1}, {outcome: o2}) => sortOutcomes(o1, o2))
         .map(mutationResult => {
           const {outcome, operator, mutatedLines} = mutationResult;
