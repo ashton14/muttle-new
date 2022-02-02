@@ -192,6 +192,7 @@ const displayMutationCoverage = (
         .filter(mutationResult => mutationResult.outcome !== Outcome.KILLED)
         .filter(
           mutationResult =>
+            struckLinesSet.size === 1 ||
             _.isEqual(mutationResult, selectedMutant) ||
             !struckLinesSet.has(lineNo)
         )
