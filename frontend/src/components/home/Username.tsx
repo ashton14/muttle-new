@@ -45,7 +45,7 @@ export const Username = ({name}: UsernameProps) => {
         rootCloseEvent="click"
         onHide={() => setShow(false)}
       >
-        <ListGroup>
+        <ListGroup style={{zIndex: 99999}}>
           <ListGroup.Item className="py-1 ">
             <Button
               className="border-0"
