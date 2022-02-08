@@ -3,9 +3,9 @@ import Placeholder from '../common/Placeholder';
 
 const Landing = () => (
   <Placeholder
-    title="Landing Page"
-    purpose="Initial page when hitting base URL"
-    status="Still in development with the following TODOs: (1) Login/Signup options (2) ProtectedRoutes"
+    title="Welcome to Muttle!"
+    purpose="Log in or sign up to continue"
+    status="Still in development"
   />
 );
 
