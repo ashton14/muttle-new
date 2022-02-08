@@ -8,23 +8,17 @@ import app from '../server/app';
 export interface Token {
   subject: number;
   email: string;
-  role: string;
   issuer: string;
   audience: string;
   iat: number;
   exp: number;
 }
 
-export const createToken = ({id, role, email}: Omit<User, 'password'>) => {
-  // Sign the JWT
-  if (!role) {
-    throw new Error('No user role specified');
-  }
+export const createToken = ({id, email}: Omit<User, 'password'>) => {
   return jwt.sign(
     {
       subject: id,
       email: email,
-      role: role,
       issuer: 'api.muttle',
       audience: 'api.muttle',
     },
@@ -52,19 +46,3 @@ export const hashPassword = (password: string): Promise<string> => {
 
 export const verifyPassword = (attempt: string, encrypted: string) =>
   bcrypt.compare(attempt, encrypted);
-
-export const requireAdmin = (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  if (!req.user) {
-    return res.status(401).json({
-      message: 'There was a problem authorizing the request',
-    });
-  }
-  if (req.user.role !== 'admin') {
-    return res.status(401).json({message: 'Insufficient role'});
-  }
-  return next();
-};

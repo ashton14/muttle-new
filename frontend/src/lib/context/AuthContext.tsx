@@ -3,10 +3,8 @@ import {useHistory} from 'react-router-dom';
 
 export interface UserInfo {
   id: number;
-  firstName: string;
-  lastName: string;
+  name: string;
   email: string;
-  role: string;
 }
 
 export interface AuthInfo {
@@ -20,7 +18,6 @@ export interface Auth {
   setAuthInfo(authInfo: AuthInfo): void;
   logout(): void;
   isAuthenticated(): boolean;
-  isAdmin(): boolean;
 }
 
 const UNAUTHORIZED: AuthInfo = {
@@ -34,7 +31,6 @@ const AuthContext = createContext<Auth>({
   authInfo: UNAUTHORIZED,
   setAuthInfo: NO_OP,
   logout: NO_OP,
-  isAdmin: () => false,
   isAuthenticated: () => false,
 });
 
@@ -78,10 +74,6 @@ const AuthProvider = ({children}: {children: ReactNode}) => {
     return new Date().getTime() / 1000 < authState.expiresAt;
   };
 
-  const isAdmin = () => {
-    return authState.userInfo?.role === 'admin';
-  };
-
   return (
     <AuthContext.Provider
       value={{
@@ -89,7 +81,6 @@ const AuthProvider = ({children}: {children: ReactNode}) => {
         setAuthInfo: authInfo => setAuthInfo(authInfo),
         logout,
         isAuthenticated,
-        isAdmin,
       }}
     >
       {children}

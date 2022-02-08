@@ -9,15 +9,13 @@ const signup = express.Router();
 signup.post('/', async (req, res) => {
   try {
     const userRepo = await getRepository(User);
-    const {email, firstName, lastName, password} = req.body;
+    const {email, name, password} = req.body;
     const hashedPassword = await hashPassword(password);
 
     const userData = {
       email: email.toLowerCase(),
-      firstName,
-      lastName,
+      name,
       password: hashedPassword,
-      role: 'admin', // TODO - probably shouldn't create everyone as admins
     };
 
     const existingEmail = await userRepo.findOne({
@@ -34,14 +32,12 @@ signup.post('/', async (req, res) => {
       const token = createToken(savedUser);
       const {exp: expiresAt} = jwtDecode<Token>(token);
 
-      const {id, firstName, lastName, email, role} = savedUser;
+      const {id, name, email} = savedUser;
 
       const userInfo = {
         id,
-        firstName,
-        lastName,
+        name,
         email,
-        role,
       };
 
       return res.json({

@@ -6,11 +6,10 @@ import {useAuth} from '../../lib/context/AuthContext';
 import {useHistory} from 'react-router-dom';
 
 interface UsernameProps {
-  firstName: string;
-  lastName: string;
+  name: string;
 }
 
-export const Username = ({firstName, lastName}: UsernameProps) => {
+export const Username = ({name}: UsernameProps) => {
   const [show, setShow] = useState(false);
   const target = useRef(null);
 
@@ -31,7 +30,7 @@ export const Username = ({firstName, lastName}: UsernameProps) => {
         variant="link"
         aria-label="UserName"
       >
-        {`${firstName} ${lastName}`}
+        {`${name}`}
         <i
           className="ml-1 fas fa-caret-down"
           aria-hidden="true"

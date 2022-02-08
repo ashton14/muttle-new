@@ -10,7 +10,6 @@ import {
 } from 'typeorm';
 import {TestCase} from './TestCase';
 import {Attempt} from './Attempt';
-import {Role} from './Role';
 
 @Entity('User')
 export class User {
@@ -23,20 +22,8 @@ export class User {
   @Column()
   password!: string;
 
-  // TODO - Use Role table (for housing roles that may later be attached to
-  //  specific permissions for courses, edit/view privileges, etc.)
-  // @ManyToMany(() => Role, {eager: true})
-  // @JoinTable()
-  // userRoles!: Role[];
-
   @Column()
-  role!: string;
-
-  @Column()
-  firstName!: string;
-
-  @Column()
-  lastName!: string;
+  name!: string;
 
   @OneToMany(() => TestCase, testCase => testCase.user)
   testCases!: TestCase[];

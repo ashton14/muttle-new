@@ -54,10 +54,8 @@ export interface MutationOutcome {
 }
 
 export interface User {
-  firstName: string;
-  lastName: string;
+  name: string;
   email: string;
-  role: string;
 }
 
 export interface SavedUser extends User {
@@ -68,8 +66,7 @@ export interface SavedUser extends User {
 export interface SignupInfo {
   email: string;
   password: string;
-  firstName: string;
-  lastName: string;
+  name: string;
 }
 
 export interface UserCredentials {

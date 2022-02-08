@@ -28,7 +28,7 @@ const AuthenticatedNav = () => {
     history.push('/');
   }
 
-  const {firstName, lastName} = userInfo as UserInfo;
+  const {name} = userInfo as UserInfo;
 
   return (
     <>
@@ -42,7 +42,7 @@ const AuthenticatedNav = () => {
       </Nav>
       <Nav>
         <Nav.Item>
-          <Username firstName={firstName} lastName={lastName} />
+          <Username name={name} />
         </Nav.Item>
         <Nav.Item>
           <Help />

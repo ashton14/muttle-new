@@ -48,17 +48,12 @@ const AuthenticatedRoutes = () => (
     <AuthenticatedRoute path="/home">
       <Home />
     </AuthenticatedRoute>
-  </Switch>
-);
-
-const AdminRoutes = () => (
-  <Switch>
-    <AdminRoute path="/exercises/new">
+    <AuthenticatedRoute path="/exercises/new">
       <NewExercise />
-    </AdminRoute>
-    <AdminRoute path="/exercises/:exerciseId/edit">
+    </AuthenticatedRoute>
+    <AuthenticatedRoute path="/exercises/:exerciseId/edit">
       <EditExercise />
-    </AdminRoute>
+    </AuthenticatedRoute>
   </Switch>
 );
 
@@ -78,33 +73,17 @@ const AuthenticatedRoute = ({children, ...rest}: RouteProps) => {
   );
 };
 
-const AdminRoute = ({children, ...rest}: RouteProps) => {
-  const auth = useAuth();
-  return (
-    <Route
-      {...rest}
-      render={() =>
-        auth.isAuthenticated() && auth.isAdmin() ? (
-          <AuthenticatedApiProvider>{children}</AuthenticatedApiProvider>
-        ) : (
-          <Redirect to="/" />
-        )
-      }
-    />
-  );
-};
-
 const AppRoutes = () => {
   return (
     <>
       <Suspense fallback={<LoadingFallback />}>
         <Switch>
-          <AdminRoute path="/exercises/new">
+          <AuthenticatedRoute path="/exercises/new">
             <NewExercise />
-          </AdminRoute>
-          <AdminRoute path="/exercises/:exerciseId/edit">
+          </AuthenticatedRoute>
+          <AuthenticatedRoute path="/exercises/:exerciseId/edit">
             <EditExercise />
-          </AdminRoute>
+          </AuthenticatedRoute>
           <AuthenticatedRoute path="/exercises/:exerciseId">
             <Exercise />
           </AuthenticatedRoute>
@@ -115,7 +94,7 @@ const AppRoutes = () => {
             <Home />
           </AuthenticatedRoute>
           {/*TODO - Debug issues with Admin/AuthenticatedRoutes components */}
-          {/*<AdminRoutes />*/}
+          {/*<AuthenticatedRoutes />*/}
           {/*<AuthenticatedRoutes />*/}
           <UnauthenticatedRoutes />
         </Switch>
