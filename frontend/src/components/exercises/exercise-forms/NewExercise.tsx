@@ -4,16 +4,17 @@ import Container from 'react-bootstrap/Container';
 import Button from 'react-bootstrap/Button';
 
 import ExerciseForm from './ExerciseForm';
-import {createExercise} from '../../../lib/api';
+import {useAuthenticatedApi} from '../../../lib/context/AuthenticatedApiContext';
 
 const NewExercise = () => {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [snippet, setSnippet] = useState('');
 
-  const disabled = !name || !description || !snippet;
-
   const history = useHistory();
+  const {createExercise} = useAuthenticatedApi();
+
+  const disabled = !name || !description || !snippet;
 
   const submit = async () => {
     const {id} = await createExercise({name, description, snippet});

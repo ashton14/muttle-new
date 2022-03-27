@@ -3,7 +3,7 @@ import {useHistory, useParams} from 'react-router-dom';
 import {Button, Container} from 'react-bootstrap';
 
 import ExerciseForm from './ExerciseForm';
-import {getExercise, updateExercise} from '../../../lib/api';
+import {useAuthenticatedApi} from '../../../lib/context/AuthenticatedApiContext';
 
 interface RouteParams {
   exerciseId: string;
@@ -18,6 +18,8 @@ const EditExercise = () => {
   const {exerciseId: idString} = useParams<RouteParams>();
   const exerciseId = parseInt(idString);
 
+  const {getExercise, updateExercise} = useAuthenticatedApi();
+
   useEffect(() => {
     const fetchExercise = async () => {
       const {name, description, snippet} = await getExercise(exerciseId);
@@ -27,7 +29,7 @@ const EditExercise = () => {
     };
 
     fetchExercise();
-  }, [exerciseId]);
+  }, [exerciseId, getExercise]);
 
   const submit = async () => {
     const res = await updateExercise(exerciseId, {

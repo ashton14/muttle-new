@@ -1,25 +1,18 @@
-import React, {useEffect, useState, useContext} from 'react';
+import React, {useEffect, useState} from 'react';
 import {useHistory, useParams} from 'react-router-dom';
 import Row from 'react-bootstrap/Row';
 import Container from 'react-bootstrap/Container';
-
-import {UserContext} from '../../app/App';
-import {
-  AttemptFeedback,
-  createTestCase,
-  deleteTestCase,
-  getExercise,
-  getLatestAttempt,
-  getTestCases,
-  NewTestCase,
-  runTests as runTestCases,
-  SavedExercise,
-  SavedTestCase,
-  User,
-} from '../../../lib/api';
 import TestCaseTable from '../../testcases/TestCaseTable';
 import Highlighter from '../../code/Highlighter';
 import ExerciseFooter from './ExerciseFooter';
+import {
+  AttemptFeedback,
+  NewTestCase,
+  SavedExercise,
+  SavedTestCase,
+} from '../../../lib/api';
+import {useAuthenticatedApi} from '../../../lib/context/AuthenticatedApiContext';
+import {Auth, useAuth} from '../../../lib/context/AuthContext';
 
 const SHOW_ACTUAL = true;
 
@@ -43,9 +36,20 @@ const Exercise = () => {
 
   const history = useHistory();
   const {exerciseId: idString} = useParams<RouteParams>();
-  const exerciseId = parseInt(idString);
 
-  const user: User = useContext(UserContext);
+  const {
+    authInfo: {userInfo: user},
+  }: Auth = useAuth();
+
+  const {
+    getExercise,
+    getTestCases,
+    getLatestAttempt,
+    deleteTestCase,
+    createTestCase,
+    runTests: runTestCases,
+  } = useAuthenticatedApi();
+  const exerciseId = parseInt(idString);
 
   useEffect(() => {
     if (user) {
@@ -61,13 +65,16 @@ const Exercise = () => {
         setTests(displayTests(tests));
         setAttemptFeedback(attempt);
       });
-    } else {
-      return;
     }
-  }, [history, exerciseId, user]);
+  }, [history, exerciseId, user, getExercise, getTestCases, getLatestAttempt]);
+
+  if (!user) {
+    history.push('/');
+    return null;
+  }
 
   if (!exercise) {
-    return <div />;
+    return null;
   }
 
   const createNewTest = () => {

@@ -1,9 +1,21 @@
 import express, {Request, Response} from 'express';
 import path from 'path';
 import api from './api';
+import env from 'dotenv';
 
 const app = express();
+const {error, parsed} = env.config();
+
+if (error) {
+  throw error;
+}
+
+if (!parsed?.JWT_SECRET) {
+  throw Error('Requires JWT_SECRET to be set in .env file');
+}
+
 app.set('port', process.env.PORT || 3000);
+app.set('secret', process.env.JWT_SECRET);
 
 const publicDir = path.join(__dirname, '../..', 'public');
 app.use(express.static(publicDir));
@@ -18,7 +30,7 @@ app.use((req, res, next) => {
   }
 
   res.header('Access-Control-Allow-Credentials', 'true');
-  res.header('Access-Control-Allow-Headers', 'Content-Type');
+  res.header('Access-Control-Allow-Headers', ['Authorization', 'Content-Type']);
   res.header('Access-Control-Expose-Headers', 'Content-Type, Location');
   res.header('Access-Control-Allow-Methods', 'POST, GET, PUT, DELETE');
   return next();
