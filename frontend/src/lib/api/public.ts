@@ -1,7 +1,6 @@
 import {AxiosInstance} from 'axios';
-import {SignupInfo} from '../models';
 import {AuthInfo} from '../context/AuthContext';
-import {PublicApi} from '../api';
+import {PublicApi, SignupInfo} from '../api';
 
 export const getPublicEndpoints = (api: AxiosInstance): PublicApi => ({
   signup: signup(api),

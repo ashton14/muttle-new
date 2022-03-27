@@ -1,12 +1,12 @@
 import {AxiosInstance} from 'axios';
-import {AuthenticatedApi} from '../api';
 import {
+  AuthenticatedApi,
   AttemptFeedback,
   Exercise,
   NewTestCase,
   SavedExercise,
   SavedTestCase,
-} from '../models';
+} from '../api';
 
 export const getAuthenticatedEndpoints = (
   api: AxiosInstance

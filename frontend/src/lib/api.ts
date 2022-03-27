@@ -7,7 +7,7 @@ const backendPort = 3000;
 const {protocol, hostname} = window.location;
 const baseURL = `${protocol}//${hostname}:${backendPort}/api/`;
 
-interface Exercise {
+export interface Exercise {
   name: string;
   description: string;
   snippet: string;

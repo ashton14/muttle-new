@@ -7,7 +7,7 @@ import Spinner from 'react-bootstrap/Spinner';
 import Row from 'react-bootstrap/Row';
 import Alert from 'react-bootstrap/Alert';
 import {useAuthenticatedApi} from '../../../lib/context/AuthenticatedApiContext';
-import {SavedExercise} from '../../../lib/models';
+import {SavedExercise} from '../../../lib/api';
 
 const SIGNATURE_REGEX = /(def .+\(.*\).*):/;
 
