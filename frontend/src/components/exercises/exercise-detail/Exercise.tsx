@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {useHistory, useParams} from 'react-router-dom';
 import Row from 'react-bootstrap/Row';
+import {Button} from 'react-bootstrap';
 import Container from 'react-bootstrap/Container';
 import TestCaseTable from '../../testcases/TestCaseTable';
 import Highlighter from '../../code/Highlighter';
@@ -20,6 +21,13 @@ interface RouteParams {
   exerciseId: string;
 }
 
+export enum FeedbackType {
+  NO_FEEDBACK,
+  CODE_COVERAGE,
+  MUTATION_ANALYSIS,
+  ALL_FEEDBACK,
+}
+
 const displayTests = (tests: SavedTestCase[]) =>
   tests
     .filter(test => test.visible && !test.fixedId)
@@ -33,6 +41,9 @@ const Exercise = () => {
   const [newTests, setNewTests] = useState<NewTestCase[]>([]);
   const [attemptFeedback, setAttemptFeedback] = useState<AttemptFeedback>();
   const [running, setRunning] = useState<boolean>(false);
+  const [feedbackType, setFeedbackType] = useState<FeedbackType>(
+    FeedbackType.ALL_FEEDBACK
+  );
 
   const history = useHistory();
   const {exerciseId: idString} = useParams<RouteParams>();
@@ -149,10 +160,41 @@ const Exercise = () => {
     mutationOutcomes: [],
   };
 
+  const toggleFeedbackType = buttonType => {
+    setFeedbackType(
+      feedbackType === buttonType ? FeedbackType.ALL_FEEDBACK : buttonType
+    );
+  };
+
   return (
     <Container>
-      <h1>{exercise.name}</h1>
+      <h1>
+        {exercise.name}{' '}
+        <Button
+          size="sm"
+          variant="outline-secondary"
+          onClick={() => toggleFeedbackType(FeedbackType.NO_FEEDBACK)}
+        >
+          NC
+        </Button>{' '}
+        <Button
+          size="sm"
+          variant="outline-secondary"
+          onClick={() => toggleFeedbackType(FeedbackType.CODE_COVERAGE)}
+        >
+          CC
+        </Button>{' '}
+        <Button
+          size="sm"
+          variant="outline-secondary"
+          onClick={() => toggleFeedbackType(FeedbackType.MUTATION_ANALYSIS)}
+        >
+          MA
+        </Button>
+      </h1>
+
       <p>{exercise.description}</p>
+
       <Highlighter
         value={exercise.snippet}
         options={{
@@ -162,6 +204,7 @@ const Exercise = () => {
         coverageOutcomes={coverageOutcomes}
         mutationOutcomes={mutationOutcomes}
         className="border rounded h-auto mb-4"
+        feedbackType={feedbackType}
       />
       <Row>
         <TestCaseTable

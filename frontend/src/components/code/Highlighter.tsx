@@ -18,6 +18,7 @@ import MutantBadge, {
   Outcome,
 } from '../feedback/Mutant';
 import _ from 'lodash';
+import {FeedbackType} from '../exercises/exercise-detail/Exercise';
 
 const baseOptions: Partial<codemirror.EditorConfiguration> = {
   readOnly: true,
@@ -32,6 +33,7 @@ interface HighlighterProps {
   coverageOutcomes?: CoverageOutcome[];
   mutationOutcomes?: MutationOutcome[];
   className?: string;
+  feedbackType?: FeedbackType;
 }
 
 const Highlighter = (props: HighlighterProps) => {
@@ -45,6 +47,7 @@ const Highlighter = (props: HighlighterProps) => {
     coverageOutcomes,
     mutationOutcomes,
     className,
+    feedbackType,
   } = props;
 
   const [selectedMutant, setSelectedMutant] = useState<MutationResult>(null);
@@ -119,7 +122,11 @@ const Highlighter = (props: HighlighterProps) => {
       }
     };
 
-    if (mutationOutcomes?.length) {
+    if (
+      mutationOutcomes?.length &&
+      (feedbackType === FeedbackType.ALL_FEEDBACK ||
+        feedbackType === FeedbackType.MUTATION_ANALYSIS)
+    ) {
       const editor = codeMirrorRef.current?.editor;
       widgetsRef.current?.forEach(w => w.clear());
       widgetsRef.current = displayMutationCoverage(
@@ -128,8 +135,10 @@ const Highlighter = (props: HighlighterProps) => {
         selectedMutant,
         handleMutantSelect
       );
+    } else {
+      widgetsRef.current?.forEach(w => w.clear());
     }
-  }, [value, mutationOutcomes, selectedMutant]);
+  }, [value, mutationOutcomes, selectedMutant, feedbackType]);
 
   // If the coverageOutcomes change, redraw condition coverage feedback.
   // Also redraw if the editor contents change, because CodeMirror clears
@@ -140,11 +149,15 @@ const Highlighter = (props: HighlighterProps) => {
     if (editor) {
       editor.clearGutter('coverage-gutter');
 
-      if (coverageOutcomes) {
+      if (
+        coverageOutcomes &&
+        (feedbackType === FeedbackType.ALL_FEEDBACK ||
+          feedbackType === FeedbackType.CODE_COVERAGE)
+      ) {
         highlightCoverage(editor, coverageOutcomes);
       }
     }
-  }, [value, coverageOutcomes]);
+  }, [value, coverageOutcomes, feedbackType]);
 
   return (
     <CodeMirror
