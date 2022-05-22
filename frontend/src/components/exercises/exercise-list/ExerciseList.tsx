@@ -1,12 +1,13 @@
 import React, {useEffect, useState} from 'react';
 import ListGroup from 'react-bootstrap/ListGroup';
-import {getExercises, SavedExercise} from '../../../lib/api';
 import Button from 'react-bootstrap/Button';
 import Container from 'react-bootstrap/Container';
 import Highlighter from '../../code/Highlighter';
 import Spinner from 'react-bootstrap/Spinner';
 import Row from 'react-bootstrap/Row';
 import Alert from 'react-bootstrap/Alert';
+import {useAuthenticatedApi} from '../../../lib/context/AuthenticatedApiContext';
+import {SavedExercise} from '../../../lib/api';
 
 const SIGNATURE_REGEX = /(def .+\(.*\).*):/;
 
@@ -26,6 +27,7 @@ const ExerciseList = () => {
     status: LoadingStatus.LOADING,
   });
   const [exercises, setExercises] = useState<SavedExercise[]>([]);
+  const {getExercises} = useAuthenticatedApi();
 
   useEffect(() => {
     getExercises()
@@ -36,7 +38,7 @@ const ExerciseList = () => {
       .catch(err => {
         setLoading({status: LoadingStatus.ERROR, error: err});
       });
-  }, []);
+  }, [getExercises]);
 
   switch (status) {
     case LoadingStatus.LOADING:

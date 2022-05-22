@@ -21,16 +21,23 @@ interface MutationReport {
 /**
  * Format in which mutated source code is extraced from stdout.
  */
+interface MutatedLine {
+  lineNo: number;
+  mutatedSource: string;
+}
+
 interface Mutant {
-  operator?: string;
-  number?: number;
-  mutatedLine?: string;
+  operator: string;
+  number: number;
+  addedLines: MutatedLine[];
+  removedLines: MutatedLine[];
 }
 
 export const runMutationAnalysis = (rootDir: string) => {
-  return new Promise<[Mutant]>((resolve, reject) => {
+  return new Promise<Mutant[]>((resolve, reject) => {
     const python = spawn('python', [
       'mut.py',
+      '-e',
       '--target',
       path.join(rootDir, SNIPPET_FILENAME),
       '--unit-test',
@@ -73,7 +80,6 @@ export const getMutationData = async (
       'utf-8'
     );
     const doc = yaml.load(resultsData, {schema: SCHEMA}) as MutationReport;
-
     return doc.mutations.map(
       (outcome): DeepPartial<MutationOutcome> => ({
         ...outcome,
@@ -85,24 +91,46 @@ export const getMutationData = async (
   }
 };
 
-const getMutatedSource = (output: string): [Mutant] => {
+const getMutatedSource = (output: string): Mutant[] => {
+  // Group 1: mutant number, Group 2: operator
   const reOperator = /^\s+-\s\[#\s+(\d+)\] (\w+)/g;
-  const reMutatedLine = /^.*\+\s+\d+:(.+)$/g;
-  const mutants: [Mutant] = [{}];
-  let current = 0;
+  // Group 1: + or -, Group 2: line number, Group 3: source
+  const reMutatedLine = /^.*(\+|-)\s+(\d+):\s+(.+)$/g;
+
+  const mutants: Mutant[] = [];
+  let current = -1;
+
   output.split(/\n|\r/).forEach(l => {
     const opMatches = reOperator.exec(l);
     if (opMatches) {
-      if (!mutants[current]) {
-        mutants.push({});
-      }
-      mutants[current]['operator'] = opMatches[2];
-      mutants[current]['number'] = parseInt(opMatches[1]);
+      mutants.push({} as Mutant);
+      current = mutants.length - 1;
+      mutants[current] = {
+        operator: opMatches[2],
+        number: parseInt(opMatches[1]),
+        addedLines: [],
+        removedLines: [],
+      };
     }
+
     const mutantMatches = reMutatedLine.exec(l);
     if (mutantMatches) {
-      mutants[current]['mutatedLine'] = mutantMatches[1];
-      current++;
+      const addedOrRemoved: string = mutantMatches[1];
+      const lineNumber: string = mutantMatches[2];
+      const lineSource: string = mutantMatches[3];
+
+      const newMutatedLine: MutatedLine = {
+        lineNo: Number(lineNumber),
+        mutatedSource: lineSource,
+      };
+
+      const currentMutant: Mutant = mutants[current];
+
+      if (addedOrRemoved === '+') {
+        currentMutant.addedLines.push(newMutatedLine);
+      } else if (addedOrRemoved === '-') {
+        currentMutant.removedLines.push(newMutatedLine);
+      }
     }
   });
   return mutants;

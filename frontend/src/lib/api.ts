@@ -1,12 +1,13 @@
-import axios, {AxiosRequestConfig} from 'axios';
+import axios from 'axios';
+import {AuthInfo} from './context/AuthContext';
+import {getPublicEndpoints} from './api/public';
+import {getAuthenticatedEndpoints} from './api/authenticated';
 
 const backendPort = 3000;
 const {protocol, hostname} = window.location;
 const baseURL = `${protocol}//${hostname}:${backendPort}/api/`;
 
-const config: AxiosRequestConfig = {baseURL};
-
-interface Exercise {
+export interface Exercise {
   name: string;
   description: string;
   snippet: string;
@@ -48,13 +49,18 @@ export interface CoverageOutcome {
   conditionsCovered: number;
 }
 
+export interface MutatedLine {
+  lineNo: number;
+  mutatedSource: string;
+}
+
 export interface MutationOutcome {
   exception_traceback: string;
   killer: string;
   mutations?: {
     lineno: number;
     operator: string;
-    mutatedLine: string;
+    mutatedLines: MutatedLine[];
   }[];
   number: number;
   status: string;
@@ -62,74 +68,83 @@ export interface MutationOutcome {
   time: number;
 }
 
-export interface User {
-  id: number;
-  sessionId: string;
+export interface SignupInfo {
+  email: string;
+  password: string;
+  name: string;
 }
 
-export const getUserBySessionId = async (sessionId: string): Promise<User> => {
-  const encodedSessionId = encodeURI(sessionId);
-  return axios
-    .get(`users?sessionId=${encodedSessionId}`, config)
-    .then(user => user.data);
-};
+export interface UserCredentials {
+  email: string;
+  password: string;
+}
 
-export const createUser = (sessionId: string): Promise<User> =>
-  axios.post('users/', {sessionId}, config).then(user => user.data);
+/**
+ * Describes the public API, accessible without user authentication.
+ */
+export interface PublicApi {
+  signup(info: SignupInfo): Promise<AuthInfo>;
+  login(credentials: UserCredentials): Promise<AuthInfo>;
+}
 
-export const createExercise = (data: Exercise): Promise<SavedExercise> =>
-  axios.post('exercises', data, config).then(res => res.data);
+/**
+ * Gets an object with all the publicly accessible routes, configured with the
+ * appropriate base URL.
+ *
+ * @returns object with all public endpoints.
+ */
+export const getPublicApi = (): PublicApi =>
+  getPublicEndpoints(axios.create({baseURL}));
 
-export const updateExercise = (exerciseId: number, data: SavedExercise) =>
-  axios.put(`exercises/${exerciseId}`, data, config);
+/**
+ * Describes the authenticated API, accessible only after authentication.
+ */
+export interface AuthenticatedApi {
+  // Exercises
+  createExercise(exercise: Exercise): Promise<SavedExercise>;
+  getExercise(exerciseId: number): Promise<SavedExercise>;
+  getExercises(): Promise<SavedExercise[]>;
+  updateExercise(
+    exerciseId: number,
+    exercise: SavedExercise
+  ): Promise<SavedExercise>;
+  // Test Cases
+  getTestCases(
+    exerciseId: number,
+    userId: number,
+    actual?: boolean
+  ): Promise<SavedTestCase[]>;
+  createTestCase(testCase: NewTestCase): Promise<SavedTestCase>;
+  deleteTestCase(testCase: SavedTestCase): Promise<number | null>;
+  // Misc
+  runTests(exerciseId: number, userId: number): Promise<AttemptFeedback>;
+  getLatestAttempt(
+    exerciseId: number,
+    userId: number
+  ): Promise<AttemptFeedback>;
+}
 
-export const getExercise = (exerciseId: number): Promise<SavedExercise> =>
-  axios.get(`exercises/${exerciseId}`, config).then(exercise => {
-    return exercise.data;
+/**
+ * Returns the configured, authenticated API with the given JWT token attached
+ * to the authorization header.
+ *
+ * @param {string} token -
+ * @returns object with all authenticated endpoints.
+ */
+export const getAuthenticatedApi = (token: string): AuthenticatedApi => {
+  const api = axios.create({baseURL});
+
+  api.interceptors.request.use(({headers, ...rest}) => {
+    const headersWithAuth = {
+      ...headers,
+      Authorization: `Bearer ${token}`,
+    };
+
+    return {
+      ...rest,
+      headers: headersWithAuth,
+    };
   });
 
-export const getExercises = (): Promise<SavedExercise[]> =>
-  axios.get('exercises', config).then(res => res.data);
-
-export const getTestCases = (
-  exerciseId: number,
-  userId: number,
-  actual = false
-): Promise<SavedTestCase[]> =>
-  axios
-    .get(`exercises/${exerciseId}/testCases`, {
-      ...config,
-      params: {userId, actual},
-    })
-    .then(res => res.data);
-
-export const createTestCase = (data: NewTestCase): Promise<SavedTestCase> =>
-  axios
-    .post(`exercises/${data.exerciseId}/testCases`, data, config)
-    .then(res => res.data);
-
-export const createTestCases = (
-  data: NewTestCase[]
-): Promise<SavedTestCase[]> =>
-  axios.post('testCases/batch', data, config).then(res => res.data);
-
-export const deleteTestCase = (
-  testCase: SavedTestCase
-): Promise<number | null> =>
-  axios
-    .delete(`exercises/${testCase.exerciseId}/testCases/${testCase.id}`, config)
-    .then(res => res.data);
-
-export const runTests = (
-  exerciseId: number,
-  userId: number
-): Promise<AttemptFeedback> =>
-  axios.post(`run/${exerciseId}`, {userId}, config).then(res => res.data);
-
-export const getLatestAttempt = (
-  exerciseId: number,
-  userId: number
-): Promise<AttemptFeedback> =>
-  axios
-    .get(`exercises/${exerciseId}/attempts/latest?userId=${userId}`, config)
-    .then(res => res.data);
+  return getAuthenticatedEndpoints(api);
+};

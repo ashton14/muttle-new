@@ -3,10 +3,12 @@ import {
   CreateDateColumn,
   Entity,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import {MutationOutcome} from './MutationOutcome';
+import {MutatedLine} from './MutatedLine';
 
 @Entity('Mutation')
 export class Mutation {
@@ -19,14 +21,14 @@ export class Mutation {
   )
   mutationOutcome!: MutationOutcome;
 
-  @Column()
-  lineno!: number;
+  @OneToMany(() => MutatedLine, mutatedLine => mutatedLine.mutation, {
+    cascade: true,
+    eager: true,
+  })
+  mutatedLines!: MutatedLine[];
 
   @Column()
   operator!: string;
-
-  @Column()
-  mutatedLine!: string;
 
   @CreateDateColumn({type: 'timestamp'})
   created!: Date;

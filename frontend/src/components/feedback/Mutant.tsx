@@ -1,6 +1,6 @@
 import React from 'react';
 import Badge from 'react-bootstrap/Badge';
-import {MutationOutcome} from '../../lib/api';
+import {MutatedLine, MutationOutcome} from '../../lib/api';
 
 import '../../styles/feedback/Mutant.css';
 
@@ -10,6 +10,13 @@ export enum Outcome {
   INCOMPETENT = 'incompetent',
   SURVIVED = 'survived',
   NONE = 'none',
+}
+
+export interface MutationResult {
+  line: number;
+  operator: string;
+  mutatedLines: MutatedLine[];
+  outcome: Outcome;
 }
 
 const values = Object.values(Outcome);
@@ -28,18 +35,18 @@ const DEFAULT_VARIANT = 'primary';
 const MutantBadge = ({
   outcome,
   operator,
-  mutatedLine,
+  mutatedLines,
   isSelected,
   handleClick,
 }: {
   outcome: Outcome;
   operator: string;
-  mutatedLine: string;
+  mutatedLines: MutatedLine[];
   isSelected: boolean;
   handleClick: Function;
 }) => {
   const performClick = () => {
-    handleClick(mutatedLine);
+    handleClick(mutatedLines);
   };
 
   const bugClassName = `bug ${isSelected ? 'bi-bug' : 'bi-bug-fill'}`;
@@ -57,21 +64,14 @@ const MutantBadge = ({
   );
 };
 
-export interface MutationResult {
-  line: number;
-  operator: string;
-  mutatedLine: string;
-  outcome: Outcome;
-}
-
 export const parseMutationData = (
   mutationOutcomes?: MutationOutcome[]
 ): MutationResult[] =>
   (mutationOutcomes || []).flatMap(mutationOutcome =>
     (mutationOutcome.mutations || []).map(mutation => ({
-      line: mutation.lineno,
+      line: mutation.lineNo,
       operator: mutation.operator,
-      mutatedLine: mutation.mutatedLine,
+      mutatedLines: mutation.mutatedLines,
       outcome: mutationOutcome.status as Outcome,
     }))
   );

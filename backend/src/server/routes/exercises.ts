@@ -2,8 +2,10 @@ import express, {Request, Response} from 'express';
 import {getRepository} from 'typeorm';
 import {Exercise} from '../../entity/Exercise';
 import {Attempt} from '../../entity/Attempt';
+import testCases from './testCases';
 
 const exercises = express.Router();
+exercises.use('/:exerciseId/testCases', testCases);
 
 exercises.get('/', async (req: Request, res: Response) =>
   res.json(await getRepository(Exercise).find())

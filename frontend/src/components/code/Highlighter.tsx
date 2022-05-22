@@ -15,8 +15,10 @@ import MutantBadge, {
   sortOutcomes,
   parseMutationData,
   MutationResult,
+  Outcome,
 } from '../feedback/Mutant';
 import _ from 'lodash';
+import {FeedbackType} from '../exercises/exercise-detail/Exercise';
 
 const baseOptions: Partial<codemirror.EditorConfiguration> = {
   readOnly: true,
@@ -31,6 +33,7 @@ interface HighlighterProps {
   coverageOutcomes?: CoverageOutcome[];
   mutationOutcomes?: MutationOutcome[];
   className?: string;
+  feedbackType?: FeedbackType;
 }
 
 const Highlighter = (props: HighlighterProps) => {
@@ -44,6 +47,7 @@ const Highlighter = (props: HighlighterProps) => {
     coverageOutcomes,
     mutationOutcomes,
     className,
+    feedbackType,
   } = props;
 
   const [selectedMutant, setSelectedMutant] = useState<MutationResult>(null);
@@ -55,9 +59,13 @@ const Highlighter = (props: HighlighterProps) => {
    */
   useEffect(() => {
     if (selectedMutant) {
-      const {line, mutatedLine} = selectedMutant;
+      const {mutatedLines} = selectedMutant;
       const editorLines = initialValue.split(/\n/);
-      editorLines[line - 1] = `${editorLines[line - 1]} ${mutatedLine.trim()}`;
+      mutatedLines.forEach(({lineNo, mutatedSource}) => {
+        const currLine = editorLines[lineNo - 1];
+        const edit = currLine.length ? mutatedSource.trim() : mutatedSource;
+        editorLines[lineNo - 1] = `${editorLines[lineNo - 1]} ${edit}`;
+      });
       setValue(editorLines.join('\n'));
     } else {
       setValue(initialValue);
@@ -70,16 +78,17 @@ const Highlighter = (props: HighlighterProps) => {
   useEffect(() => {
     const editor = codeMirrorRef.current?.editor;
     if (selectedMutant) {
-      const line = selectedMutant.line - 1;
-      const textAtLine = initialValue.split(/\n/)[line];
-      const fromChar = /\w/.exec(textAtLine).index;
-      const toChar = textAtLine.length;
       markRef.current?.clear();
-      markRef.current = editor.markText(
-        {line: line, ch: fromChar},
-        {line: line, ch: toChar},
-        {className: 'strike', inclusiveRight: false}
-      );
+      selectedMutant.mutatedLines.forEach(({lineNo}) => {
+        const textAtLine = initialValue.split(/\n/)[lineNo - 1];
+        const fromChar = /\w/.exec(textAtLine)?.index || 0;
+        const toChar = textAtLine.length;
+        markRef.current = editor.markText(
+          {line: lineNo - 1, ch: fromChar},
+          {line: lineNo - 1, ch: toChar},
+          {className: 'strike', inclusiveRight: false}
+        );
+      });
     } else {
       markRef.current?.clear();
     }
@@ -105,6 +114,7 @@ const Highlighter = (props: HighlighterProps) => {
      * @param mutant The MutationResult to be set as the selectedMutant.
      */
     const handleMutantSelect = (mutant: MutationResult) => {
+      console.log(mutant);
       if (_.isEqual(mutant, selectedMutant)) {
         setSelectedMutant(null);
       } else {
@@ -112,7 +122,11 @@ const Highlighter = (props: HighlighterProps) => {
       }
     };
 
-    if (mutationOutcomes?.length) {
+    if (
+      mutationOutcomes?.length &&
+      (feedbackType === FeedbackType.ALL_FEEDBACK ||
+        feedbackType === FeedbackType.MUTATION_ANALYSIS)
+    ) {
       const editor = codeMirrorRef.current?.editor;
       widgetsRef.current?.forEach(w => w.clear());
       widgetsRef.current = displayMutationCoverage(
@@ -121,8 +135,10 @@ const Highlighter = (props: HighlighterProps) => {
         selectedMutant,
         handleMutantSelect
       );
+    } else {
+      widgetsRef.current?.forEach(w => w.clear());
     }
-  }, [value, mutationOutcomes, selectedMutant]);
+  }, [value, mutationOutcomes, selectedMutant, feedbackType]);
 
   // If the coverageOutcomes change, redraw condition coverage feedback.
   // Also redraw if the editor contents change, because CodeMirror clears
@@ -133,11 +149,15 @@ const Highlighter = (props: HighlighterProps) => {
     if (editor) {
       editor.clearGutter('coverage-gutter');
 
-      if (coverageOutcomes) {
+      if (
+        coverageOutcomes &&
+        (feedbackType === FeedbackType.ALL_FEEDBACK ||
+          feedbackType === FeedbackType.CODE_COVERAGE)
+      ) {
         highlightCoverage(editor, coverageOutcomes);
       }
     }
-  }, [value, coverageOutcomes]);
+  }, [value, coverageOutcomes, feedbackType]);
 
   return (
     <CodeMirror
@@ -165,22 +185,39 @@ const displayMutationCoverage = (
   selectedMutant: MutationResult,
   handleMutantClick: Function
 ) => {
-  const mutantsByLine = _.groupBy(parseMutationData(mutationOutcomes), 'line');
+  const mutationResultsByLine = _.groupBy(
+    parseMutationData(mutationOutcomes),
+    mutationResult => mutationResult.mutatedLines[0].lineNo
+  );
 
   const newWidgets: codemirror.LineWidget[] = [];
 
+  const struckLinesSet: Set<string> = new Set<string>();
+  if (selectedMutant !== null) {
+    selectedMutant.mutatedLines.forEach(mutatedLine =>
+      struckLinesSet.add(mutatedLine.lineNo.toString())
+    );
+  }
+
   Object.entries(
-    _.mapValues(mutantsByLine, mutants =>
+    _.mapValues(mutationResultsByLine, (mutants, lineNo, _object) =>
       mutants
+        .filter(mutationResult => mutationResult.outcome !== Outcome.KILLED)
+        .filter(
+          mutationResult =>
+            struckLinesSet.size === 1 ||
+            _.isEqual(mutationResult, selectedMutant) ||
+            !struckLinesSet.has(lineNo)
+        )
         .sort(({outcome: o1}, {outcome: o2}) => sortOutcomes(o1, o2))
         .map(mutationResult => {
-          const {outcome, operator, mutatedLine} = mutationResult;
+          const {outcome, operator, mutatedLines} = mutationResult;
           const isSelected = _.isEqual(mutationResult, selectedMutant);
           return (
             <MutantBadge
               outcome={outcome}
               operator={operator}
-              mutatedLine={mutatedLine}
+              mutatedLines={mutatedLines}
               isSelected={isSelected}
               handleClick={() => handleMutantClick(mutationResult)}
             />
