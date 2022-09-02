@@ -17,10 +17,10 @@ export class Exercise {
   @Column()
   name!: string;
 
-  @Column('longtext')
+  @Column('text')
   description!: string;
 
-  @Column('longtext')
+  @Column('text')
   snippet!: string;
 
   @CreateDateColumn({type: 'timestamp'})

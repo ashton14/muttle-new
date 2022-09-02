@@ -31,7 +31,7 @@ export class MutationOutcome {
   })
   mutations!: Mutation[];
 
-  @Column({type: 'longtext', nullable: true})
+  @Column('text', {nullable: true})
   exception_traceback?: string;
 
   @Column({nullable: true})
