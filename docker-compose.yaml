@@ -18,7 +18,7 @@ services:
     build: ./backend
     container_name: muttle-backend
     environment:
-      DB_SERVER: muttle-postgres
+      MUTTLE_DB_HOST: ${MUTTLE_DB_HOST}
       MUTTLE_DB_USER: ${MUTTLE_DB_USER}
       MUTTLE_DB_PW: ${MUTTLE_DB_PW}
     ports:
