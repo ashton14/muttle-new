@@ -1,0 +1,37 @@
+version: '3.9'
+services:
+  muttle-postgres:
+    image: "postgres:14.5"
+    container_name: muttle-postgres
+    volumes:
+      - muttle-data:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_DB: muttle
+      POSTGRES_USER: ${MUTTLE_DB_USER}
+      POSTGRES_PASSWORD: ${MUTTLE_DB_PW}
+
+  backend:
+    depends_on:
+      - muttle-postgres
+    build: ./backend
+    container_name: muttle-backend
+    environment:
+      DB_SERVER: muttle-postgres
+      MUTTLE_DB_USER: ${MUTTLE_DB_USER}
+      MUTTLE_DB_PW: ${MUTTLE_DB_PW}
+    ports:
+      - 3000:3000
+    command: ["./wait-for-it.sh", "muttle-postgres:5432", "--", "yarn", "start-dev"]
+
+  frontend:
+    depends_on:
+      - backend
+    build: ./frontend
+    container_name: muttle-frontend
+    ports:
+      - 3001:3001
+  
+volumes:
+  muttle-data:

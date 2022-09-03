@@ -1,13 +1,13 @@
 module.exports = {
   type: 'postgres',
-  host: process.env.MUTTLE_POSTGRESS_URL,
+  host: process.env.DB_SERVER,
   port: 5432,
   username: process.env.MUTTLE_DB_USER,
   password: process.env.MUTTLE_DB_PW,
   database: 'muttle',
   entities: ['src/entity/*.ts'],
   logging: false,
-  synchronize: false,
+  synchronize: true,
   migrationsTableName: 'migration_table',
   migrations: ['migrations/*.ts'],
   cli: {
