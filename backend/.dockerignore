@@ -4,3 +4,7 @@ usr/
 
 .DS_Store
 .vscode
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+.git
+.gitignore

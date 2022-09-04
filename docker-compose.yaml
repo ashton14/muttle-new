@@ -22,7 +22,7 @@ services:
       MUTTLE_DB_USER: ${MUTTLE_DB_USER}
       MUTTLE_DB_PW: ${MUTTLE_DB_PW}
     ports:
-      - 3000:3000
+      - "3000:80"
     command: ["./wait-for-it.sh", "muttle-postgres:5432", "--", "yarn", "start-dev"]
 
   frontend:

@@ -14,7 +14,7 @@ if (!parsed?.JWT_SECRET) {
   throw Error('Requires JWT_SECRET to be set in .env file');
 }
 
-app.set('port', process.env.PORT || 3000);
+app.set('port', process.env.PORT || 80);
 app.set('secret', process.env.JWT_SECRET);
 
 const publicDir = path.join(__dirname, '../..', 'public');
@@ -25,7 +25,8 @@ app.use((req, res, next) => {
   const allowedOrigins = ['http://localhost:3001', 'http://192.168.0.216:3001'];
   const origin = req.headers.origin;
 
-  if (origin && allowedOrigins.includes(origin)) {
+  // if (origin && allowedOrigins.includes(origin)) {
+  if (origin) {
     res.setHeader('Access-Control-Allow-Origin', origin);
   }
 
