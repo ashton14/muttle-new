@@ -10,7 +10,6 @@ import './index.css';
 ReactDOM.render(
   <React.StrictMode>
     <BrowserRouter>
-      <h1>Hello world</h1>
       <App />
     </BrowserRouter>
   </React.StrictMode>,
