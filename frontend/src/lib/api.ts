@@ -3,9 +3,7 @@ import {AuthInfo} from './context/AuthContext';
 import {getPublicEndpoints} from './api/public';
 import {getAuthenticatedEndpoints} from './api/authenticated';
 
-const backendPort = 3000;
-const {protocol, hostname} = window.location;
-const baseURL = `${protocol}//${hostname}:${backendPort}/api/`;
+const baseURL = process.env.MUTTLE_API_URL;
 
 export interface Exercise {
   name: string;
