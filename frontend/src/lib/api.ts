@@ -3,7 +3,7 @@ import {AuthInfo} from './context/AuthContext';
 import {getPublicEndpoints} from './api/public';
 import {getAuthenticatedEndpoints} from './api/authenticated';
 
-const baseURL = process.env.MUTTLE_API_URL;
+const baseURL = 'garbageUrlTest/';
 
 export interface Exercise {
   name: string;
