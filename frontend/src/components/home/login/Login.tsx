@@ -26,8 +26,6 @@ const Login = () => {
     }
   };
 
-  console.log(process.env.MUTTLE_API_URL);
-
   return (
     <Card title="Login">
       <Form>
