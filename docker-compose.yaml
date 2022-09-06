@@ -9,8 +9,8 @@ services:
       - 5432:5432
     environment:
       POSTGRES_DB: muttle
-      POSTGRES_USER: ${MUTTLE_DB_USER}
-      POSTGRES_PASSWORD: ${MUTTLE_DB_PW}
+      POSTGRES_USER: professorx 
+      POSTGRES_PASSWORD: mutants 
 
   backend:
     depends_on:
@@ -18,9 +18,12 @@ services:
     build: ./backend
     container_name: muttle-backend
     environment:
-      MUTTLE_DB_HOST: ${MUTTLE_DB_HOST}
-      MUTTLE_DB_USER: ${MUTTLE_DB_USER}
-      MUTTLE_DB_PW: ${MUTTLE_DB_PW}
+      MUTTLE_DB_HOST: muttle-postgres 
+      MUTTLE_DB_USER: professorx 
+      MUTTLE_DB_PW: mutants
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
     ports:
       - "3000:80"
     command: ["./wait-for-it.sh", "muttle-postgres:5432", "--", "yarn", "start-dev"]
@@ -30,8 +33,13 @@ services:
       - backend
     build: ./frontend
     container_name: muttle-frontend
+    environment:
+      REACT_APP_API_URL: http://localhost:3000/api/
     ports:
       - 3001:3001
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
   
 volumes:
   muttle-data:

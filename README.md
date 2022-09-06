@@ -1,67 +1,38 @@
 # muttle
 Web application to develop student software testing habits through improved testing feedback.
 
-## Initial Setup
-Follow these steps for initial setup
+### Quickstart development environment 
 
-1. Install and setup mySQL v8.0.22 or higher
-2. Clone the repository: `git clone git@github.com:jlai12/muttle.git && cd muttle`
-3. Run `muttle setup db <admin>` with admin username for your mysql database*
-4. Run `muttle setup python`
-  - Ensure that your `python3` version is 3.7.x; mut.py does not supprt python 3.8+
-  - It is recommended to use [pyenv](https://github.com/pyenv/pyenv) to manage multiple python versions
-5. Execute any of the [usage commands](#usage)!
+Commands below assume you're in the `muttle` directory (project root).
 
-[*] Should you run into issues using the `muttle db-setup` command, you may need to execute the
-commands from the [database setup script](/scripts/db-setup.sql) in order to create a database and
-credentials for the application. Alternatively, you may manually set up credentials and a database
-and then configure the database connection in the [ORM config](backend/ormconfig.json).
+1. Install Docker.
+2. Clone this repository.
+3. In the `muttle` directory, run
 
-## Usage
-`muttle <command> [--dev | --no-build]` (only to be run from **project root**)
+```bash
+docker compose up
+```
 
-Commands:
- * `install`: Installs all dependencies via `npm` for both frontend/backend.
- * `build`: Generates build artifacts for frontend/backend.
-   * frontend: Uses react-scripts build to generate optimized static assets.
-   * backend: Transpiles Typescript to Javascript and type declarations (not currently used, server
-     instead uses `ts-node`).
-* `run`: Runs the application. May be used in development mode to enable live reloads on backend/
-  frontend applications.
-* `clean`: Remove build artifacts and node modules.
-* `clean-install`: Runs `npm ci`, which performs a clean install of node_modules for backend/frontend
-   applications.
-* `setup db <admin>`: Runs the [db-setup.sql](/scripts/db-setup.sql) script using the provided mySQL
-   admin username to create the database and credentials necessary for the backend application to
-   connect to mySQL.
-* `setup python`: Setups an isolated python virtual environment and installs the necessary python
-   dependencies for the backend server.
-* `help`: Print help message.
+This will take some time to run for the first time while it builds the images for the frontend and backend and downloads the image for the database. Subsequent runs should go quicker.
 
-Options:
- * `--dev | -D`: Run the application in development mode, with live reloads  on changes to the 
- frontend/backend applications. Frontend is accessible via the port used by `react-scripts start`
- (3001).
- * `--no-build`: Run the application, skipping the build and install steps. The development option
- supersedes this and already skips the build/install steps."
+This command does three things:
+* Sets up a PostgreSQL database running at port `5432`. This can be accessed through any relational database client, even if you don't have Postgres installed on your computer.
+  - If you run into errors saying `no database named "muttle"`, connect to the database and create it manually.
+* Sets up and serves the frontend at `http://localhost:3001`.
+* Sets up and serves the backend API at `http://localhost:3000` (even though the console output says "App listening on port 80").
 
+Changes you make to the backend or frontend code should be reflected in the running servers.
 
-## Backend
-Node/Express server backed by MySQL
+Navigate to http://localhost:3001 to see the website.
 
-### Dependencies:
-* `NodeJS`: 14.15.4
-* `yarn`: 1.22.10
-* `mySQL`: 8.0.22
-* `python`: 3.7.9
-* `virtualenv`: 16.7.10
-* See the backend [package.json](backend/package.json) for additional information.
+To stop servers:
 
-## Frontend
-React frontend using Bootstrap CSS framework.
+```bash
+docker compose down
+```
 
-### Dependencies:
-* `NodeJS`: 14.15.4
-* `yarn`: 1.22.10
-* See the frontned [package.json](frontend/package.json) for additional information.
+To run commands inside one of the containers (e.g., to run CLI commands inside the backend container), prefix your command with `docker compose run [service name]`. So to end up in a terminal in the (running) backend container:
 
+```bash
+docker compose run backend bash
+```

@@ -3,12 +3,14 @@ import {useHistory} from 'react-router-dom';
 import Card from '../../common/Card';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
+import Alert from 'react-bootstrap/Alert';
 import {useAuth} from '../../../lib/context/AuthContext';
 import {usePublicApi} from '../../../lib/context/PublicApiContext';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [invalidLogin, setInvalidLogin] = useState(false);
 
   const disabled = !email;
 
@@ -20,14 +22,22 @@ const Login = () => {
     try {
       const authInfo = await login({email, password});
       auth.setAuthInfo(authInfo);
+      setInvalidLogin(false);
       history.push('/home');
     } catch (e) {
-      console.log(e);
+      setInvalidLogin(true);
     }
   };
 
+  const loginError = invalidLogin ? (
+    <Alert variant="danger">Error while logging in.</Alert>
+  ) : (
+    ''
+  );
+
   return (
     <Card title="Login">
+      {loginError}
       <Form>
         <Form.Group>
           <Form.Label>Email</Form.Label>

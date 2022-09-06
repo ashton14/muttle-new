@@ -22,11 +22,14 @@ app.use(express.static(publicDir));
 
 app.use((req, res, next) => {
   console.log(`Handling ${req.path}/${req.method}`);
-  const allowedOrigins = ['http://localhost:3001', 'http://192.168.0.216:3001'];
+  const allowedOrigins = [
+    'http://localhost:3001',
+    'https://muttle.ayaankazerouni.org',
+    'https://muttle.vercel.app',
+  ];
   const origin = req.headers.origin;
 
-  // if (origin && allowedOrigins.includes(origin)) {
-  if (origin) {
+  if (origin && allowedOrigins.includes(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin);
   }
 

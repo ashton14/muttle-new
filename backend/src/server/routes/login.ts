@@ -15,7 +15,7 @@ login.post('/', async (req, res) => {
     });
 
     if (!user) {
-      return res.status(403).json({
+      return res.status(401).json({
         message: 'Wrong email or password.',
       });
     }
