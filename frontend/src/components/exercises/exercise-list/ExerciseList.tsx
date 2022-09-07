@@ -8,6 +8,7 @@ import Row from 'react-bootstrap/Row';
 import Alert from 'react-bootstrap/Alert';
 import {useAuthenticatedApi} from '../../../lib/context/AuthenticatedApiContext';
 import {SavedExercise} from '../../../lib/api';
+import {useLocation} from 'react-router-dom';
 
 const SIGNATURE_REGEX = /(def .+\(.*\).*):/;
 
@@ -22,7 +23,17 @@ interface LoadingState {
   error?: Error;
 }
 
+interface LocationState {
+  from: {
+    pathname: string;
+  };
+  state: {
+    message?: string;
+  };
+}
+
 const ExerciseList = () => {
+  const location: LocationState = useLocation();
   const [{status, error}, setLoading] = useState<LoadingState>({
     status: LoadingStatus.LOADING,
   });
@@ -48,6 +59,11 @@ const ExerciseList = () => {
     case LoadingStatus.DONE:
       return (
         <Container>
+          {location?.state?.message ? (
+            <Alert variant="danger">{location.state.message}</Alert>
+          ) : (
+            ''
+          )}
           <ListGroup className="w-auto my-2">
             {exercises.map(exercise => (
               <ExerciseListItem key={exercise.id} exercise={exercise} />

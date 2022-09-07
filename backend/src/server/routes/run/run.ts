@@ -188,7 +188,7 @@ const writeTestFile = async (
 
 const runTests = (rootDir: string, testCases: TestCase[]) => {
   return new Promise<boolean>((resolve, reject) => {
-    const python = spawn('python', [
+    const python = spawn('python3.7', [
       '-m',
       'pytest',
       path.join(rootDir, TESTS_FILENAME),

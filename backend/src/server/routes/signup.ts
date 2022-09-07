@@ -23,7 +23,7 @@ signup.post('/', async (req, res) => {
     });
 
     if (existingEmail) {
-      return res.status(400).json({message: 'Email already exists'});
+      return res.status(409).json({message: 'Email already exists.'});
     }
 
     const savedUser = await userRepo.save(userData);

@@ -3,6 +3,8 @@ import {getRepository} from 'typeorm';
 import {Exercise} from '../../entity/Exercise';
 import {Attempt} from '../../entity/Attempt';
 import testCases from './testCases';
+import {Token} from '../../utils/auth';
+import {FindOneOptions} from 'typeorm';
 
 const exercises = express.Router();
 exercises.use('/:exerciseId/testCases', testCases);
@@ -17,16 +19,25 @@ exercises.get('/:id', async (req: Request, res: Response) =>
 
 // What about exercise versions?
 exercises.put('/:id', async (req: Request, res: Response) => {
-  const {name, description, snippet} = req.body;
-  try {
-    await getRepository(Exercise).update(req.params.id, {
-      name,
-      description,
-      snippet,
-    });
-    res.sendStatus(200);
-  } catch (err) {
-    res.status(400).json({error: err});
+  const exerciseRepo = getRepository(Exercise);
+  const exercise = await exerciseRepo.findOne({
+    where: {
+      id: req.params.id,
+    },
+    relations: ['owner'],
+  });
+  const requestingUser = req.user as Token;
+  if (exercise?.owner?.email !== requestingUser.email) {
+    res.status(403).json({message: 'Unauthorised to update that exercise.'});
+  } else {
+    const {name, description, snippet} = req.body;
+    try {
+      const updatedExercise = {...exercise, name, description, snippet};
+      exerciseRepo.save(updatedExercise);
+      res.status(200).json({...updatedExercise});
+    } catch (err) {
+      res.status(400).json({message: err});
+    }
   }
 });
 

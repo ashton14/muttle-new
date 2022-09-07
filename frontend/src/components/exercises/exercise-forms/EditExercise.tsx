@@ -32,16 +32,20 @@ const EditExercise = () => {
   }, [exerciseId, getExercise]);
 
   const submit = async () => {
-    const res = await updateExercise(exerciseId, {
-      id: exerciseId,
-      name,
-      description,
-      snippet,
-    });
-    if (res.status === 200) {
+    try {
+      await updateExercise(exerciseId, {
+        id: exerciseId,
+        name,
+        description,
+        snippet,
+      });
       history.push(`/exercises/${exerciseId}`);
-    } else if (res.data.error) {
-      console.error(res.data.error);
+    } catch (e) {
+      if (e.response.status === 403) {
+        history.push('/exercises', {message: e.response.data.message});
+      } else {
+        console.error(e);
+      }
     }
   };
 
