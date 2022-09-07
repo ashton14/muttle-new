@@ -35,8 +35,7 @@ interface Mutant {
 
 export const runMutationAnalysis = (rootDir: string) => {
   return new Promise<Mutant[]>((resolve, reject) => {
-    const python = spawn('python', [
-      'mut.py',
+    const python = spawn('mut.py', [
       '-e',
       '--target',
       path.join(rootDir, SNIPPET_FILENAME),

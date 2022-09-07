@@ -49,7 +49,7 @@ export class MutationOutcome {
   @Column()
   tests_run!: number;
 
-  @Column()
+  @Column({type: 'numeric'})
   time!: number;
 
   @CreateDateColumn({type: 'timestamp'})
