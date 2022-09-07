@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 import {TestCase} from './TestCase';
 import {Attempt} from './Attempt';
+import { Exercise } from './Exercise';
 
 @Entity('User')
 export class User {
@@ -30,6 +31,9 @@ export class User {
 
   @OneToMany(() => Attempt, attempts => attempts.exercise)
   attempts!: Attempt[];
+
+  @OneToMany(() => Exercise, exercises => exercises.owner)
+  exercises!: Exercise[];
 
   @CreateDateColumn({type: 'timestamp'})
   created!: Date;

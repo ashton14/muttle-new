@@ -28,6 +28,8 @@ COPY . .
 
 RUN yarn install
 
-EXPOSE 80 
+RUN yarn run typeorm migration:run
 
-CMD ["yarn", "start-dev"]
+EXPOSE 80
+
+CMD ["yarn", "start"]

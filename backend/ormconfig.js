@@ -7,7 +7,7 @@ module.exports = {
   database: 'muttle',
   entities: ['src/entity/*.ts'],
   logging: false,
-  synchronize: true,
+  synchronize: false,
   migrationsTableName: 'migration_table',
   migrations: ['migrations/*.ts'],
   cli: {

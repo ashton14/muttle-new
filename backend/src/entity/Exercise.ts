@@ -5,9 +5,11 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   OneToMany,
+  ManyToOne,
 } from 'typeorm';
 import {TestCase} from './TestCase';
 import {Attempt} from './Attempt';
+import { User } from './User';
 
 @Entity('Exercise')
 export class Exercise {
@@ -34,4 +36,8 @@ export class Exercise {
 
   @OneToMany(() => Attempt, attempts => attempts.exercise)
   attempts!: Attempt[];
+
+  @ManyToOne(() => User, user => user.exercises)
+  owner!: User
+
 }
