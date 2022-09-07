@@ -74,7 +74,7 @@ run.post('/:id', async (req: Request, res: Response) => {
 
       if (allPassed) {
         const mutatedSources = await runMutationAnalysis(rootDir);
-
+        console.dir(mutatedSources, {depth: null});
         const [coverageOutcomes, mutationOutcomes] = await Promise.all([
           getCoverageData(rootDir),
           getMutationData(rootDir),

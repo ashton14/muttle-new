@@ -92,9 +92,9 @@ export const getMutationData = async (
 
 const getMutatedSource = (output: string): Mutant[] => {
   // Group 1: mutant number, Group 2: operator
-  const reOperator = /^\s+-\s\[#\s+(\d+)\] (\w+)/g;
+  const reOperator = /^\s+-\s\[#\s+(\d+)\] (\w+)/;
   // Group 1: + or -, Group 2: line number, Group 3: source
-  const reMutatedLine = /^.*(\+|-)\s+(\d+):\s+(.+)$/g;
+  const reMutatedLine = /^.*(\+|-)\s+(\d+):\s+(.+)$/;
 
   const mutants: Mutant[] = [];
   let current = -1;
@@ -130,6 +130,8 @@ const getMutatedSource = (output: string): Mutant[] => {
       } else if (addedOrRemoved === '-') {
         currentMutant.removedLines.push(newMutatedLine);
       }
+    } else {
+      console.log(reMutatedLine, l);
     }
   });
   return mutants;
