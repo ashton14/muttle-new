@@ -1,9 +1,13 @@
 # muttle
-Web application to develop student software testing habits through improved testing feedback.
+A web application for students to practice software testing and for instructors and researchers to experiment with different feedback mechanisms.
 
 ## Quickstart development environment 
 
 Commands below assume you're in the `muttle` directory (project root).
+
+**Important notes**:
+* Please work from the `staging` branch. If you create new branches, branch off the `staging` branch. The `main` branch is for deployments.
+* The `backend/.env` file is only for development secrets—please don't add production keys to this file. 
 
 ### Install dependencies
 
@@ -96,3 +100,4 @@ yart start-dev
 ```
 
 Backend runs at [http://localhost:3000]. Frontend runs at [http://localhost:3001].
+

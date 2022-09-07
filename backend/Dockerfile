@@ -28,8 +28,6 @@ COPY . .
 
 RUN yarn install
 
-RUN yarn run typeorm migration:run
-
 EXPOSE 80
 
-CMD ["yarn", "start"]
+CMD ["./migrate-and-run.sh"]

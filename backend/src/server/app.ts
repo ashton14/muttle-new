@@ -7,10 +7,12 @@ const app = express();
 const {error, parsed} = env.config();
 
 if (error) {
-  throw error;
+  if (!error.message.includes('no such file or directory')) {
+    throw error;
+  }
 }
 
-if (!parsed?.JWT_SECRET) {
+if (!process.env.JWT_SECRET) {
   throw Error('Requires JWT_SECRET to be set in .env file');
 }
 

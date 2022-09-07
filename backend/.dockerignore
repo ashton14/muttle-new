@@ -8,3 +8,4 @@ usr/
 .elasticbeanstalk/*
 .git
 .gitignore
+.env
