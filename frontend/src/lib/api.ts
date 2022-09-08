@@ -52,16 +52,31 @@ export interface MutatedLine {
   mutatedSource: string;
 }
 
+export enum Status {
+  KILLED = 'killed',
+  TIMEOUT = 'timeout',
+  INCOMPETENT = 'incompetent',
+  SURVIVED = 'survived',
+  NONE = 'none',
+}
+
+const values = Object.values(Status);
+
+export const sortStatus = (o1: Status, o2: Status) =>
+  values.indexOf(o1) - values.indexOf(o2);
+
 export interface MutationOutcome {
   exception_traceback: string;
   killer: string;
-  mutations?: {
-    lineno: number;
-    operator: string;
-    mutatedLines: MutatedLine[];
-  }[];
+  operator: string;
+  mutatedLines: MutatedLine[];
+  // mutations?: {
+  //   lineno: number;
+  //   operator: string;
+  //   mutatedLines: MutatedLine[];
+  // }[];
   number: number;
-  status: string;
+  status: Status;
   tests_run: number;
   time: number;
 }

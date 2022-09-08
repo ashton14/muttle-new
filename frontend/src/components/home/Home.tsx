@@ -1,20 +1,21 @@
 import React from 'react';
 import Highlighter from '../code/Highlighter';
 
-const CODE = `const woah = fun => fun + 1;
-const dude = woah(2) + 3;
-def thisIsAFunction() {
-  return [1,2,3].map(n => n + 1).filter(n !== 3);
-}
-console.log('making up fake code is really hard')
-function itIs() {
-  return 'no seriously really it is';
-}`;
+const CODE = `def woah = lambda fun: fun + 1
+dude = woah(2) + 3;
+def this_is_a_function(): 
+  return filter(lambda n: n != 3, 
+    map(lambda n: n + 1, [1, 2, 3])
+
+print('making up fake code is really hard')
+def it_is():
+  return 'no seriously really it is'
+`;
 
 const Home = () => {
   const options = {
     lineNumbers: true,
-    mode: 'javascript',
+    mode: 'python',
   };
 
   return <Highlighter value={CODE} options={options} />;

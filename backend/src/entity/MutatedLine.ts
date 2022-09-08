@@ -1,13 +1,16 @@
 import {Column, Entity, ManyToOne, PrimaryGeneratedColumn} from 'typeorm';
-import {Mutation} from './Mutation';
+import {MutationOutcome} from './MutationOutcome';
 
 @Entity('MutatedLine')
 export class MutatedLine {
   @PrimaryGeneratedColumn('increment')
   id!: number;
 
-  @ManyToOne(() => Mutation, mutation => mutation.mutatedLines)
-  mutation!: Mutation;
+  @ManyToOne(
+    () => MutationOutcome,
+    mutationOutcome => mutationOutcome.mutatedLines
+  )
+  mutationOutcome!: MutationOutcome;
 
   @Column()
   lineNo!: number;

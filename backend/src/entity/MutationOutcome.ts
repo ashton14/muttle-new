@@ -7,8 +7,8 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import {Mutation} from './Mutation';
 import {Attempt} from './Attempt';
+import {MutatedLine} from './MutatedLine';
 
 export enum MutationStatus {
   SURVIVED = 'survived',
@@ -25,11 +25,14 @@ export class MutationOutcome {
   @ManyToOne(() => Attempt, attempt => attempt.mutationOutcomes)
   attempt!: Attempt;
 
-  @OneToMany(() => Mutation, mutation => mutation.mutationOutcome, {
+  @OneToMany(() => MutatedLine, mutatedLine => mutatedLine.mutationOutcome, {
     cascade: true,
     eager: true,
   })
-  mutations!: Mutation[];
+  mutatedLines!: MutatedLine[];
+
+  @Column('text')
+  operator!: string;
 
   @Column('text', {nullable: true})
   exception_traceback?: string;

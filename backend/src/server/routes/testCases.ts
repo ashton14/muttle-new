@@ -12,7 +12,6 @@ exerciseTestCases.post('/', async (req: Request, res: Response) => {
 
   const exercise = entityManager.create(Exercise, {id: exerciseId});
   const user = entityManager.create(User, {id: userId});
-  console.log(user);
   const newTest = {input, output, exercise, user};
 
   try {

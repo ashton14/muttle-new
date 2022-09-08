@@ -74,7 +74,6 @@ run.post('/:id', async (req: Request, res: Response) => {
 
       if (allPassed) {
         const mutatedSources = await runMutationAnalysis(rootDir);
-        console.dir(mutatedSources, {depth: null});
         const [coverageOutcomes, mutationOutcomes] = await Promise.all([
           getCoverageData(rootDir),
           getMutationData(rootDir),
@@ -83,11 +82,10 @@ run.post('/:id', async (req: Request, res: Response) => {
         // Add the mutatedLine field to the `mutations` in `mutationOutcomes
         mutationOutcomes.forEach(outcome => {
           const mutant = mutatedSources.find(m => m.number === outcome.number);
+          // TODO What to do if this is false? Can that happen?
           if (mutant) {
-            const mutations = outcome.mutations;
-            // @ts-expect-error The mutations object is a DeepPartial so it's not
-            // fully initialised yet.
-            mutations[0] = {...mutations[0], mutatedLines: mutant.addedLines};
+            outcome.mutatedLines = mutant.addedLines;
+            outcome.operator = mutant.operator;
           }
         });
 
@@ -110,13 +108,11 @@ run.post('/:id', async (req: Request, res: Response) => {
     console.log(err);
     res.sendStatus(500);
   } finally {
-    // console.log('Deleting files...');
-    // await deleteIfExists(SNIPPET_FILENAME);
-    // await deleteIfExists(TESTS_FILENAME);
-    // await deleteIfExists(PYTEST_RESULTS_FILENAME);
-    // await deleteIfExists(MUTATION_RESULTS_FILENAME);
-    // await deleteIfExists(COVERAGE_RESULTS_FILENAME);
-    // console.log('Files deleted.');
+    await deleteIfExists(SNIPPET_FILENAME);
+    await deleteIfExists(TESTS_FILENAME);
+    await deleteIfExists(PYTEST_RESULTS_FILENAME);
+    await deleteIfExists(MUTATION_RESULTS_FILENAME);
+    await deleteIfExists(COVERAGE_RESULTS_FILENAME);
   }
 });
 

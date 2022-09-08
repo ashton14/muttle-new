@@ -130,8 +130,6 @@ const getMutatedSource = (output: string): Mutant[] => {
       } else if (addedOrRemoved === '-') {
         currentMutant.removedLines.push(newMutatedLine);
       }
-    } else {
-      console.log(reMutatedLine, l);
     }
   });
   return mutants;

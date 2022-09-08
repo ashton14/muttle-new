@@ -2,7 +2,8 @@ import React, {useRef, useState} from 'react';
 import Overlay from 'react-bootstrap/Overlay';
 import ListGroup from 'react-bootstrap/cjs/ListGroup';
 import Button from 'react-bootstrap/Button';
-import Mutant, {Outcome} from '../feedback/Mutant';
+import Mutant from '../feedback/Mutant';
+import {Status} from '../../lib/api';
 
 const MutationOperators = [
   {
@@ -119,7 +120,7 @@ export const Help = () => {
           </ListGroup.Item>
           {MutationOperators.map(({operator, description}) => (
             <ListGroup.Item key={operator} className="py-1">
-              <Mutant outcome={Outcome.NONE} operator={operator} />
+              <Mutant status={Status.NONE} operator={operator} />
               {description}
             </ListGroup.Item>
           ))}
