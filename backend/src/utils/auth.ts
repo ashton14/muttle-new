@@ -1,8 +1,6 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
-import {NextFunction, Response} from 'express';
-import {User} from '../entity/User';
-import {Request} from '../server/types';
+import { User } from '../entity/User';
 import app from '../server/app';
 
 export interface Token {
@@ -14,7 +12,7 @@ export interface Token {
   exp: number;
 }
 
-export const createToken = ({id, email}: Omit<User, 'password'>) => {
+export const createToken = ({ id, email }: Omit<User, 'password'>) => {
   return jwt.sign(
     {
       subject: id,
@@ -23,7 +21,7 @@ export const createToken = ({id, email}: Omit<User, 'password'>) => {
       audience: 'api.muttle',
     },
     app.get('secret'),
-    {algorithm: 'HS256', expiresIn: '1h'}
+    { algorithm: 'HS256', expiresIn: '1h' }
   );
 };
 

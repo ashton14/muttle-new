@@ -7,9 +7,10 @@ import {
   OneToMany,
   ManyToOne,
 } from 'typeorm';
-import {TestCase} from './TestCase';
-import {Attempt} from './Attempt';
+import { TestCase } from './TestCase';
+import { Attempt } from './Attempt';
 import { User } from './User';
+import { ExerciseOffering } from './ExerciseOffering';
 
 @Entity('Exercise')
 export class Exercise {
@@ -25,10 +26,10 @@ export class Exercise {
   @Column('text')
   snippet!: string;
 
-  @CreateDateColumn({type: 'timestamp'})
+  @CreateDateColumn({ type: 'timestamp' })
   created!: Date;
 
-  @UpdateDateColumn({type: 'timestamp'})
+  @UpdateDateColumn({ type: 'timestamp' })
   modified!: Date;
 
   @OneToMany(() => TestCase, testCase => testCase.exercise)
@@ -37,7 +38,12 @@ export class Exercise {
   @OneToMany(() => Attempt, attempts => attempts.exercise)
   attempts!: Attempt[];
 
-  @ManyToOne(() => User, user => user.exercises)
-  owner!: User
+  @OneToMany(
+    () => ExerciseOffering,
+    exerciseOffering => exerciseOffering.exercise
+  )
+  exerciseOfferings!: ExerciseOffering[];
 
+  @ManyToOne(() => User, user => user.exercises)
+  owner!: User;
 }
