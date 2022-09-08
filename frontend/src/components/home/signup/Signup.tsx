@@ -36,7 +36,7 @@ const Signup = () => {
 
   return (
     <div>
-      {alert}
+      {alertMessage ? alert : ''}
       <Card title="Sign Up">
         <Form>
           <Form.Group>
