@@ -50,9 +50,9 @@ const AuthProvider = ({children}: {children: ReactNode}) => {
   });
 
   const setAuthInfo = ({token, userInfo, expiresAt}: AuthInfo) => {
-    token && setCookie('token', token);
-    userInfo && setCookie('userInfo', JSON.stringify(userInfo));
-    expiresAt && setCookie('expiresAt', expiresAt.toString());
+    token && setCookie('token', token, { path: '/' });
+    userInfo && setCookie('userInfo', JSON.stringify(userInfo), { path: '/' });
+    expiresAt && setCookie('expiresAt', expiresAt.toString(), { path: '/' });
 
     setAuthState({token, userInfo, expiresAt})
   };

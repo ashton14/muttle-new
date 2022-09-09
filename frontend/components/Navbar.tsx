@@ -42,12 +42,10 @@ const AuthenticatedNav = () => {
         </BsNavbar.Text>
       </Nav>
       <Nav>
-        <Nav.Item>
-          <Username name={name} />
-        </Nav.Item>
-        <Nav.Item>
-          <Link href='/help'><Help/></Link>
-        </Nav.Item>
+        <Username name={name} />
+        <BsNavbar.Text>
+          <Link href='/help'>Help</Link>
+        </BsNavbar.Text>
       </Nav>
     </>
   );

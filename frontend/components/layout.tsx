@@ -1,7 +1,7 @@
 import React from 'react';
 import Navbar from './Navbar';
 import { useAuth } from '../lib/context/AuthContext';
-import { AuthenticatedApiProvider, u } from '../lib/context/AuthenticatedApiContext';
+import { AuthenticatedApiProvider } from '../lib/context/AuthenticatedApiContext';
 
 export default function Layout({ children }) {
   const { isAuthenticated } = useAuth();

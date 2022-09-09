@@ -13,8 +13,6 @@ export const AuthenticatedApiProvider = ({children}: {children: ReactNode}) => {
   const authenticatedApi =
     isAuthenticated() && token ? getAuthenticatedApi(token) : undefined;
 
-  console.log(isAuthenticated());
-
   return (
     <ApiContext.Provider value={authenticatedApi}>
       {children}
