@@ -1,6 +1,6 @@
 import React from 'react';
 import Form from 'react-bootstrap/Form';
-import CodeEditor from '../../code/CodeEditor';
+import CodeEditor from '../code/CodeEditor';
 
 interface ExerciseFormProps {
   name?: string;
