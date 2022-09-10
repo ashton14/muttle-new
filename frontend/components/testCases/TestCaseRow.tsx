@@ -45,7 +45,7 @@ const TestCaseRow = React.forwardRef<HTMLInputElement, TestCaseProps>(
       <tr>
         <td>
           <Button size="sm" variant="danger" onClick={deleteTestCase}>
-            <i className="fas fa-trash-alt" aria-label="delete" />
+            <i className="bi bi-trash" aria-label="delete" />
           </Button>
         </td>
         <td>

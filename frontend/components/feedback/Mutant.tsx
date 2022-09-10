@@ -2,7 +2,7 @@ import React from 'react';
 import Badge from 'react-bootstrap/Badge';
 import {MutatedLine, Status} from '../../lib/api';
 
-import './Mutant.module.css';
+import styles from './Mutant.module.css';
 
 const VARIANTS_BY_STATUS: Map<Status, string> = new Map([
   [Status.KILLED, 'success'],
@@ -39,7 +39,7 @@ const MutantBadge = ({
       variant={VARIANTS_BY_STATUS.get(status) || DEFAULT_VARIANT}
       onClick={performClick}
     >
-      <i className={`bi ${bugClassName}`}></i>
+      <i className={`bi ${styles.bug} ${bugClassName}`}></i>
     </Badge>
   );
 };

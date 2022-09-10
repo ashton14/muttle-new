@@ -7,7 +7,7 @@ import NewTestRow from './NewTestRow';
 import {Controlled as CodeMirror} from 'react-codemirror2';
 import codemirror from 'codemirror';
 
-interface TestCasesTableProps {
+export interface TestCasesTableProps {
   savedTests: SavedTestCase[];
   editSavedTest(field: string, index: number): (value: string) => void;
   deleteSavedTest(index: number): () => void;
@@ -32,7 +32,7 @@ const TestCaseTable = ({
 
   useEffect(() => {
     const {current} = codeMirrorRef;
-    current && current.editor.focus();
+    current?.editor?.focus();
   }, [newTests.length]);
 
   const savedTestRows = savedTests.map((test, i) => (

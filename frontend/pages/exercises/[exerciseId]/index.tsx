@@ -4,7 +4,6 @@ import dynamic from 'next/dynamic';
 import Row from 'react-bootstrap/Row';
 import {Button} from 'react-bootstrap';
 import Container from 'react-bootstrap/Container';
-import TestCaseTable from '../../../components/testCases/TestCaseTable';
 import ExerciseFooter from '../../../components/exercises/ExerciseFooter';
 import {
   AttemptFeedback,
@@ -15,8 +14,10 @@ import {
 import {useAuthenticatedApi} from '../../../lib/context/AuthenticatedApiContext';
 import {Auth, useAuth} from '../../../lib/context/AuthContext';
 import { HighlighterProps } from '../../../components/code/Highlighter';
+import { TestCasesTableProps } from '../../../components/testCases/TestCaseTable';
 
 const Highlighter = dynamic<HighlighterProps>(() => import('../../../components/code/Highlighter'), { ssr: false });
+const TestCaseTable = dynamic<TestCasesTableProps>(() => import('../../../components/testCases/TestCaseTable'), { ssr: false });
 
 const SHOW_ACTUAL = true;
 

@@ -9,7 +9,6 @@ import {
   THEME,
 } from '../../lib/codeMirrorSetup';
 
-import styles from './Highlighter.module.css';
 import {
   CoverageOutcome,
   MutationOutcome,
@@ -89,7 +88,7 @@ const Highlighter = (props: HighlighterProps) => {
           markRef.current = editor.markText(
             {line: lineNo - 1, ch: fromChar},
             {line: lineNo - 1, ch: toChar},
-            {className: 'strike', inclusiveRight: false}
+            {className: 'strikethrough', inclusiveRight: false}
           );
         }
       });
@@ -162,12 +161,10 @@ const Highlighter = (props: HighlighterProps) => {
     }
   }, [value, coverageOutcomes, feedbackType]);
 
-  const s = typeof className !== 'undefined' ? styles[className] : className; 
-
   return (
     <CodeMirror
       ref={codeMirrorRef}
-      className={s}
+      className={className}
       value={value}
       options={{...baseOptions, ...options}}
       onBeforeChange={() => {}} // No-op

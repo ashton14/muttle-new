@@ -68,7 +68,7 @@ export class Attempt {
   @BeforeInsert()
   @BeforeUpdate()
   checkExercise() {
-    if (!this.exercise || !this.exerciseOffering) {
+    if (!this.exercise && !this.exerciseOffering) {
       throw Error('An Attempt must belong to an Exercise or ExerciseOffering.');
     }
   }

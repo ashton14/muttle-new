@@ -30,3 +30,25 @@ code {
 .form-hint {
   color: gray;
 }
+
+.coverage-covered {
+  background-color: #CDFFD8;
+}
+
+.coverage-partial {
+  background-color: #FFF3C4;
+}
+
+.coverage-uncovered {
+  background-color: #FCDCE0;
+}
+
+.coverage-gutter {
+  background-color: #FFFFFF;
+  left: 29px;
+  width: 8px;
+}
+
+.strikethrough {
+  text-decoration: line-through;
+}
