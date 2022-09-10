@@ -1,18 +1,18 @@
-import express, {Request, Response} from 'express';
-import {getManager, getRepository} from 'typeorm';
-import {Exercise} from '../../entity/Exercise';
-import {TestCase} from '../../entity/TestCase';
-import {User} from '../../entity/User';
+import express, { Request, Response } from 'express';
+import { getManager, getRepository } from 'typeorm';
+import { Exercise } from '../../entity/Exercise';
+import { TestCase } from '../../entity/TestCase';
+import { User } from '../../entity/User';
 
-const exerciseTestCases = express.Router({mergeParams: true});
+const exerciseTestCases = express.Router({ mergeParams: true });
 
 exerciseTestCases.post('/', async (req: Request, res: Response) => {
   const entityManager = getManager();
-  const {id, input, output, exerciseId, userId} = req.body;
+  const { id, input, output, exerciseId, userId } = req.body;
 
-  const exercise = entityManager.create(Exercise, {id: exerciseId});
-  const user = entityManager.create(User, {id: userId});
-  const newTest = {input, output, exercise, user};
+  const exercise = entityManager.create(Exercise, { id: exerciseId });
+  const user = entityManager.create(User, { id: userId });
+  const newTest = { input, output, exercise, user };
 
   try {
     if (id) {
@@ -50,11 +50,11 @@ exerciseTestCases.post('/batch', async (req: Request, res: Response) => {
       output,
       exerciseId,
       fixedId,
-    }: TestCase & {exerciseId: number}) => ({
+    }: TestCase & { exerciseId: number }) => ({
       input,
       output,
       fixedId,
-      exercise: exerciseRepo.create({id: exerciseId}),
+      exercise: exerciseRepo.create({ id: exerciseId }),
     })
   );
   res.json(await getManager().save(TestCase, testCases));
@@ -62,14 +62,14 @@ exerciseTestCases.post('/batch', async (req: Request, res: Response) => {
 
 exerciseTestCases.get('/', async (req: Request, res: Response) => {
   const {
-    params: {exerciseId},
-    query: {userId, actual},
+    params: { exerciseId },
+    query: { userId, actual },
   } = req;
 
   const testCases = await getManager().find(TestCase, {
     where: {
-      exercise: {id: exerciseId},
-      user: {id: userId},
+      exercise: { id: exerciseId },
+      user: { id: userId },
     },
   });
 

@@ -1,10 +1,10 @@
-import express, {Request, Response} from 'express';
+import express, { Request, Response } from 'express';
 import path from 'path';
 import api from './api';
 import env from 'dotenv';
 
 const app = express();
-const {error, parsed} = env.config();
+const { error, parsed } = env.config();
 
 if (error) {
   if (!error.message.includes('no such file or directory')) {

@@ -4,7 +4,7 @@ import run from './routes/run/run';
 import login from './routes/login';
 import signup from './routes/signup';
 import jwtDecode from 'jwt-decode';
-import {Token} from '../utils/auth';
+import { Token } from '../utils/auth';
 
 const tokenRegex = /Bearer (.*)/;
 
@@ -16,9 +16,9 @@ api.use('/signup', signup);
 // TODO - Move to separate method?
 // Decode and attach JWT token as user property on Request
 api.use((req, res, next) => {
-  const {authorization} = req.headers;
+  const { authorization } = req.headers;
   if (!authorization) {
-    return res.status(401).json({message: 'Authentication invalid'});
+    return res.status(401).json({ message: 'Authentication invalid' });
   }
 
   const tokenMatch = authorization.match(tokenRegex);
