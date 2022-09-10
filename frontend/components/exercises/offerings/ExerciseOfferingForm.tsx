@@ -10,7 +10,9 @@ interface OfferingFormProps {
   withMutationCoverage?: boolean,
   setWithMutationCoverage: Function,
   mutationOperators?: string[],
-  setMutationOperators: Function
+  setMutationOperators: Function,
+  minTests?: number,
+  setMinTests: Function
 }
 
 export default function ExerciseOfferingForm({
@@ -21,7 +23,9 @@ export default function ExerciseOfferingForm({
   withMutationCoverage,
   setWithMutationCoverage,
   mutationOperators,
-  setMutationOperators
+  setMutationOperators,
+  minTests,
+  setMinTests
 }: OfferingFormProps) {
   return (
     <>
@@ -29,6 +33,9 @@ export default function ExerciseOfferingForm({
         <Form>
           <Form.Group>
             <h5>Choose feedback types</h5>
+            <small className="form-hint">
+              Select at least one type of feedback.
+            </small>
             <Form.Check
               label="Condition Coverage"
               checked={withConditionCoverage}
@@ -42,7 +49,7 @@ export default function ExerciseOfferingForm({
                 />
               <Form.Check.Label>Mutation coverage</Form.Check.Label>{' '}
               <small className="form-hint">
-              {`If you select this, you'll be asked to choose specific mutation operators or groups of operators.`}
+              {`You'll be asked to choose specific mutation operators.`}
               </small>
             </Form.Check>
             {
@@ -61,6 +68,8 @@ export default function ExerciseOfferingForm({
               min={0}
               placeholder="Blank for no minimum"
               className="w-50"
+              defaultValue={minTests}
+              onChange={event => setMinTests(event.target.value)}
             />
             <small className="form-hint">
               How many tests are required before feedback (other than pass/fail status) is shown?

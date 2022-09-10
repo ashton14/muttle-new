@@ -121,14 +121,12 @@ export default function MutationOperatorChoice ({
     values: MultiValue<MutationOperator>,
     action: ActionMeta<MutationOperator>
   ) => {
-    if (action.action === 'select-option') {
-      setMutationOperators([values.map(v => v.value)]);
-    }
+    setMutationOperators(values.map(v => v.value));
   };
 
   return (
     <>
-      <small>
+      <small className="form-hint">
         Information about these operators can be found on the{' '}
         <a href="https://github.com/mutpy/mutpy#mutation-operators">MutPy</a>{' '}
         website.
@@ -142,6 +140,7 @@ export default function MutationOperatorChoice ({
         )}
         className="w-50"
         onChange={onChange}
+        placeholder="Select at least one"
       />
     </>
   );

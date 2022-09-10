@@ -15,6 +15,18 @@ export interface SavedExercise extends Exercise {
   id: number;
 }
 
+export interface ExerciseOffering {
+  exerciseId: number;
+  withConditionCoverage: boolean;
+  mutationOperators: string[];
+  minTests?: number;
+}
+
+export interface SavedExerciseOffering extends ExerciseOffering {
+  id: number;
+  inviteCode: string;
+}
+
 export interface NewTestCase {
   input: string;
   output: string;
@@ -70,11 +82,6 @@ export interface MutationOutcome {
   killer: string;
   operator: string;
   mutatedLines: MutatedLine[];
-  // mutations?: {
-  //   lineno: number;
-  //   operator: string;
-  //   mutatedLines: MutatedLine[];
-  // }[];
   number: number;
   status: Status;
   tests_run: number;
@@ -121,6 +128,8 @@ export interface AuthenticatedApi {
     exerciseId: number,
     exercise: SavedExercise
   ): Promise<SavedExercise>;
+  // ExerciseOfferings
+  createExerciseOffering(exerciseOffering: ExerciseOffering): Promise<SavedExerciseOffering>;
   // Test Cases
   getTestCases(
     exerciseId: number,

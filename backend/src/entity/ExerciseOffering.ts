@@ -11,7 +11,7 @@ import { Attempt } from './Attempt';
 import { Exercise } from './Exercise';
 import { User } from './User';
 
-@Entity()
+@Entity('ExerciseOffering')
 export class ExerciseOffering {
   @PrimaryGeneratedColumn('increment')
   id!: number;

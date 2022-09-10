@@ -3,10 +3,12 @@ import { getRepository } from 'typeorm';
 import { Exercise } from '../../entity/Exercise';
 import { Attempt } from '../../entity/Attempt';
 import testCases from './testCases';
+import exerciseOfferings from './exerciseOfferings';
 import { Token } from '../../utils/auth';
 
 const exercises = express.Router();
 exercises.use('/:exerciseId/testCases', testCases);
+exercises.use('/:exerciseId/offerings', exerciseOfferings);
 
 exercises.get('/', async (req: Request, res: Response) =>
   res.json(await getRepository(Exercise).find())
