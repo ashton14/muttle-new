@@ -10,7 +10,7 @@ interface UsernameProps {
   name: string;
 }
 
-export default ({name}: UsernameProps) => {
+export default function Username ({name}: UsernameProps) {
   const [show, setShow] = useState(false);
   const target = useRef(null);
 

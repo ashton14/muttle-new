@@ -42,7 +42,7 @@ export default function ExerciseOfferingForm({
                 />
               <Form.Check.Label>Mutation coverage</Form.Check.Label>{' '}
               <small className="form-hint">
-              If you select this, you'll be asked to choose specific mutation operators or groups of operators.
+              {`If you select this, you'll be asked to choose specific mutation operators or groups of operators.`}
               </small>
             </Form.Check>
             {

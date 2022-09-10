@@ -1,8 +1,8 @@
-import React, {useEffect, useState} from 'react';
-import {useRouter} from 'next/router';
+import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
 import dynamic from 'next/dynamic';
 import Row from 'react-bootstrap/Row';
-import {Button} from 'react-bootstrap';
+import { Button } from 'react-bootstrap';
 import Container from 'react-bootstrap/Container';
 import ExerciseFooter from '../../../components/exercises/ExerciseFooter';
 import {
@@ -11,13 +11,19 @@ import {
   SavedExercise,
   SavedTestCase,
 } from '../../../lib/api';
-import {useAuthenticatedApi} from '../../../lib/context/AuthenticatedApiContext';
-import {Auth, useAuth} from '../../../lib/context/AuthContext';
+import { useAuthenticatedApi } from '../../../lib/context/AuthenticatedApiContext';
+import { Auth, useAuth } from '../../../lib/context/AuthContext';
 import { HighlighterProps } from '../../../components/code/Highlighter';
 import { TestCasesTableProps } from '../../../components/testCases/TestCaseTable';
 
-const Highlighter = dynamic<HighlighterProps>(() => import('../../../components/code/Highlighter'), { ssr: false });
-const TestCaseTable = dynamic<TestCasesTableProps>(() => import('../../../components/testCases/TestCaseTable'), { ssr: false });
+const Highlighter = dynamic<HighlighterProps>(
+  () => import('../../../components/code/Highlighter'),
+  { ssr: false }
+);
+const TestCaseTable = dynamic<TestCasesTableProps>(
+  () => import('../../../components/testCases/TestCaseTable'),
+  { ssr: false }
+);
 
 const SHOW_ACTUAL = true;
 
@@ -50,13 +56,10 @@ const Exercise = () => {
   );
 
   const router = useRouter();
-  if (!router.query.exerciseId) {
-    return '';
-  }
   const idParam = router.query.exerciseId as string;
 
   const {
-    authInfo: {userInfo: user},
+    authInfo: { userInfo: user },
   }: Auth = useAuth();
 
   const {
@@ -98,7 +101,7 @@ const Exercise = () => {
   const createNewTest = () => {
     setNewTests(prevTests =>
       prevTests.concat([
-        {input: '', output: '', exerciseId, visible: true, userId: user.id},
+        { input: '', output: '', exerciseId, visible: true, userId: user.id },
       ])
     );
   };
@@ -123,7 +126,10 @@ const Exercise = () => {
 
   const editNewTest = (key: string, index: number) => (value: string) =>
     setNewTests(prevTests => {
-      const updatedTest = {...prevTests[index], [key]: replaceSmartKeys(value)};
+      const updatedTest = {
+        ...prevTests[index],
+        [key]: replaceSmartKeys(value),
+      };
       return [
         ...prevTests.slice(0, index),
         updatedTest,
@@ -133,7 +139,10 @@ const Exercise = () => {
 
   const editSavedTest = (key: string, index: number) => (value: string) =>
     setTests(prevTests => {
-      const updatedTest = {...prevTests[index], [key]: replaceSmartKeys(value)};
+      const updatedTest = {
+        ...prevTests[index],
+        [key]: replaceSmartKeys(value),
+      };
       return [
         ...prevTests.slice(0, index),
         updatedTest,
@@ -142,10 +151,10 @@ const Exercise = () => {
     });
 
   const saveTests = () => {
-    const testsToSave = newTests.filter(({input, output}) => input || output);
+    const testsToSave = newTests.filter(({ input, output }) => input || output);
     const testsToUpdate = tests
-      .filter(({passed}) => !passed)
-      .map(test => ({...test, exerciseId, userId: user.id}));
+      .filter(({ passed }) => !passed)
+      .map(test => ({ ...test, exerciseId, userId: user.id }));
 
     return Promise.all(testsToSave.concat(testsToUpdate).map(createTestCase));
   };
@@ -161,7 +170,7 @@ const Exercise = () => {
     setRunning(false);
   };
 
-  const {coverageOutcomes, mutationOutcomes} = attemptFeedback || {
+  const { coverageOutcomes, mutationOutcomes } = attemptFeedback || {
     results: [],
     coverageOutcomes: [],
     mutationOutcomes: [],

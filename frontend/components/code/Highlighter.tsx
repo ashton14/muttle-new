@@ -212,7 +212,7 @@ const displayMutationCoverage = (
             !struckLinesSet.has(lineNo)
         )
         .sort(({status: o1}, {status: o2}) => sortStatus(o1, o2))
-        .map(mutationResult => {
+        .map((mutationResult, i) => {
           const {status, operator, mutatedLines} = mutationResult;
           const isSelected = _.isEqual(mutationResult, selectedMutant);
           return (
@@ -222,6 +222,7 @@ const displayMutationCoverage = (
               mutatedLines={mutatedLines}
               isSelected={isSelected}
               handleClick={() => handleMutantClick(mutationResult)}
+              key={`mutant-${i}`}
             />
           );
         })

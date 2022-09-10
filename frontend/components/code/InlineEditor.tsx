@@ -27,6 +27,7 @@ export interface InlineEditorProps {
   options?: Partial<codemirror.EditorConfiguration>;
 }
 
+/* eslint-disable react/display-name */
 const InlineEditor = React.forwardRef(
   ({value, onChange, readOnly, options}: InlineEditorProps, ref) => {
     const derivedOptions = {

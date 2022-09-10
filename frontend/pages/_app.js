@@ -22,7 +22,7 @@ function MyApp({ Component, cookies, pageProps }) {
 MyApp.getInitialProps = async function(context) {
   const cookies = context.ctx.req?.cookies;
   const appProps = await App.getInitialProps(context);
-  return { ...appProps, cookies };
+return { ...appProps, cookies };
 }
 
 export default MyApp;

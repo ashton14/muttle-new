@@ -18,6 +18,7 @@ interface TestCaseProps {
   deleteTestCase: () => void;
 }
 
+/* eslint-disable react/display-name */
 const TestCaseRow = React.forwardRef<HTMLInputElement, TestCaseProps>(
   (
     {

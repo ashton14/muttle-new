@@ -1,12 +1,6 @@
 {
   "extends": [
-    "./node_modules/gts/",
-    "react-app",
-    "react-app/jest"
-  ],
-  "rules": {
-    "node/no-unpublished-import": ["error", {
-      "allowModules": ["@testing-library/react", "@testing-library/jest-dom"]
-    }]
-  }
+    "next/core-web-vitals",
+    "prettier"
+  ]
 }

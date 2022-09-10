@@ -28,9 +28,9 @@ const mutantsToRows = (mutationOutcomes?: MutationOutcome[]) => {
     _.mapValues(mutantsByLine, mutants =>
       mutants
         .sort(({outcome: o1}, {outcome: o2}) => sortOutcomes(o1, o2))
-        .map(({outcome, operator}) => (
-          <MutantBadge outcome={outcome} operator={operator} />
+        .map(({outcome, operator}, index) => (
+          <MutantBadge outcome={outcome} operator={operator} key={`op-${index}`}/>
         ))
     )
-  ).map(([line, mutants]) => <FeedbackRow line={line} feedback={mutants} />);
+  ).map(([line, mutants], index) => <FeedbackRow line={line} feedback={mutants} key={`f-${index}`}/>);
 };

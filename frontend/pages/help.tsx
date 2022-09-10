@@ -88,7 +88,7 @@ const MutationOperators = [
   },
 ];
 
-export default () => {
+export default function Help() {
   const [show, setShow] = useState(false);
   const target = useRef(null);
 

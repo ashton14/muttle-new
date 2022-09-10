@@ -24,7 +24,7 @@ export default function NewExerciseForm() {
     }
 
     fetchExercise();
-  }, [])
+  }, [exerciseId, getExercise])
 
   return (
     <Container>
@@ -36,7 +36,7 @@ export default function NewExerciseForm() {
               {`X${exerciseId}: ${exercise.name}`}
             </Link>
           </h1>
-          <p>After creating it, you'll be given an invite link to share with your students.</p>
+          <p>{`After creating it, you'll be given an invite link to share with your students.`}</p>
           <ExerciseOfferingForm
             withConditionCoverage={withConditionCoverage}
             setWithConditionCoverage={setWithConditionCoverage}

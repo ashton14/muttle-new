@@ -110,13 +110,13 @@ const pythonMutationOperators: MutationOperator[] = [
   },
 ];
 
-export default ({
+export default function MutationOperatorChoice ({
   mutationOperators,
   setMutationOperators,
 }: {
   mutationOperators?: string[];
   setMutationOperators: Function;
-}) => {
+}) {
   const onChange = (
     values: MultiValue<MutationOperator>,
     action: ActionMeta<MutationOperator>

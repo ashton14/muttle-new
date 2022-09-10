@@ -1,6 +1,9 @@
+import dynamic from 'next/dynamic';
 import React from 'react';
 import Form from 'react-bootstrap/Form';
-import CodeEditor from '../code/CodeEditor';
+import { CodeEditorProps } from '../code/CodeEditor';
+
+const CodeEditor = dynamic<CodeEditorProps>(() => import('../code/CodeEditor'));
 
 interface ExerciseFormProps {
   name?: string;
