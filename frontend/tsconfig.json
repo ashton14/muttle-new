@@ -16,10 +16,16 @@
     "noEmit": true,
     "allowJs": true,
     "skipLibCheck": true,
-    "module": "esnext"
+    "module": "esnext",
+    "target": "es5",
+    "strict": false,
+    "forceConsistentCasingInFileNames": true
   },
   "include": [
     "src/**/*.ts",
     "test/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
   ]
 }
