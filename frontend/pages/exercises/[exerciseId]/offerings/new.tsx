@@ -12,6 +12,7 @@ export default function NewExerciseOfferingForm() {
   const [mutationOperators, setMutationOperators] = useState<string[]>([]);
   const [minTests, setMinTests] = useState<number | undefined>(undefined);
   const [exercise, setExercise] = useState<SavedExercise | null>(null);
+  const [inviteLink, setInviteLink] = useState('');
 
   const router = useRouter();
   const exerciseId = parseInt(router.query.exerciseId as string);
@@ -30,12 +31,14 @@ export default function NewExerciseOfferingForm() {
   const { createExerciseOffering } = useAuthenticatedApi();
 
   const submit = async () => {
-    await createExerciseOffering({
+    const savedOffering = await createExerciseOffering({
       exerciseId,
       withConditionCoverage,
       mutationOperators,
-      minTests
+      minTests,
     });
+    const inviteLink = `${window.location.hostname}assignment/${savedOffering.inviteCode}`;
+    setInviteLink(inviteLink);
   };
 
   const enabled =
@@ -51,7 +54,19 @@ export default function NewExerciseOfferingForm() {
               {`X${exerciseId}: ${exercise.name}`}
             </Link>
           </h1>
-          <p>{`After creating the assignment, you'll be given an invite link to share with your students.`}</p>
+          {inviteLink ? (
+            <Alert variant="success">
+              Assignment created successfully. Share the following invite link
+              with your students.
+              <br />
+              <a href={inviteLink}>{inviteLink}</a>
+              <Button size="sm" variant="success">
+                <i className="bi bi-clipboard" />
+              </Button>
+            </Alert>
+          ) : (
+            <p>{`After creating the assignment, you'll be given an invite link to share with your students.`}</p>
+          )}
           <ExerciseOfferingForm
             withConditionCoverage={withConditionCoverage}
             setWithConditionCoverage={setWithConditionCoverage}
@@ -62,7 +77,7 @@ export default function NewExerciseOfferingForm() {
             minTests={minTests}
             setMinTests={setMinTests}
           />
-          <Button onClick={submit} disabled={!enabled} variant="success">
+          <Button onClick={submit} disabled={!enabled}>
             Create Assignment
           </Button>
         </>

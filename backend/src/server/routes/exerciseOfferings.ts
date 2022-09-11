@@ -40,7 +40,7 @@ exerciseOfferings.post('/', async (req: Request, res: Response) => {
   };
 
   try {
-    const saved = getRepository(ExerciseOffering).save(exerciseOffering);
+    const saved = await getRepository(ExerciseOffering).save(exerciseOffering);
     res.status(200).json(saved);
   } catch (err) {
     res.status(400).json({ message: err });
