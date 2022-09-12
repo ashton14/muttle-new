@@ -7,9 +7,9 @@ import Link from 'next/link';
 import { SavedExercise } from '../../../../lib/api';
 
 export default function NewExerciseOfferingForm() {
-  const [withConditionCoverage, setWithConditionCoverage] = useState(false);
-  const [withMutationCoverage, setWithMutationCoverage] = useState(false);
-  const [mutationOperators, setMutationOperators] = useState<string[]>([]);
+  const [conditionCoverage, setConditionCoverage] = useState(false);
+  const [mutationCoverage, setMutationCoverage] = useState(false);
+  const [mutators, setMutators] = useState<string[]>([]);
   const [minTests, setMinTests] = useState<number | undefined>(undefined);
   const [exercise, setExercise] = useState<SavedExercise | null>(null);
   const [inviteLink, setInviteLink] = useState('');
@@ -33,16 +33,16 @@ export default function NewExerciseOfferingForm() {
   const submit = async () => {
     const savedOffering = await createExerciseOffering({
       exerciseId,
-      withConditionCoverage,
-      mutationOperators,
+      withConditionCoverage: conditionCoverage,
+      mutationOperators: mutators,
       minTests,
     });
-    const inviteLink = `${window.location.hostname}assignment/${savedOffering.inviteCode}`;
+    const inviteLink = `${window.location.host}/assignment/${savedOffering.inviteCode}`;
     setInviteLink(inviteLink);
   };
 
   const enabled =
-    withConditionCoverage || (withMutationCoverage && mutationOperators.length);
+    conditionCoverage || (mutationCoverage && mutators.length);
 
   return (
     <Container>
@@ -60,20 +60,17 @@ export default function NewExerciseOfferingForm() {
               with your students.
               <br />
               <a href={inviteLink}>{inviteLink}</a>
-              <Button size="sm" variant="success">
-                <i className="bi bi-clipboard" />
-              </Button>
             </Alert>
           ) : (
             <p>{`After creating the assignment, you'll be given an invite link to share with your students.`}</p>
           )}
           <ExerciseOfferingForm
-            withConditionCoverage={withConditionCoverage}
-            setWithConditionCoverage={setWithConditionCoverage}
-            withMutationCoverage={withMutationCoverage}
-            setWithMutationCoverage={setWithMutationCoverage}
-            mutationOperators={mutationOperators}
-            setMutationOperators={setMutationOperators}
+            withConditionCoverage={conditionCoverage}
+            setWithConditionCoverage={setConditionCoverage}
+            withMutationCoverage={mutationCoverage}
+            setWithMutationCoverage={setMutationCoverage}
+            mutationOperators={mutators}
+            setMutationOperators={setMutators}
             minTests={minTests}
             setMinTests={setMinTests}
           />

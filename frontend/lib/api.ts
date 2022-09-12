@@ -25,6 +25,8 @@ export interface ExerciseOffering {
 export interface SavedExerciseOffering extends ExerciseOffering {
   id: number;
   inviteCode: string;
+  exercise: SavedExercise;
+  created: Date;
 }
 
 export interface NewTestCase {
@@ -130,6 +132,7 @@ export interface AuthenticatedApi {
   ): Promise<SavedExercise>;
   // ExerciseOfferings
   createExerciseOffering(exerciseOffering: ExerciseOffering): Promise<SavedExerciseOffering>;
+  getUserExerciseOfferings(userId: number): Promise<SavedExerciseOffering[]>;
   // Test Cases
   getTestCases(
     exerciseId: number,

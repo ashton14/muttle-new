@@ -1,6 +1,7 @@
 import express from 'express';
 import exercises from './routes/exercises';
 import run from './routes/run/run';
+import users from './routes/users';
 import login from './routes/login';
 import signup from './routes/signup';
 import jwtDecode from 'jwt-decode';
@@ -37,6 +38,7 @@ api.use((req, res, next) => {
 // Authenticated routes
 api.use('/exercises', exercises);
 api.use('/run', run);
+api.use('/users', users);
 
 // Anchor handler for general 404 cases.
 api.use('/', (req, res) => res.status(404).end());

@@ -1,5 +1,6 @@
 import express, { Request, Response } from 'express';
 import { getManager, getRepository } from 'typeorm';
+import { Exercise } from '../../entity/Exercise';
 import { ExerciseOffering } from '../../entity/ExerciseOffering';
 import { User } from '../../entity/User';
 import { Token } from '../../utils/auth';
@@ -33,9 +34,18 @@ exerciseOfferings.post('/', async (req: Request, res: Response) => {
     return;
   }
 
-  const exerciseOffering: ExerciseOffering = {
-    ...req.body,
+  const { conditionCoverage, mutators, exerciseId } = req.body;
+  const exercise = await getRepository(Exercise).findOne({
+    where: {
+      id: exerciseId,
+    },
+  });
+
+  const exerciseOffering = {
+    conditionCoverage,
+    mutators,
     inviteCode,
+    exercise,
     owner: user,
   };
 
@@ -53,7 +63,7 @@ exerciseOfferings.post('/', async (req: Request, res: Response) => {
  * again, a maximum of 5 times. This limit is arbitrarily chosen
  * because I'm not uncomfortable hitting the DB in a (potentially)
  * infinite loop.
- * 
+ *
  * @returns A Promise which resolves to the code or null if a code
  *  couldn't be generated in 5 tries.
  */
