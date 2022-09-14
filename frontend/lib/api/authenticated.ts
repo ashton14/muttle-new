@@ -17,6 +17,8 @@ export const getAuthenticatedEndpoints = (
   getExercise: getExercise(api),
   getExercises: getExercises(api),
   createExerciseOffering: createExerciseOffering(api),
+  updateExerciseOffering: updateExerciseOffering(api),
+  getExerciseOffering: getExerciseOffering(api),
   getUserExerciseOfferings: getUserExerciseOfferings(api),
   updateExercise: updateExercise(api),
   getTestCases: getTestCases(api),
@@ -71,12 +73,25 @@ const deleteTestCase =
       .delete(`exercises/${testCase.exerciseId}/testCases/${testCase.id}`)
       .then(res => res.data);
 
+const getExerciseOffering = 
+    (api: AxiosInstance) =>
+    (exerciseId: number, exerciseOfferingId: number): Promise<SavedExerciseOffering> =>
+      api.get(`exercises/${exerciseId}/offerings/${exerciseOfferingId}`)
+        .then(res => res.data);
+
 const createExerciseOffering =
   (api: AxiosInstance) =>
   (data: ExerciseOffering): Promise<SavedExerciseOffering> =>
     api
       .post(`exercises/${data.exerciseId}/offerings`, data)
       .then(res => res.data);
+
+const updateExerciseOffering =
+    (api: AxiosInstance) =>
+    (data: SavedExerciseOffering): Promise<SavedExerciseOffering> =>
+      api
+        .put(`exercises/${data.exerciseId}/offerings/${data.id}`, data)
+        .then(res => res.data);
 
 const getUserExerciseOfferings = 
     (api: AxiosInstance) =>

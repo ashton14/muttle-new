@@ -17,9 +17,9 @@ export interface SavedExercise extends Exercise {
 
 export interface ExerciseOffering {
   exerciseId: number;
-  withConditionCoverage: boolean;
-  mutationOperators: string[];
-  minTests?: number;
+  conditionCoverage: boolean;
+  mutators: string[];
+  minTests?: number | undefined;
 }
 
 export interface SavedExerciseOffering extends ExerciseOffering {
@@ -132,6 +132,8 @@ export interface AuthenticatedApi {
   ): Promise<SavedExercise>;
   // ExerciseOfferings
   createExerciseOffering(exerciseOffering: ExerciseOffering): Promise<SavedExerciseOffering>;
+  updateExerciseOffering(exerciseOffering: SavedExerciseOffering): Promise<SavedExerciseOffering>;
+  getExerciseOffering(exerciseId: number, exerciseOfferingId: number): Promise<SavedExerciseOffering>;
   getUserExerciseOfferings(userId: number): Promise<SavedExerciseOffering[]>;
   // Test Cases
   getTestCases(

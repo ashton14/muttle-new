@@ -1,43 +1,58 @@
-import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
-import ExerciseOfferingForm from '../../../../components/exercises/offerings/ExerciseOfferingForm';
-import { useAuthenticatedApi } from '../../../../lib/context/AuthenticatedApiContext';
-import { Alert, Button, Container } from 'react-bootstrap';
 import Link from 'next/link';
-import { SavedExercise } from '../../../../lib/api';
-import { inviteLinkFromCode } from '../../../../lib/helper';
+import { useRouter } from 'next/router';
+import React, { useEffect, useState } from 'react';
+import { Alert, Button, Container } from 'react-bootstrap';
+import ExerciseOfferingForm from '../../../../../components/exercises/offerings/ExerciseOfferingForm';
+import { SavedExercise, SavedExerciseOffering } from '../../../../../lib/api';
+import { useAuthenticatedApi } from '../../../../../lib/context/AuthenticatedApiContext';
+import { inviteLinkFromCode } from '../../../../../lib/helper';
 
-export default function NewExerciseOfferingForm() {
+const EditExerciseOffering = () => {
   const [conditionCoverage, setConditionCoverage] = useState(false);
   const [mutationCoverage, setMutationCoverage] = useState(false);
   const [mutators, setMutators] = useState<string[]>([]);
   const [minTests, setMinTests] = useState<number | undefined>(undefined);
   const [exercise, setExercise] = useState<SavedExercise | null>(null);
   const [inviteCode, setInviteCode] = useState('');
+  const [offering, setOffering] = useState<SavedExerciseOffering>();
 
-  const router = useRouter();
+  const router = useRouter(); 
   const exerciseId = parseInt(router.query.exerciseId as string);
+  const offeringId = parseInt(router.query.offeringId as string);
 
-  const { getExercise, createExerciseOffering } = useAuthenticatedApi();
+  const { getExerciseOffering, updateExerciseOffering } = useAuthenticatedApi();
 
   useEffect(() => {
-    const fetchExercise = async () => {
-      const exercise = await getExercise(exerciseId);
+    const fetchOffering = async () => {
+      const fetched = await getExerciseOffering(exerciseId, offeringId);
+      const {
+        conditionCoverage,
+        mutators,
+        minTests,
+        exercise,
+        inviteCode
+      } = fetched;
+      setConditionCoverage(conditionCoverage);
+      setMutators(mutators);
+      setMinTests(minTests);
+      setInviteCode(inviteCode)
       setExercise(exercise);
-    };
+      setOffering(fetched);
+    }
 
-    fetchExercise();
-  }, [exerciseId, getExercise]);
+    fetchOffering();
+  }, [getExerciseOffering, exerciseId, offeringId])
 
   const submit = async () => {
-    const savedOffering = await createExerciseOffering({
-      exerciseId,
-      conditionCoverage,
-      mutators,
-      minTests,
-    });
-    setInviteCode(savedOffering.inviteCode);
-  };
+    if (offering) {
+      await updateExerciseOffering({
+        ...offering,
+        conditionCoverage,
+        mutators,
+        minTests
+      });
+    }
+  }
 
   const enabled =
     conditionCoverage || (mutationCoverage && mutators.length);
@@ -48,15 +63,14 @@ export default function NewExerciseOfferingForm() {
       {exercise ? (
         <>
           <h1>
-            Creating an assignment based on{' '}
+            This assignment is based on the exercise{' '}
             <Link href={`/exercises/${exerciseId}`}>
               {`X${exerciseId}: ${exercise.name}`}
             </Link>
           </h1>
           {inviteCode ? (
             <Alert variant="success">
-              Assignment created successfully. Share the following invite link
-              with your students.
+              Share the following link with your students to distribute this assignment. 
               <br />
               <a href={inviteLink}>{inviteLink}</a>
             </Alert>
@@ -74,7 +88,7 @@ export default function NewExerciseOfferingForm() {
             setMinTests={setMinTests}
           />
           <Button onClick={submit} disabled={!enabled}>
-            Create Assignment
+            Update Assignment
           </Button>
         </>
       ) : (
@@ -83,3 +97,5 @@ export default function NewExerciseOfferingForm() {
     </Container>
   );
 }
+
+export default EditExerciseOffering;

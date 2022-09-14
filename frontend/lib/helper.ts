@@ -52,3 +52,11 @@ export function getCookie(name: string) {
   }
   return '';
 }
+
+export function inviteLinkFromCode(code: string): string {
+  if (typeof window !== 'undefined' && code) {
+    return `https://${window.location.host}/assignment/${code}`;
+  } else {
+    return '';
+  }
+}

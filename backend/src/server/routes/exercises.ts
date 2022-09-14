@@ -37,7 +37,7 @@ exercises.put('/:id', async (req: Request, res: Response) => {
       exerciseRepo.save(updatedExercise);
       res.status(200).json({ ...updatedExercise });
     } catch (err) {
-      res.status(400).json({ message: err });
+      res.status(400).json({ error: err });
     }
   }
 });
