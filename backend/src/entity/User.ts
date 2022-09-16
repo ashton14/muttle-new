@@ -2,6 +2,8 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinTable,
+  ManyToMany,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -35,6 +37,10 @@ export class User {
   exercises!: Exercise[];
 
   @OneToMany(() => ExerciseOffering, exerciseOffering => exerciseOffering.owner)
+  ownedExerciseOfferings!: ExerciseOffering[];
+
+  @ManyToMany(() => ExerciseOffering, { eager: false })
+  @JoinTable()
   exerciseOfferings!: ExerciseOffering[];
 
   @CreateDateColumn({ type: 'timestamp' })

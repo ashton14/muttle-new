@@ -59,7 +59,7 @@ exerciseOfferings.post('/', async (req: Request, res: Response) => {
 
 exerciseOfferings.get('/:id', async (req: Request, res: Response) => {
   const requestingUser = req.user as Token;
-  const exerciseOfferingId = req.params.id;
+  const exerciseOfferingId = parseInt(req.params.id);
 
   try {
     const exerciseOffering = await getRepository(ExerciseOffering).findOne({
@@ -68,13 +68,14 @@ exerciseOfferings.get('/:id', async (req: Request, res: Response) => {
       },
       relations: ['owner', 'exercise'],
     });
+
     if (
       exerciseOffering &&
       exerciseOffering.owner.id === requestingUser.subject
     ) {
       res.status(200).json(exerciseOffering);
     } else {
-      res.status(401).json({ message: 'Cannot access that record.' });
+      res.status(403).json({ message: 'Cannot access that record.' });
     }
   } catch (err) {
     res.status(400).json(err);

@@ -19,7 +19,8 @@ export const getAuthenticatedEndpoints = (
   createExerciseOffering: createExerciseOffering(api),
   updateExerciseOffering: updateExerciseOffering(api),
   getExerciseOffering: getExerciseOffering(api),
-  getUserExerciseOfferings: getUserExerciseOfferings(api),
+  getUserAssignments: getUserAssignments(api),
+  getUserAssignment: getUserAssignment(api),
   updateExercise: updateExercise(api),
   getTestCases: getTestCases(api),
   createTestCase: createTestCase(api),
@@ -93,15 +94,21 @@ const updateExerciseOffering =
         .put(`exercises/${data.exerciseId}/offerings/${data.id}`, data)
         .then(res => res.data);
 
-const getUserExerciseOfferings = 
+const getUserAssignments = 
     (api: AxiosInstance) =>
     (userId: number): Promise<SavedExerciseOffering[]> =>
-      api.get(`users/${userId}/exerciseOfferings`).then(res => res.data);
+      api.get(`users/${userId}/assignments`).then(res => res.data);
 
 const runTests =
   (api: AxiosInstance) =>
   (exerciseId: number, userId: number): Promise<AttemptFeedback> =>
     api.post(`run/${exerciseId}`, { userId }).then(res => res.data);
+
+const getUserAssignment =
+    (api: AxiosInstance) => 
+    (userId: number, inviteCode: string): Promise<SavedExerciseOffering> =>
+        api.put(`/users/${userId}/assignments/${inviteCode}`)
+          .then(res => res.data);
 
 const getLatestAttempt =
   (api: AxiosInstance) =>

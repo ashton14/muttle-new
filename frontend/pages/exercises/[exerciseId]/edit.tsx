@@ -5,10 +5,6 @@ import {Button, Container} from 'react-bootstrap';
 import ExerciseForm from '../../../components/exercises/ExerciseForm';
 import {useAuthenticatedApi} from '../../../lib/context/AuthenticatedApiContext';
 
-interface RouteParams {
-  exerciseId: string;
-}
-
 const EditExercise = () => {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');

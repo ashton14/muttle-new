@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { Alert, Button, Container } from 'react-bootstrap';
 import ExerciseOfferingForm from '../../../../../components/exercises/offerings/ExerciseOfferingForm';
 import { SavedExercise, SavedExerciseOffering } from '../../../../../lib/api';
+import { useAuth } from '../../../../../lib/context/AuthContext';
 import { useAuthenticatedApi } from '../../../../../lib/context/AuthenticatedApiContext';
 import { inviteLinkFromCode } from '../../../../../lib/helper';
 
@@ -24,24 +25,30 @@ const EditExerciseOffering = () => {
 
   useEffect(() => {
     const fetchOffering = async () => {
-      const fetched = await getExerciseOffering(exerciseId, offeringId);
-      const {
-        conditionCoverage,
-        mutators,
-        minTests,
-        exercise,
-        inviteCode
-      } = fetched;
-      setConditionCoverage(conditionCoverage);
-      setMutators(mutators);
-      setMinTests(minTests);
-      setInviteCode(inviteCode)
-      setExercise(exercise);
-      setOffering(fetched);
+      try {
+        const fetched = await getExerciseOffering(exerciseId, offeringId);
+        const {
+          conditionCoverage,
+          mutators,
+          minTests,
+          exercise,
+          inviteCode
+        } = fetched;
+        setConditionCoverage(conditionCoverage);
+        setMutators(mutators);
+        setMinTests(minTests);
+        setInviteCode(inviteCode)
+        setExercise(exercise);
+        setOffering(fetched);
+      } catch (err) {
+        if (err.response.status === 403) {
+          router.push({pathname: '/exercises', query: {message: err.response.data.message}});
+        }
+      }
     }
-
+    
     fetchOffering();
-  }, [getExerciseOffering, exerciseId, offeringId])
+  }, [getExerciseOffering, exerciseId, offeringId, router])
 
   const submit = async () => {
     if (offering) {
@@ -72,7 +79,9 @@ const EditExerciseOffering = () => {
             <Alert variant="success">
               Share the following link with your students to distribute this assignment. 
               <br />
-              <a href={inviteLink}>{inviteLink}</a>
+              <Link href={`/assignments/${inviteCode}`}>
+                {inviteLink}
+              </Link>
             </Alert>
           ) : (
             <p>{`After creating the assignment, you'll be given an invite link to share with your students.`}</p>

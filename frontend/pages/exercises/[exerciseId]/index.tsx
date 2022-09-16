@@ -27,10 +27,6 @@ const TestCaseTable = dynamic<TestCasesTableProps>(
 
 const SHOW_ACTUAL = true;
 
-interface RouteParams {
-  exerciseId: string;
-}
-
 export enum FeedbackType {
   NO_FEEDBACK,
   CODE_COVERAGE,

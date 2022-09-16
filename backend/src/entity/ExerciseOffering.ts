@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  ManyToMany,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -19,11 +20,16 @@ export class ExerciseOffering {
   @Column({ type: 'text', unique: true })
   inviteCode!: string;
 
-  @ManyToOne(() => Exercise, exercise => exercise.exerciseOfferings)
+  @ManyToOne(() => Exercise, exercise => exercise.exerciseOfferings, {
+    eager: true,
+  })
   exercise!: Exercise;
 
-  @ManyToOne(() => User, user => user.exerciseOfferings)
+  @ManyToOne(() => User, user => user.ownedExerciseOfferings)
   owner!: User;
+
+  @ManyToMany(() => User, user => user.exerciseOfferings)
+  users!: User[];
 
   @OneToMany(() => Attempt, attempt => attempt.exerciseOffering)
   attempts!: Attempt[];

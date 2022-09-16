@@ -21,6 +21,8 @@ export const config = {
   matcher: [
     '/exercises/(.*)',
     '/exercises/:id*',
-    '/exercises/:id/(.*)'
+    '/exercises/:id/(.*)',
+    '/exercises/:id/offerings/(.*)',
+    '/assignments/(.*)'
   ] 
 }

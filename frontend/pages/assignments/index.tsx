@@ -21,12 +21,12 @@ const ExerciseOfferingList = () => {
   });
 
   const [exerciseOfferings, setExerciseOfferings] = useState<SavedExerciseOffering[]>([]);
-  const { getUserExerciseOfferings } = useAuthenticatedApi();
+  const { getUserAssignments } = useAuthenticatedApi();
   const { authInfo: { userInfo } } = useAuth();
 
   useEffect(() => {
     if (userInfo) {
-      getUserExerciseOfferings(userInfo.id)
+      getUserAssignments(userInfo.id)
         .then(exerciseOfferings => {
           setExerciseOfferings(exerciseOfferings);
           setLoading({ status: LoadingStatus.DONE });
@@ -35,7 +35,7 @@ const ExerciseOfferingList = () => {
           setLoading({ status: LoadingStatus.ERROR, error: err });
         });
     }
-  }, [getUserExerciseOfferings, userInfo]);
+  }, [getUserAssignments, userInfo]);
 
   const offeringGroups = 
     _.chain(exerciseOfferings)
