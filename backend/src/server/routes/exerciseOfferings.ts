@@ -1,5 +1,6 @@
 import express, { Request, Response } from 'express';
 import { getManager, getRepository } from 'typeorm';
+import { Attempt } from '../../entity/Attempt';
 import { Exercise } from '../../entity/Exercise';
 import { ExerciseOffering } from '../../entity/ExerciseOffering';
 import { User } from '../../entity/User';
@@ -139,5 +140,29 @@ const getInviteCode = async (): Promise<string | null> => {
   }
   return null;
 };
+
+exerciseOfferings.get(
+  '/:id/attempts/latest',
+  async (req: Request, res: Response) => {
+    const user = req.user as Token;
+    if (!user) {
+      res.sendStatus(403);
+      return;
+    }
+
+    res.json(
+      await getRepository(Attempt).findOne({
+        where: {
+          exerciseOffering: { id: req.params.id },
+          user: { id: user.subject },
+        },
+        relations: ['testCases'],
+        order: {
+          id: 'DESC',
+        },
+      })
+    );
+  }
+);
 
 export default exerciseOfferings;

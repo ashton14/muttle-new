@@ -8,6 +8,7 @@ import {
   SavedExercise,
   SavedTestCase,
   SavedExerciseOffering,
+  AttemptRequest,
 } from '../api';
 
 export const getAuthenticatedEndpoints = (
@@ -54,6 +55,7 @@ const getTestCases =
   (
     exerciseId: number,
     userId: number,
+    attemptId: number,
     actual = false
   ): Promise<SavedTestCase[]> =>
     api
@@ -112,7 +114,15 @@ const getUserAssignment =
 
 const getLatestAttempt =
   (api: AxiosInstance) =>
-  (exerciseId: number, userId: number): Promise<AttemptFeedback> =>
-    api
-      .get(`exercises/${exerciseId}/attempts/latest?userId=${userId}`)
-      .then(res => res.data);
+  ({userId, exerciseId, exerciseOfferingId}: AttemptRequest): Promise<AttemptFeedback> => {
+    if (exerciseId && exerciseOfferingId) {
+      return api.get(`exercises/${exerciseId}/offerings/${exerciseOfferingId}/attempts/latest`)
+        .then(res => res.data)
+    } else if (exerciseId) {
+      return api
+        .get(`exercises/${exerciseId}/attempts/latest?userId=${userId}`)
+        .then(res => res.data);
+    } else {
+      return Promise.resolve({} as AttemptFeedback);
+    }
+  }

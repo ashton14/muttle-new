@@ -46,18 +46,25 @@ exercises.post('/', async (req: Request, res: Response) =>
   res.json(await getRepository(Exercise).save(req.body))
 );
 
-exercises.get('/:id/attempts/latest', async (req: Request, res: Response) =>
+exercises.get('/:id/attempts/latest', async (req: Request, res: Response) => {
+  const user = req.user as Token;
+  if (!user) {
+    res.sendStatus(403);
+    return;
+  }
+
   res.json(
     await getRepository(Attempt).findOne({
       where: {
         exercise: { id: req.params.id },
-        user: { id: req.query.userId },
+        user: { id: user.subject },
       },
+      relations: ['testCases'],
       order: {
         id: 'DESC',
       },
     })
-  )
-);
+  );
+});
 
 export default exercises;

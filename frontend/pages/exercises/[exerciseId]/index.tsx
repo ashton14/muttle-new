@@ -22,13 +22,6 @@ export enum FeedbackType {
   ALL_FEEDBACK,
 }
 
-const displayTests = (tests: SavedTestCase[]) =>
-  tests
-    .filter(test => test.visible && !test.fixedId)
-    .sort((t1, t2) =>
-      t1.passed && !t2.passed ? -1 : !t1.passed && t2.passed ? 1 : 0
-    );
-
 const Exercise = () => {
   const [exercise, setExercise] = useState<SavedExercise>();
   const [tests, setTests] = useState<SavedTestCase[]>([]);
@@ -37,9 +30,7 @@ const Exercise = () => {
   const router = useRouter();
   const idParam = router.query.exerciseId as string;
 
-  const {
-    authInfo: { userInfo: user },
-  }: Auth = useAuth();
+  const { authInfo: { userInfo: user } }: Auth = useAuth();
 
   const {
     getExercise,
@@ -49,20 +40,21 @@ const Exercise = () => {
   const exerciseId = parseInt(idParam);
 
   useEffect(() => {
-    if (user) {
-      Promise.all([
-        getExercise(exerciseId),
-        getTestCases(exerciseId, user.id),
-        getLatestAttempt(exerciseId, user.id),
-      ]).then(([exercise, tests, attempt]) => {
+    const fetchData = async () => {
+      if (user) {
+        const exercise = await getExercise(exerciseId);
         if (!exercise) {
           router.push('/exercises');
+        } else {
+          const attempt = await getLatestAttempt({ userId: user.id, exerciseId: exercise.id });
+          setExercise(exercise);
+          setTests(attempt.testCases);
+          setAttemptFeedback(attempt);
         }
-        setExercise(exercise);
-        setTests(displayTests(tests));
-        setAttemptFeedback(attempt);
-      });
+      }
     }
+
+    fetchData();
   }, [router, exerciseId, user, getExercise, getTestCases, getLatestAttempt]);
 
   if (!user) {

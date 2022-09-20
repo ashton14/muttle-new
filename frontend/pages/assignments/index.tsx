@@ -1,4 +1,3 @@
-import dynamic from 'next/dynamic';
 import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
 import { Alert, Button, Container, ListGroup } from 'react-bootstrap';
@@ -8,11 +7,7 @@ import { SavedExerciseOffering } from '../../lib/api';
 import { useAuth } from '../../lib/context/AuthContext';
 import { useAuthenticatedApi } from '../../lib/context/AuthenticatedApiContext';
 import Link from 'next/link';
-
-const ExerciseOfferingListItem = dynamic(() => 
-  import('../../components/exercises/ExerciseList')
-  .then(mod => mod.ExerciseOfferingListItem)
-);
+import { inviteLinkFromCode } from '../../lib/helper';
 
 const ExerciseOfferingList = () => {
   const router = useRouter();
@@ -45,10 +40,22 @@ const ExerciseOfferingList = () => {
           <div key={key}>
             <h3>Your offerings of {`X${key}: ${value[0].exercise.name}`}</h3>
             {
-              value.map(o => 
-                <Link key={o.id} href={`/exercises/${key}/offerings/${o.id}/edit`}>
-                  {`Offering ${o.id} (Created ${o.created})`}
-                </Link>
+              value.map(o => {
+                return (
+                  <div key={o.inviteCode}>
+                    <Link href={`/assignments/${o.inviteCode}`}>
+                      {inviteLinkFromCode(o.inviteCode)}
+                    </Link>{` `}
+                    {
+                      `Created ${new Date(o.created).toLocaleDateString('en-US', {
+                        weekday: 'short',
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                      })}`
+                    }
+                  </div>
+                )}
               )
             }
           </div>

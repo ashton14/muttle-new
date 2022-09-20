@@ -37,7 +37,7 @@ export interface PracticeProps {
 
 export default function Practice({ user, exercise, exerciseOffering, initialTests, initialAttemptFeedback }: PracticeProps) {
   const [tests, setTests] = useState<SavedTestCase[]>([]);
-  const [newTests, setNewTests] = useState<NewTestCase[]>(initialTests);
+  const [newTests, setNewTests] = useState<NewTestCase[]>(displayTests(initialTests));
   const [running, setRunning] = useState<boolean>(false);
   const [attemptFeedback, setAttemptFeedback] = useState(initialAttemptFeedback);
   const [feedbackType, setFeedbackType] = useState<FeedbackType>(
@@ -48,7 +48,6 @@ export default function Practice({ user, exercise, exerciseOffering, initialTest
   const { id: exerciseId } = exercise;
 
   const {
-    getTestCases,
     deleteTestCase,
     createTestCase,
     runTests: runTestCases,
@@ -118,8 +117,7 @@ export default function Practice({ user, exercise, exerciseOffering, initialTest
   const runTests = async () => {
     setRunning(true);
     const attempt = await runTestCases(exerciseId, user.id);
-    const tests = await getTestCases(exerciseId, user.id, SHOW_ACTUAL);
-    setTests(displayTests(tests));
+    setTests(displayTests(attempt.testCases));
     setNewTests([]);
 
     setAttemptFeedback(attempt);
@@ -127,7 +125,6 @@ export default function Practice({ user, exercise, exerciseOffering, initialTest
   };
 
   const { coverageOutcomes, mutationOutcomes } = attemptFeedback || {
-    results: [],
     coverageOutcomes: [],
     mutationOutcomes: [],
   };

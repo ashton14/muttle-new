@@ -1,30 +1,70 @@
 import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
-import { SavedExerciseOffering } from '../../lib/api';
+import { AttemptFeedback, SavedExercise, SavedExerciseOffering, SavedTestCase } from '../../lib/api';
 import { useAuth } from '../../lib/context/AuthContext';
 import { useAuthenticatedApi } from '../../lib/context/AuthenticatedApiContext';
 
+import { PracticeProps } from '../../components/exercises/practice';
+import dynamic from 'next/dynamic';
+const Practice = dynamic<PracticeProps>(
+  () => import('../../components/exercises/practice'),
+  { ssr: false }
+);
+
 export default function Assignment() {
   const [exerciseOffering, setExerciseOffering] = useState<SavedExerciseOffering>();
+  const [tests, setTests] = useState<SavedTestCase[]>([]);
+  const [attemptFeedback, setAttemptFeedback] = useState<AttemptFeedback>();
+
   const router = useRouter();
-  const { authInfo: { userInfo }} = useAuth();
   const inviteCode = router.query.inviteCode as string;
-  const { getUserAssignment } = useAuthenticatedApi();
+
+  const { authInfo: { userInfo: user } } = useAuth();
+
+  const { getUserAssignment, getLatestAttempt } = useAuthenticatedApi();
 
   useEffect(() => {
     const fetchExerciseOffering = async () => {
-      if (userInfo) {
-        const exerciseOffering = await getUserAssignment(userInfo?.id, inviteCode);
-        setExerciseOffering(exerciseOffering);
+      if (user) {
+        const exerciseOffering = await getUserAssignment(user?.id, inviteCode);
+        if (!exerciseOffering) {
+          router.push('/assignments');
+        } else {
+          const attempt = await getLatestAttempt({
+            userId: user.id,
+            exerciseId: exerciseOffering.exercise.id,
+            exerciseOfferingId: exerciseOffering.id
+          });
+
+          console.log(exerciseOffering, user);
+
+          setExerciseOffering(exerciseOffering);
+          setAttemptFeedback(attempt);
+          setTests(attempt.testCases || []);
+        }
       }
     };
 
     fetchExerciseOffering();
-  }, [getUserAssignment, inviteCode, userInfo]);
+  }, [router, getUserAssignment, getLatestAttempt, inviteCode, user]);
+
+  if (!user) {
+    router.push('/');
+    return null;
+  }
+
+  if (!exerciseOffering) {
+    return null;
+  }
+
 
   return (
-    <>
-      {`Exercise offering is ${exerciseOffering?.id}`}
-    </>
+    <Practice
+      user={user}
+      exercise={exerciseOffering.exercise}
+      exerciseOffering={exerciseOffering}
+      initialAttemptFeedback={attemptFeedback}
+      initialTests={tests}
+    />
   );
 };

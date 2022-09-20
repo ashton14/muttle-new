@@ -1,7 +1,7 @@
-import express, {Request, Response} from 'express';
-import {getManager, getRepository} from 'typeorm';
-import {Exercise} from '../../../entity/Exercise';
-import {spawn} from 'child_process';
+import express, { Request, Response } from 'express';
+import { getManager, getRepository } from 'typeorm';
+import { Exercise } from '../../../entity/Exercise';
+import { spawn } from 'child_process';
 
 import {
   ATTEMPTS_DIR,
@@ -13,39 +13,39 @@ import {
   TESTS_FILENAME,
 } from '../../../utils/pythonUtils';
 
-import {TestCase} from '../../../entity/TestCase';
-import {deleteIfExists} from '../../../utils/fsUtils';
+import { TestCase } from '../../../entity/TestCase';
+import { deleteIfExists } from '../../../utils/fsUtils';
 import {
   getMutationData,
   MUTATION_RESULTS_FILENAME,
   runMutationAnalysis,
 } from './mutation';
-import {COVERAGE_RESULTS_FILENAME, getCoverageData} from './coverage';
-import {User} from '../../../entity/User';
-import {mkdir, readFile, writeFile} from 'fs/promises';
+import { COVERAGE_RESULTS_FILENAME, getCoverageData } from './coverage';
+import { User } from '../../../entity/User';
+import { mkdir, readFile, writeFile } from 'fs/promises';
 import path from 'path';
-import {Attempt} from '../../../entity/Attempt';
+import { Attempt } from '../../../entity/Attempt';
 
 const run = express.Router();
 
 run.post('/:id', async (req: Request, res: Response) => {
   try {
     const {
-      body: {userId},
-      params: {id: exerciseId},
+      body: { userId },
+      params: { id: exerciseId },
     } = req;
 
     const entityManager = getManager();
-    const user = entityManager.create(User, {id: userId});
+    const user = entityManager.create(User, { id: userId });
 
     const exercise = await entityManager
       .createQueryBuilder(Exercise, 'exercise')
-      .where('exercise.id = :exerciseId', {exerciseId})
+      .where('exercise.id = :exerciseId', { exerciseId })
       .leftJoinAndSelect(
         'exercise.testCases',
         'testCase',
         'testCase.userId = :userId',
-        {userId}
+        { userId }
       )
       .getOne();
 
@@ -97,7 +97,7 @@ run.post('/:id', async (req: Request, res: Response) => {
           })
         );
 
-        res.json({...savedAttempt});
+        res.json({ ...savedAttempt });
       } else {
         res.json({});
       }
@@ -130,8 +130,8 @@ const createWorkspace = async (
 ): Promise<string> => {
   const rootDir = path.join(ATTEMPTS_DIR, userId.toString(), exerciseId);
   await Promise.all([
-    mkdir(path.join(rootDir, 'src'), {recursive: true}),
-    mkdir(path.join(rootDir, 'reports'), {recursive: true}),
+    mkdir(path.join(rootDir, 'src'), { recursive: true }),
+    mkdir(path.join(rootDir, 'reports'), { recursive: true }),
   ]);
 
   return rootDir;
@@ -167,7 +167,7 @@ const writeTestFile = async (
   testCases: TestCase[]
 ): Promise<void> => {
   try {
-    const testSnippets = testCases.map(({input, output}, i) => {
+    const testSnippets = testCases.map(({ input, output }, i) => {
       const resultAsNumber = Number(output);
       const isFloat =
         !Number.isNaN(resultAsNumber) && !Number.isSafeInteger(resultAsNumber);
@@ -204,7 +204,7 @@ const runTests = (rootDir: string, testCases: TestCase[]) => {
 
     python.on('close', async () => {
       try {
-        const {exitcode, summary, tests} = await getTestResultData(rootDir);
+        const { exitcode, summary, tests } = await getTestResultData(rootDir);
         if (exitcode === 0 || exitcode === 1) {
           await updateTestCases(testCases, tests);
           resolve(summary.passed === summary.total);
@@ -270,7 +270,7 @@ const updateTestCases = async (
   try {
     const testRepo = getRepository(TestCase);
     const updatedTestCases = testCases.map((test, i) => {
-      const {passed, actual, errorMessage} = parseResult(testResults[i]);
+      const { passed, actual, errorMessage } = parseResult(testResults[i]);
 
       return testRepo.merge(test, {
         passed,
@@ -308,7 +308,7 @@ const parseResult = (result: TestResult) => {
       break;
   }
 
-  return {passed, actual, errorMessage};
+  return { passed, actual, errorMessage };
 };
 
 const getOutcome = (result: TestResult): TestOutcome => {

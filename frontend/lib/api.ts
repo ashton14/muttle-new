@@ -45,8 +45,15 @@ export interface SavedTestCase extends NewTestCase {
   errorMessage?: string;
 }
 
+export interface AttemptRequest {
+  userId: number,
+  exerciseId: number,
+  exerciseOfferingId?: number
+};
+
 export interface AttemptFeedback {
-  results: SavedTestCase[];
+  id: number;
+  testCases: SavedTestCase[];
   coverageOutcomes?: CoverageOutcome[];
   mutationOutcomes?: MutationOutcome[];
 }
@@ -141,16 +148,14 @@ export interface AuthenticatedApi {
   getTestCases(
     exerciseId: number,
     userId: number,
+    attemptId: number,
     actual?: boolean
   ): Promise<SavedTestCase[]>;
   createTestCase(testCase: NewTestCase): Promise<SavedTestCase>;
   deleteTestCase(testCase: SavedTestCase): Promise<number | null>;
   // Misc
   runTests(exerciseId: number, userId: number): Promise<AttemptFeedback>;
-  getLatestAttempt(
-    exerciseId: number,
-    userId: number
-  ): Promise<AttemptFeedback>;
+  getLatestAttempt(options: AttemptRequest): Promise<AttemptFeedback>;
 }
 
 /**
