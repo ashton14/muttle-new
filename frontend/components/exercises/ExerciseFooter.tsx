@@ -6,18 +6,16 @@ import {SavedTestCase} from '../../lib/api';
 interface ExerciseFooterProps {
   disabled: boolean;
   running: boolean;
-  saveTests(): Promise<SavedTestCase[]>;
   runTests(): void;
 }
 
 const ExerciseFooter = ({
   disabled,
   running,
-  saveTests,
   runTests,
 }: ExerciseFooterProps) => (
   <Row className="mt-2 d-flex justify-content-center">
-    <Button onClick={() => saveTests().then(runTests)} disabled={disabled}>
+    <Button onClick={() => runTests()} disabled={disabled}>
       {running ? (
         <Spinner animation="border" size="sm" />
       ) : (

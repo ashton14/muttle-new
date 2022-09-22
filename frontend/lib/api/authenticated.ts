@@ -24,7 +24,6 @@ export const getAuthenticatedEndpoints = (
   getUserAssignment: getUserAssignment(api),
   updateExercise: updateExercise(api),
   getTestCases: getTestCases(api),
-  createTestCase: createTestCase(api),
   deleteTestCase: deleteTestCase(api),
   runTests: runTests(api),
   getLatestAttempt: getLatestAttempt(api),
@@ -62,6 +61,7 @@ const getTestCases =
       .get(`exercises/${exerciseId}/testCases`, { params: { userId, actual } })
       .then(res => res.data);
 
+// NOT USED
 const createTestCase =
   (api: AxiosInstance) =>
   (testCase: NewTestCase): Promise<SavedTestCase> =>
@@ -103,8 +103,8 @@ const getUserAssignments =
 
 const runTests =
   (api: AxiosInstance) =>
-  (exerciseId: number, userId: number): Promise<AttemptFeedback> =>
-    api.post(`run/${exerciseId}`, { userId }).then(res => res.data);
+  (exerciseId: number, userId: number, testCases: (NewTestCase | SavedTestCase)[]): Promise<AttemptFeedback> =>
+    api.post(`run/${exerciseId}`, { userId, testCases }).then(res => res.data);
 
 const getUserAssignment =
     (api: AxiosInstance) => 

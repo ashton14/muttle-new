@@ -1,64 +1,10 @@
 import express, { Request, Response } from 'express';
-import { getManager, getRepository } from 'typeorm';
+import { getManager } from 'typeorm';
 import { Exercise } from '../../entity/Exercise';
 import { TestCase } from '../../entity/TestCase';
 import { User } from '../../entity/User';
 
 const exerciseTestCases = express.Router({ mergeParams: true });
-
-exerciseTestCases.post('/', async (req: Request, res: Response) => {
-  const entityManager = getManager();
-  const { id, input, output, exerciseId, userId } = req.body;
-
-  const exercise = entityManager.create(Exercise, { id: exerciseId });
-  const user = entityManager.create(User, { id: userId });
-  const newTest = { input, output, exercise, user };
-
-  try {
-    if (id) {
-      const existing = await entityManager.findOne(TestCase, id);
-      if (
-        existing &&
-        (existing.input !== input || existing.output !== output)
-      ) {
-        const savedNewTest = (await entityManager.save(
-          TestCase,
-          newTest
-        )) as TestCase;
-
-        const updated = entityManager.merge(TestCase, existing, {
-          fixedId: savedNewTest.id,
-        });
-        await entityManager.save(TestCase, updated);
-      }
-    } else {
-      await entityManager.save(TestCase, newTest);
-    }
-    res.sendStatus(200);
-  } catch (err) {
-    console.log(err.stack); // TODO - Implement better error handling
-    res.sendStatus(500);
-  }
-});
-
-// TODO - Needs to be fixed with new model for inserting (
-exerciseTestCases.post('/batch', async (req: Request, res: Response) => {
-  const exerciseRepo = getRepository(Exercise);
-  const testCases = req.body.map(
-    ({
-      input,
-      output,
-      exerciseId,
-      fixedId,
-    }: TestCase & { exerciseId: number }) => ({
-      input,
-      output,
-      fixedId,
-      exercise: exerciseRepo.create({ id: exerciseId }),
-    })
-  );
-  res.json(await getManager().save(TestCase, testCases));
-});
 
 exerciseTestCases.get('/', async (req: Request, res: Response) => {
   const {
@@ -97,5 +43,46 @@ exerciseTestCases.delete('/:id', async (req: Request, res: Response) => {
 exerciseTestCases.get('/:id', async (req: Request, res: Response) =>
   res.json(await getManager().findOne(TestCase, req.params.id))
 );
+
+/**
+ * Saves the specified TestCase for the Exercise with the given id and the User
+ * with the given id.
+ *
+ * If the specified {@link TestCase} already existed (i.e., if it has an id),
+ * a new test case is created, and the existing {@link TestCase}'s fixedId
+ * points to the new {@link TestCase}.
+ *
+ * @param testCase The {@link TestCase} to save
+ * @param exerciseId The id for the Exercise
+ * @param userId The id for the User
+ * @returns The saved test case
+ */
+export async function saveTestCase(
+  testCase: TestCase,
+  exerciseId: number,
+  userId: number
+): Promise<TestCase> {
+  const { id, input, output } = testCase;
+  const entityManager = getManager();
+  const exercise = entityManager.create(Exercise, { id: exerciseId });
+  const user = entityManager.create(User, { id: userId });
+  const newTest = { input, output, exercise, user };
+
+  const existing = id && (await entityManager.findOne(TestCase, id));
+  if (existing && (existing.input !== input || existing.output !== output)) {
+    const savedNewTest = (await entityManager.save(
+      TestCase,
+      newTest
+    )) as TestCase;
+
+    const updated = entityManager.merge(TestCase, existing, {
+      fixedId: savedNewTest.id,
+    });
+    await entityManager.save(TestCase, updated);
+    return Promise.resolve(savedNewTest as TestCase);
+  } else {
+    return entityManager.save(TestCase, newTest) as Promise<TestCase>;
+  }
+}
 
 export default exerciseTestCases;

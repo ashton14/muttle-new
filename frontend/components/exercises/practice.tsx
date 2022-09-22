@@ -49,7 +49,6 @@ export default function Practice({ user, exercise, exerciseOffering, initialTest
 
   const {
     deleteTestCase,
-    createTestCase,
     runTests: runTestCases,
   } = useAuthenticatedApi();
 
@@ -105,18 +104,17 @@ export default function Practice({ user, exercise, exerciseOffering, initialTest
       ];
     });
 
-  const saveTests = () => {
+  /**
+   * Saves and runs the current set of tests for the exercise.
+   */
+  const runTests = async () => {
     const testsToSave = newTests.filter(({ input, output }) => input || output);
     const testsToUpdate = tests
       .filter(({ passed }) => !passed)
       .map(test => ({ ...test, exerciseId, userId: user.id }));
 
-    return Promise.all(testsToSave.concat(testsToUpdate).map(createTestCase));
-  };
-
-  const runTests = async () => {
     setRunning(true);
-    const attempt = await runTestCases(exerciseId, user.id);
+    const attempt = await runTestCases(exerciseId, user.id, testsToSave.concat(testsToUpdate));
     setTests(displayTests(attempt.testCases));
     setNewTests([]);
 
@@ -190,7 +188,6 @@ export default function Practice({ user, exercise, exerciseOffering, initialTest
       <ExerciseFooter
         disabled={running || (!tests.length && !newTests.length)}
         running={running}
-        saveTests={saveTests}
         runTests={runTests}
       />
     </Container>

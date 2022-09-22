@@ -5,7 +5,7 @@ import { CodeEditorProps } from '../code/CodeEditor';
 
 const CodeEditor = dynamic<CodeEditorProps>(() => import('../code/CodeEditor'));
 
-interface ExerciseFormProps {
+export interface ExerciseFormProps {
   name?: string;
   setName: (name: string) => void;
   description?: string;

@@ -33,7 +33,7 @@ const TestCaseRow = React.forwardRef<HTMLInputElement, TestCaseProps>(
     }: TestCaseProps,
     ref
   ) => {
-    let results;
+    let results: JSX.Element;
     if (passed === true) {
       results = <Success />;
     } else if (passed === false && errorMessage) {

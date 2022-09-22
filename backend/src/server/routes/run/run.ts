@@ -25,42 +25,43 @@ import { User } from '../../../entity/User';
 import { mkdir, readFile, writeFile } from 'fs/promises';
 import path from 'path';
 import { Attempt } from '../../../entity/Attempt';
+import { saveTestCase } from '../testCases';
 
 const run = express.Router();
 
 run.post('/:id', async (req: Request, res: Response) => {
   try {
     const {
-      body: { userId },
-      params: { id: exerciseId },
+      body: { userId, testCases },
     } = req;
+
+    const exerciseId = parseInt(req.params.id as string);
 
     const entityManager = getManager();
     const user = entityManager.create(User, { id: userId });
 
-    const exercise = await entityManager
-      .createQueryBuilder(Exercise, 'exercise')
-      .where('exercise.id = :exerciseId', { exerciseId })
-      .leftJoinAndSelect(
-        'exercise.testCases',
-        'testCase',
-        'testCase.userId = :userId',
-        { userId }
-      )
-      .getOne();
+    const exercise = await entityManager.findOne(Exercise, {
+      where: {
+        id: exerciseId,
+      },
+    });
 
     if (user && exercise) {
-      // Only run failing tests that have not yet been fixed
-      const testCases = exercise.testCases.filter(
-        test => test.visible && !test.fixedId
+      // Save incoming test cases. After saving, the returned list
+      // should only have test cases that should be run and displayed.
+      const savedTestCases: TestCase[] = await Promise.all(
+        testCases.map((t: TestCase) => saveTestCase(t, exerciseId, userId))
       );
 
+      // Create a new attempt for the user on the exercise, with the new set of
+      // test cases.
       const attempt = entityManager.create(Attempt, {
         user,
         exercise,
-        testCases,
+        testCases: savedTestCases,
       });
 
+      // Ready to run tests.
       const functionName = getFunctionName(exercise.snippet) || '';
       if (!functionName) {
         // TODO - better error handling? Validate during creation and populate field?
@@ -70,7 +71,7 @@ run.post('/:id', async (req: Request, res: Response) => {
       const rootDir = await createWorkspace(userId, exerciseId);
       await writeFiles(rootDir, functionName, exercise.snippet, testCases);
 
-      const allPassed = await runTests(rootDir, testCases);
+      const allPassed = await runTests(rootDir, savedTestCases);
 
       if (allPassed) {
         const mutatedSources = await runMutationAnalysis(rootDir);
@@ -99,7 +100,10 @@ run.post('/:id', async (req: Request, res: Response) => {
 
         res.json({ ...savedAttempt });
       } else {
-        res.json({});
+        const savedAttempt = entityManager.merge(Attempt, attempt, {
+          testCases: savedTestCases,
+        });
+        res.json({ ...savedAttempt });
       }
     } else {
       res.sendStatus(404);
@@ -126,9 +130,13 @@ run.post('/:id', async (req: Request, res: Response) => {
  */
 const createWorkspace = async (
   userId: number,
-  exerciseId: string
+  exerciseId: number
 ): Promise<string> => {
-  const rootDir = path.join(ATTEMPTS_DIR, userId.toString(), exerciseId);
+  const rootDir = path.join(
+    ATTEMPTS_DIR,
+    userId.toString(),
+    exerciseId.toString()
+  );
   await Promise.all([
     mkdir(path.join(rootDir, 'src'), { recursive: true }),
     mkdir(path.join(rootDir, 'reports'), { recursive: true }),

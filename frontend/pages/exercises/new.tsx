@@ -3,8 +3,14 @@ import { useRouter } from 'next/router';
 import Container from 'react-bootstrap/Container';
 import Button from 'react-bootstrap/Button';
 
-import ExerciseForm from '../../components/exercises/ExerciseForm';
 import { useAuthenticatedApi } from '../../lib/context/AuthenticatedApiContext';
+
+import { ExerciseFormProps } from '../../components/exercises/ExerciseForm';
+import dynamic from 'next/dynamic';
+const ExerciseForm = dynamic<ExerciseFormProps>(
+  () => import('../../components/exercises/ExerciseForm'),
+  { ssr: false }
+);
 
 const NewExercise = () => {
   const [name, setName] = useState('');

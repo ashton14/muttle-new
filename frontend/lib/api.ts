@@ -151,10 +151,9 @@ export interface AuthenticatedApi {
     attemptId: number,
     actual?: boolean
   ): Promise<SavedTestCase[]>;
-  createTestCase(testCase: NewTestCase): Promise<SavedTestCase>;
   deleteTestCase(testCase: SavedTestCase): Promise<number | null>;
   // Misc
-  runTests(exerciseId: number, userId: number): Promise<AttemptFeedback>;
+  runTests(exerciseId: number, userId: number, testCases: (NewTestCase | SavedTestCase)[]): Promise<AttemptFeedback>;
   getLatestAttempt(options: AttemptRequest): Promise<AttemptFeedback>;
 }
 

@@ -1,5 +1,5 @@
 import express, { Request, Response } from 'express';
-import { getRepository } from 'typeorm';
+import { getRepository, IsNull } from 'typeorm';
 import { Exercise } from '../../entity/Exercise';
 import { Attempt } from '../../entity/Attempt';
 import testCases from './testCases';
@@ -53,18 +53,21 @@ exercises.get('/:id/attempts/latest', async (req: Request, res: Response) => {
     return;
   }
 
-  res.json(
-    await getRepository(Attempt).findOne({
-      where: {
-        exercise: { id: req.params.id },
-        user: { id: user.subject },
-      },
-      relations: ['testCases'],
-      order: {
-        id: 'DESC',
-      },
-    })
-  );
+  const attempt = await getRepository(Attempt).findOne({
+    where: {
+      exercise: { id: req.params.id },
+      exerciseOffering: IsNull(),
+      user: { id: user.subject },
+    },
+    relations: ['testCases'],
+    order: {
+      created: 'DESC',
+    },
+  });
+  if (attempt) {
+    attempt.testCases = attempt?.testCases.filter(t => !t.fixedId);
+  }
+  res.json(attempt);
 });
 
 export default exercises;
