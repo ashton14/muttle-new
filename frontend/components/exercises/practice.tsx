@@ -114,7 +114,12 @@ export default function Practice({ user, exercise, exerciseOffering, initialTest
       .map(test => ({ ...test, exerciseId, userId: user.id }));
 
     setRunning(true);
-    const attempt = await runTestCases(exerciseId, user.id, testsToSave.concat(testsToUpdate));
+    const attempt = await runTestCases({
+      exerciseId,
+      userId: user.id,
+      exerciseOfferingId: exerciseOffering?.id,
+      testCases: testsToSave.concat(testsToUpdate)
+    });
     setTests(displayTests(attempt.testCases));
     setNewTests([]);
 

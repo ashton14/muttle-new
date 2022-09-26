@@ -9,6 +9,7 @@ import {
   SavedTestCase,
   SavedExerciseOffering,
   AttemptRequest,
+  RunTestRequest,
 } from '../api';
 
 export const getAuthenticatedEndpoints = (
@@ -103,8 +104,9 @@ const getUserAssignments =
 
 const runTests =
   (api: AxiosInstance) =>
-  (exerciseId: number, userId: number, testCases: (NewTestCase | SavedTestCase)[]): Promise<AttemptFeedback> =>
-    api.post(`run/${exerciseId}`, { userId, testCases }).then(res => res.data);
+  ({ exerciseId, exerciseOfferingId, userId, testCases }: RunTestRequest):
+    Promise<AttemptFeedback> =>
+    api.post(`run/${exerciseId}`, { userId, exerciseOfferingId, testCases }).then(res => res.data);
 
 const getUserAssignment =
     (api: AxiosInstance) => 

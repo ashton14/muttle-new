@@ -6,6 +6,7 @@ import { useAuthenticatedApi } from '../../lib/context/AuthenticatedApiContext';
 
 import { PracticeProps } from '../../components/exercises/practice';
 import dynamic from 'next/dynamic';
+import { Alert, Container, Spinner } from 'react-bootstrap';
 const Practice = dynamic<PracticeProps>(
   () => import('../../components/exercises/practice'),
   { ssr: false }
@@ -53,18 +54,21 @@ export default function Assignment() {
     return null;
   }
 
-  if (!exerciseOffering) {
-    return null;
-  }
-
-
   return (
-    <Practice
-      user={user}
-      exercise={exerciseOffering.exercise}
-      exerciseOffering={exerciseOffering}
-      initialAttemptFeedback={attemptFeedback}
-      initialTests={tests}
-    />
+    <Container>
+    {
+      exerciseOffering ? 
+      (<Practice
+        user={user}
+        exercise={exerciseOffering.exercise}
+        exerciseOffering={exerciseOffering}
+        initialAttemptFeedback={attemptFeedback}
+        initialTests={tests}
+      />) :
+      (
+        <Spinner animation="border" size="sm" />
+      )
+    }
+    </Container>
   );
 };

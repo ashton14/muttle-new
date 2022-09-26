@@ -51,6 +51,13 @@ export interface AttemptRequest {
   exerciseOfferingId?: number
 };
 
+export interface RunTestRequest {
+  exerciseId: number,
+  exerciseOfferingId?: number,
+  userId: number,
+  testCases: (NewTestCase | SavedTestCase)[]
+};
+
 export interface AttemptFeedback {
   id: number;
   testCases: SavedTestCase[];
@@ -153,7 +160,7 @@ export interface AuthenticatedApi {
   ): Promise<SavedTestCase[]>;
   deleteTestCase(testCase: SavedTestCase): Promise<number | null>;
   // Misc
-  runTests(exerciseId: number, userId: number, testCases: (NewTestCase | SavedTestCase)[]): Promise<AttemptFeedback>;
+  runTests(params: RunTestRequest): Promise<AttemptFeedback>;
   getLatestAttempt(options: AttemptRequest): Promise<AttemptFeedback>;
 }
 

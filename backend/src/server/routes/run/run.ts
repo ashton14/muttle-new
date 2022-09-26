@@ -26,13 +26,14 @@ import { mkdir, readFile, writeFile } from 'fs/promises';
 import path from 'path';
 import { Attempt } from '../../../entity/Attempt';
 import { saveTestCase } from '../testCases';
+import { ExerciseOffering } from '../../../entity/ExerciseOffering';
 
 const run = express.Router();
 
 run.post('/:id', async (req: Request, res: Response) => {
   try {
     const {
-      body: { userId, testCases },
+      body: { userId, testCases, exerciseOfferingId },
     } = req;
 
     const exerciseId = parseInt(req.params.id as string);
@@ -40,11 +41,22 @@ run.post('/:id', async (req: Request, res: Response) => {
     const entityManager = getManager();
     const user = entityManager.create(User, { id: userId });
 
-    const exercise = await entityManager.findOne(Exercise, {
-      where: {
-        id: exerciseId,
-      },
-    });
+    // If an exerciseOffering is specified, grab that and its exercise.
+    // The next two statements should only make one database call.
+    const exerciseOffering =
+      exerciseOfferingId &&
+      (await entityManager.findOne(ExerciseOffering, {
+        where: {
+          id: exerciseOfferingId,
+        },
+        relations: ['exercise'],
+      }));
+
+    const exercise =
+      exerciseOffering?.exercise ||
+      (await entityManager.findOne(Exercise, {
+        where: { id: exerciseId },
+      }));
 
     if (user && exercise) {
       // Save incoming test cases. After saving, the returned list
@@ -58,6 +70,7 @@ run.post('/:id', async (req: Request, res: Response) => {
       const attempt = entityManager.create(Attempt, {
         user,
         exercise,
+        exerciseOffering,
         testCases: savedTestCases,
       });
 

@@ -23,6 +23,6 @@ export const config = {
     '/exercises/:id*',
     '/exercises/:id/(.*)',
     '/exercises/:id/offerings/(.*)',
-    '/assignments/(.*)'
+    '/assignments(.*)'
   ] 
 }
