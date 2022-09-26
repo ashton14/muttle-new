@@ -83,9 +83,6 @@ const ExerciseOfferingList = () => {
               <ExerciseListItem key={offering.exercise.id} exercise={offering.exercise} />
             ))} */}
           </ListGroup>
-          <Button href="/exercises/new">
-            <i className="fas fa-plus-square" aria-hidden="true" /> New Exercise
-          </Button>
         </Container>
       );
   }
