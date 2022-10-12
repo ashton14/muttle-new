@@ -14,6 +14,7 @@ import {
   MutationOutcome,
   Status,
   sortStatus,
+  SavedExerciseOffering,
 } from '../../lib/api';
 import MutantBadge from '../feedback/Mutant';
 import _ from 'lodash';
@@ -32,7 +33,7 @@ export interface HighlighterProps {
   coverageOutcomes?: CoverageOutcome[];
   mutationOutcomes?: MutationOutcome[];
   className?: string;
-  feedbackType?: FeedbackType;
+  exerciseOffering?: SavedExerciseOffering;
 }
 
 const Highlighter = (props: HighlighterProps) => {
@@ -46,7 +47,7 @@ const Highlighter = (props: HighlighterProps) => {
     coverageOutcomes,
     mutationOutcomes,
     className,
-    feedbackType,
+    exerciseOffering
   } = props;
 
   const [selectedMutant, setSelectedMutant] = useState<MutationOutcome | null>(
@@ -124,23 +125,21 @@ const Highlighter = (props: HighlighterProps) => {
       }
     };
 
-    if (
-      mutationOutcomes?.length &&
-      (feedbackType === FeedbackType.ALL_FEEDBACK ||
-        feedbackType === FeedbackType.MUTATION_ANALYSIS)
-    ) {
+    if (mutationOutcomes) {
       const editor = codeMirrorRef.current?.editor;
       widgetsRef.current?.forEach(w => w.clear());
       widgetsRef.current = displayMutationCoverage(
         editor,
-        mutationOutcomes,
+        exerciseOffering ?
+          mutationOutcomes.filter(m => exerciseOffering.mutators.includes(m.operator)) : 
+          mutationOutcomes,
         selectedMutant,
         handleMutantSelect
       );
     } else {
       widgetsRef.current?.forEach(w => w.clear());
     }
-  }, [value, mutationOutcomes, selectedMutant, feedbackType]);
+  }, [value, mutationOutcomes, selectedMutant, exerciseOffering]);
 
   // If the coverageOutcomes change, redraw condition coverage feedback.
   // Also redraw if the editor contents change, because CodeMirror clears
@@ -151,15 +150,11 @@ const Highlighter = (props: HighlighterProps) => {
     if (editor) {
       editor.clearGutter('coverage-gutter');
 
-      if (
-        coverageOutcomes &&
-        (feedbackType === FeedbackType.ALL_FEEDBACK ||
-          feedbackType === FeedbackType.CODE_COVERAGE)
-      ) {
+      if (coverageOutcomes) {
         highlightCoverage(editor, coverageOutcomes);
       }
     }
-  }, [value, coverageOutcomes, feedbackType]);
+  }, [value, coverageOutcomes, exerciseOffering]);
 
   return (
     <CodeMirror
@@ -201,7 +196,7 @@ const displayMutationCoverage = (
     );
   }
 
-  Object.entries(
+  const mutantBadges: [string, JSX.Element[]][] = Object.entries(
     _.mapValues(mutationResultsByLine, (mutants, lineNo, _object) =>
       mutants
         .filter(mutationOutcome => mutationOutcome.status !== Status.KILLED)
@@ -227,7 +222,9 @@ const displayMutationCoverage = (
           );
         })
     )
-  ).forEach(([line, mutants]) => {
+  )
+  
+  mutantBadges.forEach(([line, mutants]) => {
     if (editor) {
       const div: HTMLElement = document.createElement('div');
       render(mutants, div);

@@ -81,12 +81,15 @@ Set the following environment variables:
 
 These are needed because the values above are referred to by environment variables in the codebase. The same code runs in production, where the values are replaced with values for the production database, which are not visible for obvious reasons.
 
-Do the following to generate database tables:
+### Set up and seed the database
 
+Do the following to set up and seed the database:
+
+```bash
+yarn db:populate
 ```
-cd backend
-yarn run typeorm migration:run
-```
+
+This drops the schema, re-creates it based on the entities in [backend/src/entity](src/entity), and seeds it with some dummy data (see [backend/src/seeds](backend/src/seeds)).
 
 ## Run servers
 
@@ -99,5 +102,5 @@ cd ../frontend
 yart start-dev
 ```
 
-Backend runs at [http://localhost:3000]. Frontend runs at [http://localhost:3001].
+Backend runs at http://localhost:3000. Frontend runs at http://localhost:3001.
 

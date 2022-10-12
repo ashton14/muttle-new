@@ -18,8 +18,6 @@ const displayTests = (tests: SavedTestCase[]) =>
       t1.passed && !t2.passed ? -1 : !t1.passed && t2.passed ? 1 : 0
     );
 
-const SHOW_ACTUAL = true;
-
 export enum FeedbackType {
   NO_FEEDBACK,
   CODE_COVERAGE,
@@ -176,7 +174,7 @@ export default function Practice({ user, exercise, exerciseOffering, initialTest
         coverageOutcomes={coverageOutcomes}
         mutationOutcomes={mutationOutcomes}
         className="border rounded h-auto mb-4"
-        feedbackType={feedbackType}
+        exerciseOffering={exerciseOffering}
       />
       <Row>
         <TestCaseTable

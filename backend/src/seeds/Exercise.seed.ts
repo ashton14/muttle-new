@@ -1,6 +1,6 @@
-import {Factory, Seeder} from 'typeorm-seeding';
-import {Connection} from 'typeorm';
-import {Exercise} from '../entity/Exercise';
+import { Factory, Seeder } from 'typeorm-seeding';
+import { Connection } from 'typeorm';
+import { Exercise } from '../entity/Exercise';
 
 const seedExercises = [
   {
@@ -9,6 +9,7 @@ const seedExercises = [
     snippet: 'def mul(x, y):\n' + '    return x * y',
     created: new Date(),
     modified: new Date(),
+    ownerId: 1,
   },
   {
     name: 'Rainfall problem',
@@ -28,6 +29,7 @@ const seedExercises = [
       '        return total / count',
     created: new Date(),
     modified: new Date(),
+    ownerId: 1,
   },
 ];
 

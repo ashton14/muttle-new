@@ -6,7 +6,7 @@ import { useAuthenticatedApi } from '../../lib/context/AuthenticatedApiContext';
 
 import { PracticeProps } from '../../components/exercises/practice';
 import dynamic from 'next/dynamic';
-import { Alert, Container, Spinner } from 'react-bootstrap';
+import { Container, Spinner } from 'react-bootstrap';
 const Practice = dynamic<PracticeProps>(
   () => import('../../components/exercises/practice'),
   { ssr: false }
