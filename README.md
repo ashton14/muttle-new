@@ -68,8 +68,9 @@ Run the following SQL queries to create the database and user.
 ```sql
 CREATE DATABASE muttle;
 CREATE USER professorx WITH PASSWORD 'mutants';
-GRANT ALL PRIVILEGES ON DATABASE "muttle" TO professorx;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA PUBLIC TO professorx; 
 ```
+
 
 ### Environment variables
 
