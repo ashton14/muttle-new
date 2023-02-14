@@ -11,7 +11,7 @@ export default function NewExerciseOfferingForm() {
   const [conditionCoverage, setConditionCoverage] = useState(false);
   const [mutationCoverage, setMutationCoverage] = useState(false);
   const [mutators, setMutators] = useState<string[]>([]);
-  const [minTests, setMinTests] = useState<number | undefined>(undefined);
+  const [minTests, setMinTests] = useState<number>(0);
   const [exercise, setExercise] = useState<SavedExercise | null>(null);
   const [inviteCode, setInviteCode] = useState('');
 
