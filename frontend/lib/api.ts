@@ -19,7 +19,7 @@ export interface ExerciseOffering {
   exerciseId: number;
   conditionCoverage: boolean;
   mutators: string[];
-  minTests?: number | undefined;
+  minTests?: number;
 }
 
 export interface SavedExerciseOffering extends ExerciseOffering {

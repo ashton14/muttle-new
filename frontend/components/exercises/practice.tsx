@@ -74,7 +74,6 @@ export default function Practice({ user, exercise, exerciseOffering, initialTest
         }
       }
       fetchOffering();
-      console.log("minTests: " + minTests)
     }, [getExerciseOffering, exerciseId, offeringId, router])
   }
 
