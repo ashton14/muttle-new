@@ -36,11 +36,7 @@ const EditExerciseOffering = () => {
         } = fetched;
         setConditionCoverage(conditionCoverage);
         setMutationCoverage(mutators.length > 0 ? true : false);
-        if (mutationCoverage === false) {
-          setMutators([]);
-        } else {
-          setMutators(mutators);
-        }
+        setMutators(mutators);
         setMinTests(minTests);
         setInviteCode(inviteCode)
         setExercise(exercise);
@@ -55,8 +51,15 @@ const EditExerciseOffering = () => {
     fetchOffering();
   }, [getExerciseOffering, exerciseId, offeringId, router])
 
+  useEffect(() => {
+    if (!mutationCoverage) {
+      setMutators([]);
+    }
+  }, [mutationCoverage])
+
   const submit = async () => {
     if (offering) {
+      //console.log("mutators: " + mutationCoverage);
       await updateExerciseOffering({
         ...offering,
         conditionCoverage,

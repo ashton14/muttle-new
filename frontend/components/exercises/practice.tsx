@@ -1,7 +1,7 @@
 import React from 'react';
 import { useRouter } from "next/router";
 import { useState, useEffect } from "react";
-import { AttemptFeedback, NewTestCase, SavedExercise, SavedExerciseOffering, SavedTestCase } from "../../lib/api";
+import { AttemptFeedback, MutationOutcome, NewTestCase, SavedExercise, SavedExerciseOffering, SavedTestCase } from "../../lib/api";
 import { useAuthenticatedApi } from "../../lib/context/AuthenticatedApiContext";
 import ExerciseFooter from "./ExerciseFooter";
 import Highlighter from '../code/Highlighter';
@@ -43,6 +43,8 @@ export default function Practice({ user, exercise, exerciseOffering, initialTest
   );
   const [minTests, setMinTests] = useState<number>(0);
   const [mutators, setMutators] = useState<string[]>([]);
+  const [showMutators, setShowMutators] = useState<boolean>(false);
+  const [mutationOutcomesFiltered, setMutationOutcomesFiltered] = useState<MutationOutcome[]>([]);
 
   const router = useRouter();
   const { id: exerciseId } = exercise;
@@ -66,6 +68,7 @@ export default function Practice({ user, exercise, exerciseOffering, initialTest
           } = fetched;
           setMinTests(minTests);
           setMutators(mutators);
+          setShowMutators(mutators.length > 0 ? true : false);
           console.log("mutators: " + mutators.length);
         } catch (err) {
           if (err.response.status === 403) {
@@ -167,13 +170,22 @@ export default function Practice({ user, exercise, exerciseOffering, initialTest
     mutationOutcomes: [],
   };
 
-  const mutationOutcomesFiltered = mutationOutcomes.filter(mutator => mutators.includes(mutator.operator))
+  //const mutationOutcomesFiltered = mutationOutcomes.filter(mutator => mutators.includes(mutator.operator))
 
   const toggleFeedbackType = buttonType => {
     setFeedbackType(
       feedbackType === buttonType ? FeedbackType.ALL_FEEDBACK : buttonType
     );
   };
+
+  
+  useEffect(() => {
+    if (showMutators && mutationOutcomes) {
+      setMutationOutcomesFiltered(mutationOutcomes.filter(mutator => mutators.includes(mutator.operator)));
+    } //else {
+      //setMutationOutcomesFiltered([]);
+    //}
+  }, [showMutators])
 
   return (
     <Container>
@@ -211,10 +223,18 @@ export default function Practice({ user, exercise, exerciseOffering, initialTest
           gutters: ['CodeMirror-linenumbers', 'coverage-gutter'],
         }}
         coverageOutcomes={coverageOutcomes}
-        mutationOutcomes={mutationOutcomesFiltered}
+        mutationOutcomes={showMutators ? mutationOutcomesFiltered : []}
         className="border rounded h-auto mb-4"
         exerciseOffering={exerciseOffering}
       />
+      <Button
+          size="sm"
+          variant="outline-secondary"
+          disabled={mutationOutcomesFiltered.length == 0}
+          onClick={() => setShowMutators(!showMutators)}
+        >
+          {showMutators ? "Hide mutators" : "Show mutators"}
+        </Button>
       <Row>
         <TestCaseTable
           savedTests={tests}
