@@ -60,7 +60,6 @@ export default function Practice({ user, exercise, exerciseOffering, initialTest
     useEffect(() => {
       const fetchOffering = async () => {
         try {
-          console.log("offeringID: ", offeringId);
           const fetched = await getExerciseOffering(exerciseId, offeringId);
           const {
             minTests,
@@ -69,7 +68,6 @@ export default function Practice({ user, exercise, exerciseOffering, initialTest
           setMinTests(minTests);
           setMutators(mutators);
           setShowMutators(mutators.length > 0 ? true : false);
-          console.log("mutators: " + mutators.length);
         } catch (err) {
           if (err.response.status === 403) {
             router.push({pathname: '/exercises', query: {message: err.response.data.message}});

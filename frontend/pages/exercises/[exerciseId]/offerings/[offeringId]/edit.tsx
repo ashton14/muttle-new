@@ -59,7 +59,6 @@ const EditExerciseOffering = () => {
 
   const submit = async () => {
     if (offering) {
-      //console.log("mutators: " + mutationCoverage);
       await updateExerciseOffering({
         ...offering,
         conditionCoverage,
