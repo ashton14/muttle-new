@@ -43,6 +43,7 @@ export default function Practice({ user, exercise, exerciseOffering, initialTest
   );
   const [minTests, setMinTests] = useState<number>(0);
   const [mutators, setMutators] = useState<string[]>([]);
+  const [showCoverage, setShowCoverage] = useState<boolean>(false);
   const [showMutators, setShowMutators] = useState<boolean>(false);
   const [mutationOutcomesFiltered, setMutationOutcomesFiltered] = useState<MutationOutcome[]>([]);
 
@@ -64,9 +65,11 @@ export default function Practice({ user, exercise, exerciseOffering, initialTest
           const {
             minTests,
             mutators,
+            conditionCoverage
           } = fetched;
           setMinTests(minTests);
           setMutators(mutators);
+          setShowCoverage(conditionCoverage);
           setShowMutators(mutators.length > 0 ? true : false);
         } catch (err) {
           if (err.response.status === 403) {
@@ -140,6 +143,12 @@ export default function Practice({ user, exercise, exerciseOffering, initialTest
     }
     return true;
   }
+
+  const toggleFeedback = () => {
+    setShowMutators(!showMutators);
+    setShowCoverage(!showCoverage);
+  }
+
   /**
    * Saves and runs the current set of tests for the exercise.
    */
@@ -168,15 +177,12 @@ export default function Practice({ user, exercise, exerciseOffering, initialTest
     mutationOutcomes: [],
   };
 
-  //const mutationOutcomesFiltered = mutationOutcomes.filter(mutator => mutators.includes(mutator.operator))
-
   const toggleFeedbackType = buttonType => {
     setFeedbackType(
       feedbackType === buttonType ? FeedbackType.ALL_FEEDBACK : buttonType
     );
   };
 
-  
   useEffect(() => {
     if (showMutators && mutationOutcomes) {
       setMutationOutcomesFiltered(mutationOutcomes.filter(mutator => mutators.includes(mutator.operator)));
@@ -214,25 +220,25 @@ export default function Practice({ user, exercise, exerciseOffering, initialTest
 
       <p>{exercise.description}</p>
 
+      <Button
+          size="sm"
+          variant="outline-secondary"
+          disabled={mutationOutcomesFiltered.length == 0}
+          onClick={() => toggleFeedback()}
+        >
+        {showMutators ? "Hide feedback" : "Show feedback"}
+      </Button>
       <Highlighter
         value={exercise.snippet}
         options={{
           lineNumbers: true,
           gutters: ['CodeMirror-linenumbers', 'coverage-gutter'],
         }}
-        coverageOutcomes={coverageOutcomes}
+        coverageOutcomes={showCoverage ? coverageOutcomes : []}
         mutationOutcomes={showMutators ? mutationOutcomesFiltered : []}
         className="border rounded h-auto mb-4"
         exerciseOffering={exerciseOffering}
       />
-      <Button
-          size="sm"
-          variant="outline-secondary"
-          disabled={mutationOutcomesFiltered.length == 0}
-          onClick={() => setShowMutators(!showMutators)}
-        >
-          {showMutators ? "Hide mutators" : "Show mutators"}
-        </Button>
       <Row>
         <TestCaseTable
           savedTests={tests}
