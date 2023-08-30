@@ -7,8 +7,8 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import {Attempt} from './Attempt';
-import {MutatedLine} from './MutatedLine';
+import { Attempt } from './Attempt';
+import { MutatedLine } from './MutatedLine';
 
 export enum MutationStatus {
   SURVIVED = 'survived',
@@ -34,13 +34,13 @@ export class MutationOutcome {
   @Column('text')
   operator!: string;
 
-  @Column('text', {nullable: true})
+  @Column('text', { nullable: true })
   exception_traceback?: string;
 
-  @Column({nullable: true})
+  @Column({ nullable: true })
   killer?: string;
 
-  @Column({nullable: true})
+  @Column({ nullable: true })
   module?: string;
 
   @Column()
@@ -52,12 +52,12 @@ export class MutationOutcome {
   @Column()
   tests_run!: number;
 
-  @Column({type: 'numeric'})
+  @Column({ type: 'numeric' })
   time!: number;
 
-  @CreateDateColumn({type: 'timestamp'})
+  @CreateDateColumn({ type: 'timestamp' })
   created!: Date;
 
-  @UpdateDateColumn({type: 'timestamp'})
+  @UpdateDateColumn({ type: 'timestamp' })
   modified!: Date;
 }

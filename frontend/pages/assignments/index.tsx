@@ -9,6 +9,11 @@ import { useAuthenticatedApi } from '../../lib/context/AuthenticatedApiContext';
 import Link from 'next/link';
 import { inviteLinkFromCode } from '../../lib/helper';
 
+/**
+ * A page a containing the ExerciseOfferings that have been
+ * "assigned" to the current user. That is, ExerciseOfferings to which
+ * the user has been invited.
+ */
 const ExerciseOfferingList = () => {
   const router = useRouter();
   const [{status, error}, setLoading] = useState<LoadingState>({

@@ -18,13 +18,6 @@ const displayTests = (tests: SavedTestCase[]) =>
       t1.passed && !t2.passed ? -1 : !t1.passed && t2.passed ? 1 : 0
     );
 
-export enum FeedbackType {
-  NO_FEEDBACK,
-  CODE_COVERAGE,
-  MUTATION_ANALYSIS,
-  ALL_FEEDBACK,
-}
-
 export interface PracticeProps {
   user: UserInfo;
   exercise: SavedExercise;
@@ -38,14 +31,17 @@ export default function Practice({ user, exercise, exerciseOffering, initialTest
   const [newTests, setNewTests] = useState<NewTestCase[]>(displayTests(initialTests));
   const [running, setRunning] = useState<boolean>(false);
   const [attemptFeedback, setAttemptFeedback] = useState(initialAttemptFeedback);
-  const [feedbackType, setFeedbackType] = useState<FeedbackType>(
-    FeedbackType.ALL_FEEDBACK
-  );
   const [minTests, setMinTests] = useState<number>(0);
-  const [mutators, setMutators] = useState<string[]>([]);
-  const [showCoverage, setShowCoverage] = useState<boolean>(false);
-  const [showMutators, setShowMutators] = useState<boolean>(false);
-  const [mutationOutcomesFiltered, setMutationOutcomesFiltered] = useState<MutationOutcome[]>([]);
+
+  // These flags are always true for plain old exercises. They may be
+  // false for exerciseOfferings, where the instructor can choose to
+  // hide or limit certain types of feedback.
+  const [showCoverageFeedback, setShowCoverageFeedback] = useState<boolean>(true);
+  const [showMutationFeedback, setShowMutationFeedback] = useState<boolean>(true);
+
+  // Always full for regular exercises, may be limited for exercise offerings.
+  const [operatorsToShow, setOperatorsToShow] = useState<string[]>([]);
+  const [filteredMutationOutcomes, setFilteredMutationOutcomes] = useState<MutationOutcome[]>([]);
 
   const router = useRouter();
   const { id: exerciseId } = exercise;
@@ -56,30 +52,31 @@ export default function Practice({ user, exercise, exerciseOffering, initialTest
     getExerciseOffering
   } = useAuthenticatedApi();
   
-  if (exerciseOffering != undefined) {
-    const { id: offeringId } = exerciseOffering;
-    useEffect(() => {
-      const fetchOffering = async () => {
-        try {
+  useEffect(() => {
+    const fetchOffering = async () => {
+      try {
+        if (exerciseOffering != undefined) {
+          const { id: offeringId } = exerciseOffering;
           const fetched = await getExerciseOffering(exerciseId, offeringId);
           const {
             minTests,
             mutators,
             conditionCoverage
           } = fetched;
-          setMinTests(minTests);
-          setMutators(mutators);
-          setShowCoverage(conditionCoverage);
-          setShowMutators(mutators.length > 0 ? true : false);
-        } catch (err) {
-          if (err.response.status === 403) {
-            router.push({pathname: '/exercises', query: {message: err.response.data.message}});
-          }
+          setMinTests(minTests == undefined ? 0 : minTests);
+          setOperatorsToShow(mutators);
+          setShowCoverageFeedback(conditionCoverage);
+          setShowMutationFeedback(mutators.length > 0 ? true : false);
+        }
+      } catch (err) {
+        if (err.response.status === 403) {
+          router.push({pathname: '/exercises', query: {message: err.response.data.message}});
         }
       }
-      fetchOffering();
-    }, [getExerciseOffering, exerciseId, offeringId, router])
-  }
+    }
+
+    fetchOffering();
+  }, [getExerciseOffering, exerciseId, exerciseOffering, router])
 
   const createNewTest = () => {
     setNewTests(prevTests =>
@@ -145,8 +142,8 @@ export default function Practice({ user, exercise, exerciseOffering, initialTest
   }
 
   const toggleFeedback = () => {
-    setShowMutators(!showMutators);
-    setShowCoverage(!showCoverage);
+    setShowMutationFeedback(!showMutationFeedback);
+    setShowCoverageFeedback(!showCoverageFeedback);
   }
 
   /**
@@ -177,45 +174,24 @@ export default function Practice({ user, exercise, exerciseOffering, initialTest
     mutationOutcomes: [],
   };
 
-  const toggleFeedbackType = buttonType => {
-    setFeedbackType(
-      feedbackType === buttonType ? FeedbackType.ALL_FEEDBACK : buttonType
-    );
-  };
-
   useEffect(() => {
-    if (showMutators && mutationOutcomes) {
-      setMutationOutcomesFiltered(mutationOutcomes.filter(mutator => mutators.includes(mutator.operator)));
-    } //else {
-      //setMutationOutcomesFiltered([]);
-    //}
-  }, [showMutators])
+    const outcomes = mutationOutcomes || [];
+
+    // Only exercise offerings have restrictions on which mutants to display.
+    if (exerciseOffering != undefined) {
+      setFilteredMutationOutcomes(
+        operatorsToShow ?
+        outcomes.filter(mutator => operatorsToShow.includes(mutator.operator)) :
+        outcomes);
+    } else { // If there's no exercise offering, display all mutation outcomes.
+      setFilteredMutationOutcomes(outcomes);
+    }
+  }, [exerciseOffering, showMutationFeedback, operatorsToShow, mutationOutcomes]);
 
   return (
     <Container>
       <h1>
         {exercise.name}{' '}
-        <Button
-          size="sm"
-          variant="outline-secondary"
-          onClick={() => toggleFeedbackType(FeedbackType.NO_FEEDBACK)}
-        >
-          NC
-        </Button>{' '}
-        <Button
-          size="sm"
-          variant="outline-secondary"
-          onClick={() => toggleFeedbackType(FeedbackType.CODE_COVERAGE)}
-        >
-          CC
-        </Button>{' '}
-        <Button
-          size="sm"
-          variant="outline-secondary"
-          onClick={() => toggleFeedbackType(FeedbackType.MUTATION_ANALYSIS)}
-        >
-          MA
-        </Button>
       </h1>
 
       <p>{exercise.description}</p>
@@ -223,10 +199,10 @@ export default function Practice({ user, exercise, exerciseOffering, initialTest
       <Button
           size="sm"
           variant="outline-secondary"
-          disabled={mutationOutcomesFiltered.length == 0}
+          disabled={filteredMutationOutcomes.length == 0}
           onClick={() => toggleFeedback()}
         >
-        {showMutators ? "Hide feedback" : "Show feedback"}
+        {showMutationFeedback ? "Hide feedback" : "Show feedback"}
       </Button>
       <Highlighter
         value={exercise.snippet}
@@ -234,8 +210,8 @@ export default function Practice({ user, exercise, exerciseOffering, initialTest
           lineNumbers: true,
           gutters: ['CodeMirror-linenumbers', 'coverage-gutter'],
         }}
-        coverageOutcomes={showCoverage ? coverageOutcomes : []}
-        mutationOutcomes={showMutators ? mutationOutcomesFiltered : []}
+        coverageOutcomes={showCoverageFeedback ? coverageOutcomes : []}
+        mutationOutcomes={showMutationFeedback ? filteredMutationOutcomes : []}
         className="border rounded h-auto mb-4"
         exerciseOffering={exerciseOffering}
       />

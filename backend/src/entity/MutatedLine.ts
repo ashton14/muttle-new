@@ -1,5 +1,5 @@
-import {Column, Entity, ManyToOne, PrimaryGeneratedColumn} from 'typeorm';
-import {MutationOutcome} from './MutationOutcome';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { MutationOutcome } from './MutationOutcome';
 
 @Entity('MutatedLine')
 export class MutatedLine {

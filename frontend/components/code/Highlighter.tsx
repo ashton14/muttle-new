@@ -18,7 +18,6 @@ import {
 } from '../../lib/api';
 import MutantBadge from '../feedback/Mutant';
 import _ from 'lodash';
-import {FeedbackType} from '../../pages/exercises/[exerciseId]';
 
 const baseOptions: Partial<codemirror.EditorConfiguration> = {
   readOnly: true,

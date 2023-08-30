@@ -7,7 +7,7 @@ Commands below assume you're in the `muttle` directory (project root).
 
 **Important notes**:
 * Please work from the `staging` branch. If you create new branches, branch off the `staging` branch. The `main` branch is for deployments.
-* The `backend/.env` file is only for development secrets—please don't add production keys to this file. 
+* The `backend/.env` file is only for development secrets&mdash;please don't add production keys to this file. 
 
 ### Install dependencies
 
@@ -55,9 +55,9 @@ Start the Postgres server:
 brew services postgresql@14 start
 ```
 
-This will start your database server at localhost:5432
+This will start your database server at `localhost:5432`
 
-Create the user and database. First enter the psql console for the default database `postgres` as the default user (your system username).
+Create the user and database. First enter the `psql` console for the default database `postgres` as the default user (your system username).
 
 ```bash
 psql -d postgres -U {your username}
@@ -70,7 +70,6 @@ CREATE DATABASE muttle;
 CREATE USER professorx WITH PASSWORD 'mutants';
 GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA PUBLIC TO professorx; 
 ```
-
 
 ### Environment variables
 
@@ -85,7 +84,7 @@ These are needed because the values above are referred to by environment variabl
 
 ### Set up and seed the database
 
-Do the following to set up and seed the database:
+In the `backend` folder, do the following to set up and seed the database:
 
 ```bash
 yarn db:populate
@@ -98,7 +97,7 @@ This drops the schema, re-creates it based on the entities in [backend/src/entit
 When everything is set up, do the following to run servers:
 
 ```
-cd backend 
+cd backend
 yarn start-dev
 cd ../frontend
 yart start-dev

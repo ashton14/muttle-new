@@ -12,6 +12,10 @@ const Practice = dynamic<PracticeProps>(
   { ssr: false }
 );
 
+/**
+ * A page displaying a given ExerciseOffering to which the user has
+ * been assigned.
+ */
 export default function Assignment() {
   const [exerciseOffering, setExerciseOffering] = useState<SavedExerciseOffering>();
   const [tests, setTests] = useState<SavedTestCase[]>([]);
