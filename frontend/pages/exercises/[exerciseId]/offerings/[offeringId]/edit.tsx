@@ -12,7 +12,7 @@ const EditExerciseOffering = () => {
   const [conditionCoverage, setConditionCoverage] = useState(false);
   const [mutationCoverage, setMutationCoverage] = useState(false);
   const [mutators, setMutators] = useState<string[]>([]);
-  const [minTests, setMinTests] = useState<number | undefined>(undefined);
+  const [minTests, setMinTests] = useState<number>(0);
   const [exercise, setExercise] = useState<SavedExercise | null>(null);
   const [inviteCode, setInviteCode] = useState('');
   const [offering, setOffering] = useState<SavedExerciseOffering>();
@@ -35,6 +35,7 @@ const EditExerciseOffering = () => {
           inviteCode
         } = fetched;
         setConditionCoverage(conditionCoverage);
+        setMutationCoverage(mutators.length > 0 ? true : false);
         setMutators(mutators);
         setMinTests(minTests);
         setInviteCode(inviteCode)
@@ -49,6 +50,12 @@ const EditExerciseOffering = () => {
     
     fetchOffering();
   }, [getExerciseOffering, exerciseId, offeringId, router])
+
+  useEffect(() => {
+    if (!mutationCoverage) {
+      setMutators([]);
+    }
+  }, [mutationCoverage])
 
   const submit = async () => {
     if (offering) {

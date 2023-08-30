@@ -21,14 +21,14 @@ npm install -g yarn
 
 ```bash
 cd frontend
-yarn # or npm install
+yarn 
 ```
 
 #### `backend`
 
 ```bash
 cd backend
-yarn # or npm install
+yarn 
 ```
 
 Muttle uses [MutPy](https://github.com/mutpy/mutpy) to run mutation analysis. MutPy doesn't work with Python versions >= 3.9. So you need to install Python 3.7.12.
@@ -67,9 +67,10 @@ Run the following SQL queries to create the database and user.
 
 ```sql
 CREATE DATABASE muttle;
-CREATE USER professorx WITH PASSWORD "mutants";
-GRANT ALL PRIVILEGES ON DATABASE "muttle" TO professorx;
+CREATE USER professorx WITH PASSWORD 'mutants';
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA PUBLIC TO professorx; 
 ```
+
 
 ### Environment variables
 
@@ -78,6 +79,7 @@ Set the following environment variables:
 * `MUTTLE_DB_HOST`: `postgresql://localhost:5432`
 * `MUTTLE_DB_USER`: `professorx`
 * `MUTTLE_DB_PW`: `mutants`
+* `JWT_SECRET`: {needed for db seeding, can be set to anything}
 
 These are needed because the values above are referred to by environment variables in the codebase. The same code runs in production, where the values are replaced with values for the production database, which are not visible for obvious reasons.
 

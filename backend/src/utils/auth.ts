@@ -42,5 +42,5 @@ export const hashPassword = (password: string): Promise<string> => {
   });
 };
 
-export const verifyPassword = (attempt: string, encrypted: string) =>
+export const verifyPassword = (attempt: string, encrypted: string) => 
   bcrypt.compare(attempt, encrypted);

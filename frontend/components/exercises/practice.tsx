@@ -1,7 +1,7 @@
 import React from 'react';
 import { useRouter } from "next/router";
-import { useState } from "react";
-import { AttemptFeedback, NewTestCase, SavedExercise, SavedExerciseOffering, SavedTestCase } from "../../lib/api";
+import { useState, useEffect } from "react";
+import { AttemptFeedback, MutationOutcome, NewTestCase, SavedExercise, SavedExerciseOffering, SavedTestCase } from "../../lib/api";
 import { useAuthenticatedApi } from "../../lib/context/AuthenticatedApiContext";
 import ExerciseFooter from "./ExerciseFooter";
 import Highlighter from '../code/Highlighter';
@@ -41,6 +41,11 @@ export default function Practice({ user, exercise, exerciseOffering, initialTest
   const [feedbackType, setFeedbackType] = useState<FeedbackType>(
     FeedbackType.ALL_FEEDBACK
   );
+  const [minTests, setMinTests] = useState<number>(0);
+  const [mutators, setMutators] = useState<string[]>([]);
+  const [showCoverage, setShowCoverage] = useState<boolean>(false);
+  const [showMutators, setShowMutators] = useState<boolean>(false);
+  const [mutationOutcomesFiltered, setMutationOutcomesFiltered] = useState<MutationOutcome[]>([]);
 
   const router = useRouter();
   const { id: exerciseId } = exercise;
@@ -48,7 +53,33 @@ export default function Practice({ user, exercise, exerciseOffering, initialTest
   const {
     deleteTestCase,
     runTests: runTestCases,
+    getExerciseOffering
   } = useAuthenticatedApi();
+  
+  if (exerciseOffering != undefined) {
+    const { id: offeringId } = exerciseOffering;
+    useEffect(() => {
+      const fetchOffering = async () => {
+        try {
+          const fetched = await getExerciseOffering(exerciseId, offeringId);
+          const {
+            minTests,
+            mutators,
+            conditionCoverage
+          } = fetched;
+          setMinTests(minTests);
+          setMutators(mutators);
+          setShowCoverage(conditionCoverage);
+          setShowMutators(mutators.length > 0 ? true : false);
+        } catch (err) {
+          if (err.response.status === 403) {
+            router.push({pathname: '/exercises', query: {message: err.response.data.message}});
+          }
+        }
+      }
+      fetchOffering();
+    }, [getExerciseOffering, exerciseId, offeringId, router])
+  }
 
   const createNewTest = () => {
     setNewTests(prevTests =>
@@ -103,6 +134,22 @@ export default function Practice({ user, exercise, exerciseOffering, initialTest
     });
 
   /**
+   * Verifies the minimum number of tests have been met.
+   */
+  const checkTests = () => {
+    const testsToSave = newTests.filter(({ input, output }) => input || output);
+    if (tests.length + testsToSave.length < minTests) {
+      return false;
+    }
+    return true;
+  }
+
+  const toggleFeedback = () => {
+    setShowMutators(!showMutators);
+    setShowCoverage(!showCoverage);
+  }
+
+  /**
    * Saves and runs the current set of tests for the exercise.
    */
   const runTests = async () => {
@@ -136,6 +183,14 @@ export default function Practice({ user, exercise, exerciseOffering, initialTest
     );
   };
 
+  useEffect(() => {
+    if (showMutators && mutationOutcomes) {
+      setMutationOutcomesFiltered(mutationOutcomes.filter(mutator => mutators.includes(mutator.operator)));
+    } //else {
+      //setMutationOutcomesFiltered([]);
+    //}
+  }, [showMutators])
+
   return (
     <Container>
       <h1>
@@ -165,14 +220,22 @@ export default function Practice({ user, exercise, exerciseOffering, initialTest
 
       <p>{exercise.description}</p>
 
+      <Button
+          size="sm"
+          variant="outline-secondary"
+          disabled={mutationOutcomesFiltered.length == 0}
+          onClick={() => toggleFeedback()}
+        >
+        {showMutators ? "Hide feedback" : "Show feedback"}
+      </Button>
       <Highlighter
         value={exercise.snippet}
         options={{
           lineNumbers: true,
           gutters: ['CodeMirror-linenumbers', 'coverage-gutter'],
         }}
-        coverageOutcomes={coverageOutcomes}
-        mutationOutcomes={mutationOutcomes}
+        coverageOutcomes={showCoverage ? coverageOutcomes : []}
+        mutationOutcomes={showMutators ? mutationOutcomesFiltered : []}
         className="border rounded h-auto mb-4"
         exerciseOffering={exerciseOffering}
       />
@@ -186,10 +249,11 @@ export default function Practice({ user, exercise, exerciseOffering, initialTest
           editNewTest={editNewTest}
           deleteNewTest={deleteNewTest}
           running={running}
-        />
+        />        
       </Row>
+      {!checkTests() ? <>Minimum Tests: {minTests}</> : <></>}
       <ExerciseFooter
-        disabled={running || (!tests.length && !newTests.length)}
+        disabled={running || (!tests.length && !newTests.length) || !checkTests()}
         running={running}
         runTests={runTests}
       />
