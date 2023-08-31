@@ -40,7 +40,7 @@ export class ExerciseOffering {
   @Column({ type: 'text', array: true, default: () => 'array[]::text[]' })
   mutators!: string[];
 
-  @Column({ type: 'integer', nullable: true })
+  @Column({ type: 'integer', nullable: true, default: 1 })
   minTests?: number;
 
   @CreateDateColumn({ type: 'timestamp' })
