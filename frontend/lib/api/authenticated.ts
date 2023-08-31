@@ -23,6 +23,7 @@ export const getAuthenticatedEndpoints = (
   getExerciseOffering: getExerciseOffering(api),
   getUserAssignments: getUserAssignments(api),
   getUserAssignment: getUserAssignment(api),
+  getOwnedAssignments: getOwnedAssignments(api),
   updateExercise: updateExercise(api),
   getTestCases: getTestCases(api),
   deleteTestCase: deleteTestCase(api),
@@ -101,6 +102,11 @@ const getUserAssignments =
     (api: AxiosInstance) =>
     (userId: number): Promise<SavedExerciseOffering[]> =>
       api.get(`users/${userId}/assignments`).then(res => res.data);
+
+const getOwnedAssignments =
+    (api: AxiosInstance) =>
+    (userId: number): Promise<SavedExerciseOffering[]> =>
+      api.get(`users/${userId}/ownedAssignments`).then(res => res.data);
 
 const runTests =
   (api: AxiosInstance) =>

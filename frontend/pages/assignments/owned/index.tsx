@@ -1,28 +1,28 @@
 import React, { useEffect, useState } from 'react';
 import _ from 'lodash';
-import { LoadingState, LoadingStatus } from '../../components/exercises/ExerciseList';
-import { SavedExerciseOffering } from '../../lib/api';
-import { useAuth } from '../../lib/context/AuthContext';
-import { useAuthenticatedApi } from '../../lib/context/AuthenticatedApiContext';
-import ExerciseOfferingList from '../../components/exercises/offerings/ExerciseOfferingList';
+import { LoadingState, LoadingStatus } from '../../../components/exercises/ExerciseList';
+import { SavedExerciseOffering } from '../../../lib/api';
+import { useAuth } from '../../../lib/context/AuthContext';
+import { useAuthenticatedApi } from '../../../lib/context/AuthenticatedApiContext';
+import ExerciseOfferingList from '../../../components/exercises/offerings/ExerciseOfferingList';
 
 /**
- * A page a containing the ExerciseOfferings that have been
- * "assigned" to the current user. That is, ExerciseOfferings to which
- * the user has been invited.
+ * A page a containing the ExerciseOfferings that are 
+ * OWNED by the current user. That is, ExerciseOfferings that were
+ * created by the user.
  */
-const Assignments = () => {
+const OwnedAssignments = () => {
   const [loadingState, setLoading] = useState<LoadingState>({
     status: LoadingStatus.LOADING,
   });
 
   const [exerciseOfferings, setExerciseOfferings] = useState<SavedExerciseOffering[]>([]);
-  const { getUserAssignments } = useAuthenticatedApi();
+  const { getOwnedAssignments } = useAuthenticatedApi();
   const { authInfo: { userInfo } } = useAuth();
 
   useEffect(() => {
     if (userInfo) {
-      getUserAssignments(userInfo.id)
+      getOwnedAssignments(userInfo.id)
         .then(exerciseOfferings => {
           setExerciseOfferings(exerciseOfferings);
           setLoading({ status: LoadingStatus.DONE });
@@ -31,11 +31,11 @@ const Assignments = () => {
           setLoading({ status: LoadingStatus.ERROR, error: err });
         });
     }
-  }, [getUserAssignments, userInfo]);
+  }, [getOwnedAssignments, userInfo]);
 
   return <ExerciseOfferingList
     exerciseOfferings={exerciseOfferings}
     loadingState={loadingState}/>
 }
 
-export default Assignments;
+export default OwnedAssignments;

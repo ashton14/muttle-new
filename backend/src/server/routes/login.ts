@@ -9,7 +9,6 @@ const login = express.Router();
 login.post('/', async (req, res) => {
   try {
     const { email, password } = req.body;
-    // 
     const user = await getRepository(User).findOne({
       email,
     });
@@ -22,7 +21,7 @@ login.post('/', async (req, res) => {
     const passwordValid = await verifyPassword(password, user.password);
 
     if (passwordValid) {
-      const { password, ...userInfo } = user;
+      const { ...userInfo } = user;
       const token = createToken(userInfo);
 
       const decodedToken = jwtDecode<Token>(token);
