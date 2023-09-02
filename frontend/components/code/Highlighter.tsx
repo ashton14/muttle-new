@@ -173,12 +173,16 @@ const Highlighter = (props: HighlighterProps) => {
 
   return (
     <>
-      <Button
-        className="btn btn-sm btn-secondary"
-        disabled={!mutationOutcomes?.length && !coverageOutcomes?.length}
-        onClick={toggleShowFeedback}>
-        { showFeedback ? 'Hide Feedback' : 'Show Feedback' }
-      </Button>
+      {
+        (mutationOutcomes || coverageOutcomes) ?
+        <Button
+          className="btn btn-sm btn-secondary"
+          disabled={!mutationOutcomes?.length && !coverageOutcomes?.length}
+          onClick={toggleShowFeedback}>
+          { showFeedback ? 'Hide Feedback' : 'Show Feedback' }
+        </Button> :
+        ''
+      }
       <CodeMirror
         ref={codeMirrorRef}
         className={className}

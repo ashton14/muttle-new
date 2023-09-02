@@ -1,19 +1,21 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import {Nav, Navbar as BsNavbar} from 'react-bootstrap';
+import {Nav, Navbar as BsNavbar, NavDropdown, Button} from 'react-bootstrap';
 import {useAuth, UserInfo} from '../lib/context/AuthContext';
 import Username from './Username';
 import Help from '../pages/help';
 
 const Navbar = () => {
   const auth = useAuth();
-  const isAuthenticated = auth.isAuthenticated();
+  const [authenticated, setAuthenticated] = useState(auth.isAuthenticated());
 
   return (
     <BsNavbar bg="dark" variant="dark">
       <BsNavbar.Brand href="/">Muttle</BsNavbar.Brand>
-      {isAuthenticated ? <AuthenticatedNav /> : <UnauthenticatedNav />}
+      {authenticated ?
+        <AuthenticatedNav /> :
+        <UnauthenticatedNav />}
     </BsNavbar>
   );
 };
@@ -40,6 +42,22 @@ const AuthenticatedNav = () => {
         <BsNavbar.Text>
           <Link href='/exercises'>Exercises</Link>
         </BsNavbar.Text>
+        <NavDropdown title='Assignments' id='assignments' className="bg-dark">
+          <NavDropdown.Item className="bg-dark">
+            <BsNavbar.Text>
+              <Link href='/assignments'>
+                Assigned to you
+              </Link>
+            </BsNavbar.Text>
+          </NavDropdown.Item>
+          <NavDropdown.Item className="navbar-dark bg-dark">
+            <BsNavbar.Text>
+              <Link href='/assignments/owned'>
+                Your assignments
+              </Link>
+            </BsNavbar.Text>
+          </NavDropdown.Item>
+        </NavDropdown>
       </Nav>
       <Nav>
         <Username name={name} />

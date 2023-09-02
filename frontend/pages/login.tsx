@@ -22,8 +22,8 @@ const Login = () => {
     try {
       const authInfo = await login({email, password});
       auth.setAuthInfo(authInfo);
-      setInvalidLogin(false);
       router.push('/');
+      setInvalidLogin(false);
     } catch (e) {
       setInvalidLogin(true);
     }

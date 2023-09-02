@@ -1,7 +1,5 @@
 import React, {useRef, useState} from 'react';
 import { useRouter } from 'next/router';
-import Overlay from 'react-bootstrap/Overlay';
-import ListGroup from 'react-bootstrap/cjs/ListGroup';
 import Button from 'react-bootstrap/Button';
 import {useAuth} from '../lib/context/AuthContext';
 import { NavDropdown } from 'react-bootstrap';

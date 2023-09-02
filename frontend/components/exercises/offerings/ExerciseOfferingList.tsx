@@ -5,43 +5,68 @@ import { ExerciseListError, ExerciseLoader, LoadingState, LoadingStatus } from '
 import _ from 'lodash';
 import Link from 'next/link';
 import { inviteLinkFromCode } from '../../../lib/helper';
-import { Alert, Container, ListGroup } from 'react-bootstrap';
+import { Alert, Container, Table } from 'react-bootstrap';
+import ClickToCopy from '../../common/ClickToCopy';
 
 export default function ExerciseOfferingList(
-  { exerciseOfferings, loadingState  }: { exerciseOfferings: SavedExerciseOffering[], loadingState: LoadingState }
+  { exerciseOfferings, loadingState, owned }: 
+  { exerciseOfferings: SavedExerciseOffering[],
+    loadingState: LoadingState, owned: boolean
+  }
 ) {
   const router = useRouter();
   const { status, error } = loadingState;
 
-  const offeringGroups =
-    _.chain(exerciseOfferings)
-      .groupBy(o => o.exercise.id)
-      .map((value, key) => {
+  const copyInviteCode = (inviteCode) => {
+    navigator.clipboard.writeText(inviteCode);
+  }
+
+  exerciseOfferings.sort((o1, o2) => o1.exercise.name.localeCompare(o2.exercise.name));
+  const offerings =
+      exerciseOfferings
+      .map(o => {
         return (
-          <div key={key}>
-            <h3>Offerings of {`X${key}: ${value[0].exercise.name}`}</h3>
+          <tr key={o.inviteCode}>
+            <td>
+              {o.id}
+            </td>
+            <td>
+              {o.exercise.name}
+            </td>
+            <td>
+              <Link href={`/assignments/${o.inviteCode}`}>
+                {inviteLinkFromCode(o.inviteCode)}
+              </Link>{` `}
+              <ClickToCopy text={inviteLinkFromCode(o.inviteCode)}/>
+            </td>
+            <td>
             {
-              value.map(o => {
-                return (
-                  <div key={o.inviteCode}>
-                    <Link href={`/assignments/${o.inviteCode}`}>
-                      {inviteLinkFromCode(o.inviteCode)}
-                    </Link>{` `}
-                    {
-                      `Created ${new Date(o.created).toLocaleDateString('en-US', {
-                        weekday: 'short',
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric'
-                      })}`
-                    }
-                  </div>
-                )
-              })
+              `${new Date(o.created).toLocaleDateString('en-US', {
+                weekday: 'short',
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+              })}`
             }
-          </div>
+            </td>
+            {
+              owned ?
+              (
+                <>
+                  <td>
+                    <Link href={`/exercises/${o.exerciseId}/offerings/${o.id}/edit`}>
+                      Edit
+                    </Link>
+                  </td>
+                  <td>
+                    <b>TODO</b>
+                  </td>
+                </>
+              ) : ''
+            }
+          </tr>
         )
-      }).value();
+      });
   
   switch(status) {
     case LoadingStatus.LOADING:
@@ -56,9 +81,26 @@ export default function ExerciseOfferingList(
           ) : (
             ''
           )}
-          <ListGroup className="w-auto my-2">
-            { offeringGroups }
-          </ListGroup>
+          <Table size="sm">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Exercise name</th>
+                <th>Invite link</th>
+                <th>Created on</th>
+                { owned ? (
+                  <>
+                  <th>Edit</th>
+                  <th>Download scores</th>
+                  </>
+                  ) : ''
+                }
+              </tr>
+            </thead>
+            <tbody>
+              { offerings }
+            </tbody>
+          </Table>
         </Container>
       )
   }

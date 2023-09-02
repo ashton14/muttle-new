@@ -37,7 +37,7 @@ const EditExerciseOffering = () => {
         setConditionCoverage(conditionCoverage);
         setMutationCoverage(mutators.length > 0 ? true : false);
         setMutators(mutators);
-        setMinTests(minTests);
+        setMinTests(minTests || 1);
         setInviteCode(inviteCode)
         setExercise(exercise);
         setOffering(fetched);
@@ -79,7 +79,7 @@ const EditExerciseOffering = () => {
           <h1>
             This assignment is based on the exercise{' '}
             <Link href={`/exercises/${exerciseId}`}>
-              {`X${exerciseId}: ${exercise.name}`}
+              {`X${exercise.id}: ${exercise.name}`}
             </Link>
           </h1>
           {inviteCode ? (

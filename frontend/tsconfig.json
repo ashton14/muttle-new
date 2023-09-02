@@ -19,7 +19,8 @@
     "module": "esnext",
     "target": "es5",
     "strict": false,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "incremental": true
   },
   "include": [
     "src/**/*.ts",

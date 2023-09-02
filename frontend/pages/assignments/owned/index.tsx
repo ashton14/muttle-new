@@ -5,6 +5,7 @@ import { SavedExerciseOffering } from '../../../lib/api';
 import { useAuth } from '../../../lib/context/AuthContext';
 import { useAuthenticatedApi } from '../../../lib/context/AuthenticatedApiContext';
 import ExerciseOfferingList from '../../../components/exercises/offerings/ExerciseOfferingList';
+import { Container } from 'react-bootstrap';
 
 /**
  * A page a containing the ExerciseOfferings that are 
@@ -33,9 +34,32 @@ const OwnedAssignments = () => {
     }
   }, [getOwnedAssignments, userInfo]);
 
-  return <ExerciseOfferingList
-    exerciseOfferings={exerciseOfferings}
-    loadingState={loadingState}/>
+  return (
+    <>
+      <Container>
+        <h1>Owned exercises</h1>
+        {
+          exerciseOfferings.length ?
+          (
+            <>
+              <p>
+                A list of exercises you own assigned.
+                You can copy the invite code and share it with your students.
+              </p>
+              <ExerciseOfferingList
+                exerciseOfferings={exerciseOfferings}
+                loadingState={loadingState}
+                owned />
+              </>
+          ) : (
+            <p>
+              You do not own any assignments.
+            </p>
+          )
+        }
+      </Container>
+    </>
+  );
 }
 
 export default OwnedAssignments;
