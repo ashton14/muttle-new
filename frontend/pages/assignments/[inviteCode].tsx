@@ -1,6 +1,6 @@
 import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
-import { AttemptFeedback, SavedExercise, SavedExerciseOffering, SavedTestCase } from '../../lib/api';
+import { AttemptFeedback, SavedExerciseOffering, SavedTestCase } from '../../lib/api';
 import { useAuth } from '../../lib/context/AuthContext';
 import { useAuthenticatedApi } from '../../lib/context/AuthenticatedApiContext';
 
@@ -31,19 +31,17 @@ export default function Assignment() {
   useEffect(() => {
     const fetchExerciseOffering = async () => {
       if (user) {
-        const exerciseOffering = await getUserAssignment(user?.id, inviteCode);
-        if (!exerciseOffering) {
+        const fetched = await getUserAssignment(user?.id, inviteCode);
+        if (!fetched) {
           router.push('/assignments');
         } else {
           const attempt = await getLatestAttempt({
             userId: user.id,
-            exerciseId: exerciseOffering.exercise.id,
-            exerciseOfferingId: exerciseOffering.id
+            exerciseId: fetched.exercise.id,
+            exerciseOfferingId: fetched.id
           });
 
-          console.log(exerciseOffering, user);
-
-          setExerciseOffering(exerciseOffering);
+          setExerciseOffering(fetched);
           setAttemptFeedback(attempt);
           setTests(attempt.testCases || []);
         }
@@ -51,7 +49,7 @@ export default function Assignment() {
     };
 
     fetchExerciseOffering();
-  }, [router, getUserAssignment, getLatestAttempt, inviteCode, user]);
+  }, [router, inviteCode, user, getUserAssignment, getLatestAttempt]);
 
   if (!user) {
     router.push('/');

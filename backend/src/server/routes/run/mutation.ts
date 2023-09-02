@@ -1,11 +1,11 @@
-import {spawn} from 'child_process';
+import { spawn } from 'child_process';
 import yaml from 'js-yaml';
 
-import {SNIPPET_FILENAME, TESTS_FILENAME} from '../../../utils/pythonUtils';
+import { SNIPPET_FILENAME, TESTS_FILENAME } from '../../../utils/pythonUtils';
 import path from 'path';
-import {readFile} from 'fs/promises';
-import {MutationOutcome} from '../../../entity/MutationOutcome';
-import {DeepPartial} from 'typeorm/common/DeepPartial';
+import { readFile } from 'fs/promises';
+import { MutationOutcome } from '../../../entity/MutationOutcome';
+import { DeepPartial } from 'typeorm/common/DeepPartial';
 
 const ModuleType = new yaml.Type('tag:yaml.org,2002:python/module:__init__', {
   kind: 'scalar',
@@ -78,7 +78,7 @@ export const getMutationData = async (
       path.join(rootDir, MUTATION_RESULTS_FILENAME),
       'utf-8'
     );
-    const doc = yaml.load(resultsData, {schema: SCHEMA}) as MutationReport;
+    const doc = yaml.load(resultsData, { schema: SCHEMA }) as MutationReport;
     return doc.mutations.map(
       (outcome): DeepPartial<MutationOutcome> => ({
         ...outcome,

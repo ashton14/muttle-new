@@ -129,9 +129,7 @@ const Highlighter = (props: HighlighterProps) => {
       widgetsRef.current?.forEach(w => w.clear());
       widgetsRef.current = displayMutationCoverage(
         editor,
-        exerciseOffering ?
-          mutationOutcomes.filter(m => exerciseOffering.mutators.includes(m.operator)) : 
-          mutationOutcomes,
+        mutationOutcomes,
         selectedMutant,
         handleMutantSelect
       );

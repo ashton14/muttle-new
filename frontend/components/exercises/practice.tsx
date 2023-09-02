@@ -1,12 +1,10 @@
 import React from 'react';
-import { useRouter } from "next/router";
-import { useState, useEffect } from "react";
-import { AttemptFeedback, MutationOutcome, NewTestCase, SavedExercise, SavedExerciseOffering, SavedTestCase } from "../../lib/api";
+import { useState } from "react";
+import { AttemptFeedback, NewTestCase, SavedExercise, SavedExerciseOffering, SavedTestCase } from "../../lib/api";
 import { useAuthenticatedApi } from "../../lib/context/AuthenticatedApiContext";
 import ExerciseFooter from "./ExerciseFooter";
 import Highlighter from '../code/Highlighter';
 import Row from 'react-bootstrap/Row';
-import { Button } from 'react-bootstrap';
 import Container from 'react-bootstrap/Container';
 import TestCaseTable from '../testCases/TestCaseTable';
 import { UserInfo } from '../../lib/context/AuthContext';
@@ -31,53 +29,17 @@ export default function Practice({ user, exercise, exerciseOffering, initialTest
   const [newTests, setNewTests] = useState<NewTestCase[]>(displayTests(initialTests));
   const [running, setRunning] = useState<boolean>(false);
   const [attemptFeedback, setAttemptFeedback] = useState(initialAttemptFeedback);
-  const [minTests, setMinTests] = useState<number>(0);
-
-  // These flags are always true for plain old exercises. They may be
-  // false for exerciseOfferings, where the instructor can choose to
-  // hide or limit certain types of feedback.
-  const [showCoverageFeedback, setShowCoverageFeedback] = useState<boolean>(true);
-  const [showMutationFeedback, setShowMutationFeedback] = useState<boolean>(true);
-
-  // Always full for regular exercises, may be limited for exercise offerings.
-  const [operatorsToShow, setOperatorsToShow] = useState<string[]>([]);
-  const [filteredMutationOutcomes, setFilteredMutationOutcomes] = useState<MutationOutcome[]>([]);
-
-  const router = useRouter();
   const { id: exerciseId } = exercise;
+  const minTests = exerciseOffering?.minTests ? exerciseOffering.minTests : 1 ;
+  const operatorsToShow = exerciseOffering?.mutators ? exerciseOffering.mutators : undefined;
+  const showMutationFeedback = operatorsToShow ? operatorsToShow.length > 0 : true;
+  const showCodeCovFeedback = exerciseOffering?.conditionCoverage ? exerciseOffering.conditionCoverage : true;
 
   const {
     deleteTestCase,
     runTests: runTestCases,
-    getExerciseOffering
   } = useAuthenticatedApi();
   
-  useEffect(() => {
-    const fetchOffering = async () => {
-      try {
-        if (exerciseOffering != undefined) {
-          const { id: offeringId } = exerciseOffering;
-          const fetched = await getExerciseOffering(exerciseId, offeringId);
-          const {
-            minTests,
-            mutators,
-            conditionCoverage
-          } = fetched;
-          setMinTests(minTests == undefined ? 0 : minTests);
-          setOperatorsToShow(mutators);
-          setShowCoverageFeedback(conditionCoverage);
-          setShowMutationFeedback(mutators.length > 0 ? true : false);
-        }
-      } catch (err) {
-        if (err.response.status === 403) {
-          router.push({pathname: '/exercises', query: {message: err.response.data.message}});
-        }
-      }
-    }
-
-    fetchOffering();
-  }, [getExerciseOffering, exerciseId, exerciseOffering, router])
-
   const createNewTest = () => {
     setNewTests(prevTests =>
       prevTests.concat([
@@ -141,11 +103,6 @@ export default function Practice({ user, exercise, exerciseOffering, initialTest
     return true;
   }
 
-  const toggleFeedback = () => {
-    setShowMutationFeedback(!showMutationFeedback);
-    setShowCoverageFeedback(!showCoverageFeedback);
-  }
-
   /**
    * Saves and runs the current set of tests for the exercise.
    */
@@ -169,24 +126,12 @@ export default function Practice({ user, exercise, exerciseOffering, initialTest
     setRunning(false);
   };
 
-  const { coverageOutcomes, mutationOutcomes } = attemptFeedback || {
-    coverageOutcomes: [],
-    mutationOutcomes: [],
-  };
+  const coverageOutcomes = attemptFeedback?.coverageOutcomes || [];
+  const mutationOutcomes = attemptFeedback?.mutationOutcomes || [];
 
-  useEffect(() => {
-    const outcomes = mutationOutcomes || [];
-
-    // Only exercise offerings have restrictions on which mutants to display.
-    if (exerciseOffering != undefined) {
-      setFilteredMutationOutcomes(
-        operatorsToShow ?
-        outcomes.filter(mutator => operatorsToShow.includes(mutator.operator)) :
-        outcomes);
-    } else { // If there's no exercise offering, display all mutation outcomes.
-      setFilteredMutationOutcomes(outcomes);
-    }
-  }, [exerciseOffering, showMutationFeedback, operatorsToShow, mutationOutcomes]);
+  const filteredMutationOutcomes = operatorsToShow == undefined ?
+    mutationOutcomes : 
+    mutationOutcomes.filter(o => operatorsToShow.includes(o.operator));
 
   return (
     <Container>
@@ -196,21 +141,13 @@ export default function Practice({ user, exercise, exerciseOffering, initialTest
 
       <p>{exercise.description}</p>
 
-      <Button
-          size="sm"
-          variant="outline-secondary"
-          disabled={filteredMutationOutcomes.length == 0}
-          onClick={() => toggleFeedback()}
-        >
-        {showMutationFeedback ? "Hide feedback" : "Show feedback"}
-      </Button>
       <Highlighter
         value={exercise.snippet}
         options={{
           lineNumbers: true,
           gutters: ['CodeMirror-linenumbers', 'coverage-gutter'],
         }}
-        coverageOutcomes={showCoverageFeedback ? coverageOutcomes : []}
+        coverageOutcomes={showCodeCovFeedback ? coverageOutcomes : []}
         mutationOutcomes={showMutationFeedback ? filteredMutationOutcomes : []}
         className="border rounded h-auto mb-4"
         exerciseOffering={exerciseOffering}
