@@ -140,7 +140,6 @@ export default function Practice({ user, exercise, exerciseOffering, initialTest
       </h1>
 
       <p>{exercise.description}</p>
-
       <Highlighter
         value={exercise.snippet}
         options={{

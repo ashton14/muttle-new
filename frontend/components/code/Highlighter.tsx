@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {render} from 'react-dom';
 
 import {Controlled as CodeMirror} from 'react-codemirror2';
@@ -18,6 +18,7 @@ import {
 } from '../../lib/api';
 import MutantBadge from '../feedback/Mutant';
 import _ from 'lodash';
+import { Button } from 'react-bootstrap';
 
 const baseOptions: Partial<codemirror.EditorConfiguration> = {
   readOnly: true,
@@ -53,6 +54,24 @@ const Highlighter = (props: HighlighterProps) => {
     null
   );
   const [value, setValue] = useState<string>(initialValue);
+  const [showFeedback, setShowFeedback] = useState<boolean>(true);
+
+  /**
+   * Unset the selected mutant and reset the editor to its
+   * original contents.
+   */
+  const resetEditor = useCallback(() => {
+    setSelectedMutant(null);
+    setValue(initialValue);
+  }, [initialValue]);
+
+  /**
+   * Toggle whether or not to display feedback.
+   */
+  const toggleShowFeedback = () => {
+    resetEditor();
+    setShowFeedback(!showFeedback);
+  }
 
   /**
    * If the selectedMutant changes, update the value so that the
@@ -103,9 +122,8 @@ const Highlighter = (props: HighlighterProps) => {
   // If the mutationOutcomes change, unset the selectedMutant and re-set the editor
   // contents back to the original value.
   useEffect(() => {
-    setSelectedMutant(null);
-    setValue(initialValue);
-  }, [mutationOutcomes, initialValue]);
+    resetEditor();
+  }, [mutationOutcomes, initialValue, resetEditor]);
 
   // If the editor value, mutationOutcomes, or selectedMutant change,
   // re-draw the mutation coverage feedback.
@@ -124,7 +142,7 @@ const Highlighter = (props: HighlighterProps) => {
       }
     };
 
-    if (mutationOutcomes) {
+    if (showFeedback && mutationOutcomes) {
       const editor = codeMirrorRef.current?.editor;
       widgetsRef.current?.forEach(w => w.clear());
       widgetsRef.current = displayMutationCoverage(
@@ -136,7 +154,7 @@ const Highlighter = (props: HighlighterProps) => {
     } else {
       widgetsRef.current?.forEach(w => w.clear());
     }
-  }, [value, mutationOutcomes, selectedMutant, exerciseOffering]);
+  }, [value, showFeedback, mutationOutcomes, selectedMutant, exerciseOffering]);
 
   // If the coverageOutcomes change, redraw condition coverage feedback.
   // Also redraw if the editor contents change, because CodeMirror clears
@@ -147,22 +165,30 @@ const Highlighter = (props: HighlighterProps) => {
     if (editor) {
       editor.clearGutter('coverage-gutter');
 
-      if (coverageOutcomes) {
+      if (showFeedback && coverageOutcomes) {
         highlightCoverage(editor, coverageOutcomes);
       }
     }
-  }, [value, coverageOutcomes, exerciseOffering]);
+  }, [value, showFeedback, coverageOutcomes, exerciseOffering]);
 
   return (
-    <CodeMirror
-      ref={codeMirrorRef}
-      className={className}
-      value={value}
-      options={{...baseOptions, ...options}}
-      onBeforeChange={() => {}} // No-op
-      onChange={() => {}} // No-op
-      editorDidMount={responsiveEditorHeight}
-    />
+    <>
+      <Button
+        className="btn btn-sm btn-secondary"
+        disabled={!mutationOutcomes?.length && !coverageOutcomes?.length}
+        onClick={toggleShowFeedback}>
+        { showFeedback ? 'Hide Feedback' : 'Show Feedback' }
+      </Button>
+      <CodeMirror
+        ref={codeMirrorRef}
+        className={className}
+        value={value}
+        options={{...baseOptions, ...options}}
+        onBeforeChange={() => {}} // No-op
+        onChange={() => {}} // No-op
+        editorDidMount={responsiveEditorHeight}
+      />
+    </>
   );
 };
 
