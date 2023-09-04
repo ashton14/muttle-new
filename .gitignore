@@ -109,6 +109,7 @@ backend/public/
 
 frontend/usr/
 backend/usr/
+backend/tmp/
 
 .vscode
 .tags

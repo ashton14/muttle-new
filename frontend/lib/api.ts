@@ -13,6 +13,7 @@ export interface Exercise {
 
 export interface SavedExercise extends Exercise {
   id: number;
+  errorMessage?: string;
 }
 
 export interface ExerciseOffering {

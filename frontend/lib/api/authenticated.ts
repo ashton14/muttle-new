@@ -34,7 +34,9 @@ export const getAuthenticatedEndpoints = (
 const createExercise =
   (api: AxiosInstance) =>
   (data: Exercise): Promise<SavedExercise> =>
-    api.post('exercises', data).then(res => res.data);
+    api.post('exercises', data)
+      .then(res => res.data)
+      .catch(err => err.response.data);
 
 const updateExercise =
   (api: AxiosInstance) =>

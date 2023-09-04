@@ -16,6 +16,7 @@ const NewExercise = () => {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [snippet, setSnippet] = useState('');
+  const [error, setError] = useState('');
 
   const router = useRouter();
   const { createExercise } = useAuthenticatedApi();
@@ -23,8 +24,13 @@ const NewExercise = () => {
   const disabled = !name || !description || !snippet;
 
   const submit = async () => {
-    const { id } = await createExercise({ name, description, snippet });
-    router.push(`/exercises/${id}`);
+    const res = await createExercise({ name, description, snippet });
+    if (res.errorMessage) {
+      setError(res.errorMessage.replace(/\\n/g, '\n'));
+    } else {
+      const { id } = res;
+      router.push(`/exercises/${id}`);
+    }
   };
 
   return (
@@ -36,6 +42,7 @@ const NewExercise = () => {
         setDescription={setDescription}
         snippet={snippet}
         setSnippet={setSnippet}
+        error={error}
       />
       <Button onClick={submit} disabled={disabled}>
         Create Exercise
