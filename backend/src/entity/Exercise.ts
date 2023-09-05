@@ -6,14 +6,16 @@ import {
   UpdateDateColumn,
   OneToMany,
   ManyToOne,
+  BaseEntity,
 } from 'typeorm';
 import { TestCase } from './TestCase';
 import { Attempt } from './Attempt';
 import { User } from './User';
 import { ExerciseOffering } from './ExerciseOffering';
+import { Mutation } from './Mutation';
 
 @Entity('Exercise')
-export class Exercise {
+export class Exercise extends BaseEntity {
   @PrimaryGeneratedColumn('increment')
   id!: number;
 
@@ -25,6 +27,9 @@ export class Exercise {
 
   @Column('text')
   snippet!: string;
+
+  @OneToMany(() => Mutation, mutation => mutation.exercise)
+  mutations!: Mutation[];
 
   @CreateDateColumn({ type: 'timestamp' })
   created!: Date;

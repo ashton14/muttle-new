@@ -1,4 +1,5 @@
 import {
+  BaseEntity,
   Column,
   CreateDateColumn,
   Entity,
@@ -7,6 +8,7 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
+  getRepository,
 } from 'typeorm';
 import { TestCase } from './TestCase';
 import { Attempt } from './Attempt';
@@ -14,7 +16,7 @@ import { Exercise } from './Exercise';
 import { ExerciseOffering } from './ExerciseOffering';
 
 @Entity('User')
-export class User {
+export class User extends BaseEntity {
   @PrimaryGeneratedColumn('increment')
   id!: number;
 
@@ -48,4 +50,15 @@ export class User {
 
   @UpdateDateColumn({ type: 'timestamp' })
   modified!: Date;
+
+  static async ownedAssignments(userId: number): Promise<ExerciseOffering[]> {
+    return await getRepository(ExerciseOffering).find({
+      where: {
+        owner: {
+          id: userId,
+        },
+      },
+      relations: ['exercise'],
+    });
+  }
 }

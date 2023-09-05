@@ -1,13 +1,12 @@
 import express, { Request, Response } from 'express';
-import { getRepository, IsNull } from 'typeorm';
+import { IsNull } from 'typeorm';
 import { Exercise } from '../../entity/Exercise';
 import { Attempt } from '../../entity/Attempt';
 import testCases from './testCases';
 import exerciseOfferings from './exerciseOfferings';
 import { Token } from '../../utils/auth';
-import { writeFile, mkdtemp, stat, mkdir, access, rmdir } from 'fs/promises';
+import { writeFile, mkdtemp, mkdir, rmdir } from 'fs/promises';
 import { join } from 'path';
-import { tmpdir } from 'os';
 import { spawn } from 'child_process';
 import { SNIPPET_FILENAME } from '../../utils/pythonUtils';
 
@@ -16,17 +15,16 @@ exercises.use('/:exerciseId/testCases', testCases);
 exercises.use('/:exerciseId/offerings', exerciseOfferings);
 
 exercises.get('/', async (req: Request, res: Response) =>
-  res.json(await getRepository(Exercise).find())
+  res.json(await Exercise.find())
 );
 
-exercises.get('/:id', async (req: Request, res: Response) =>
-  res.json(await getRepository(Exercise).findOne(req.params.id))
-);
+exercises.get('/:id', async (req: Request, res: Response) => (
+  res.json(await Exercise.findOne(req.params.id))
+))
 
 // What about exercise versions?
 exercises.put('/:id', async (req: Request, res: Response) => {
-  const exerciseRepo = getRepository(Exercise);
-  const exercise = await exerciseRepo.findOne({
+  const exercise = await Exercise.findOne({
     where: {
       id: req.params.id,
     },
@@ -36,19 +34,37 @@ exercises.put('/:id', async (req: Request, res: Response) => {
   if (exercise?.owner?.email !== requestingUser.email) {
     res.status(403).json({ message: 'Unauthorised to update that exercise.' });
   } else {
-    const { name, description, snippet } = req.body;
+    const { name, description, snippet, mutations } = req.body;
     try {
-      const updatedExercise = { ...exercise, name, description, snippet };
-      exerciseRepo.save(updatedExercise);
-      res.status(200).json({ ...updatedExercise });
+      exercise.name = name;
+      exercise.description = description;
+      exercise.snippet = snippet;
+      exercise.mutations = mutations;
+      exercise.save();
+      res.status(200).json({ exercise });
     } catch (err) {
       res.status(400).json({ error: err });
     }
   }
 });
 
+exercises.put('/:id/mutations', async (req: Request, res: Response) => {
+  const exercise = await Exercise.findOne({
+    where: {
+      id: req.params.id,
+    },
+    relations: ['owner'],
+  });
+  const requestingUser = req.user as Token;
+  if (exercise?.owner?.email !== requestingUser.email) {
+    res.status(403).json({ message: 'Unauthorised to update that exercise.' });
+  } else {
+    // TODO: Generate all mutations and send them to the client.
+    res.status(501).json({ message: 'This endpoint is not yet implemented.' });
+  }
+});
+
 exercises.post('/', async (req: Request, res: Response) => {
-  // Check if the snippet is valid Python code.
   const { snippet } = req.body;
   try {
     await mkdir('tmp', { recursive: true });
@@ -71,7 +87,7 @@ exercises.post('/', async (req: Request, res: Response) => {
       if (code === 1) {
         res.status(400).json({ errorMessage: errOutput });
       } else {
-        res.json(await getRepository(Exercise).save(req.body));
+        res.json(Exercise.save(req.body));
       }
     });
   } catch (err) {
@@ -87,7 +103,7 @@ exercises.get('/:id/attempts/latest', async (req: Request, res: Response) => {
     return;
   }
 
-  const attempt = await getRepository(Attempt).findOne({
+  const attempt = await Attempt.findOne({
     where: {
       exercise: { id: req.params.id },
       exerciseOffering: IsNull(),

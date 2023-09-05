@@ -15,15 +15,7 @@ users.get('/:id/ownedAssignments', async (req: Request, res: Response) => {
   }
 
   try {
-    const exerciseOfferings = await getRepository(ExerciseOffering).find({
-      where: {
-        owner: {
-          id: userId,
-        },
-      },
-      relations: ['exercise'],
-    });
-
+    const exerciseOfferings = await User.ownedAssignments(userId);
     res.json(exerciseOfferings);
   } catch (err) {
     res.status(400).json({ error: err });

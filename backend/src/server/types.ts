@@ -1,6 +1,6 @@
 import core from 'express-serve-static-core';
 import express from 'express';
-import {Token} from '../utils/auth';
+import { Token } from '../utils/auth';
 
 // TODO - specify app/route specific typings
 export type RequestBody = any;
