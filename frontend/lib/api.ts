@@ -152,7 +152,7 @@ export interface AuthenticatedApi {
   getUserAssignments(userId: number): Promise<SavedExerciseOffering[]>;
   getOwnedAssignments(userId: number): Promise<SavedExerciseOffering[]>;
   // Assignments
-  getUserAssignment(userId: number, inviteCode: string): Promise<SavedExerciseOffering>;
+  getUserAssignment(userId: number, inviteCode: string): Promise<SavedExerciseOffering & { message?: string }>;
   // Test Cases
   getTestCases(
     exerciseId: number,

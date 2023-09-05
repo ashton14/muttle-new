@@ -32,8 +32,8 @@ export default function Assignment() {
     const fetchExerciseOffering = async () => {
       if (user) {
         const fetched = await getUserAssignment(user?.id, inviteCode);
-        if (!fetched) {
-          router.push('/assignments');
+        if (!fetched || fetched.message) {
+          router.push({ pathname: '/assignments', query: { message: fetched.message }});
         } else {
           const attempt = await getLatestAttempt({
             userId: user.id,

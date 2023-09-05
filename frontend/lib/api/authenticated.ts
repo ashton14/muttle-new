@@ -118,9 +118,10 @@ const runTests =
 
 const getUserAssignment =
     (api: AxiosInstance) => 
-    (userId: number, inviteCode: string): Promise<SavedExerciseOffering> =>
+    (userId: number, inviteCode: string): Promise<SavedExerciseOffering & { message?: string }> =>
         api.put(`/users/${userId}/assignments/${inviteCode}`)
-          .then(res => res.data);
+          .then(res => res.data)
+          .catch(err => err.response.data);
 
 const getLatestAttempt =
   (api: AxiosInstance) =>

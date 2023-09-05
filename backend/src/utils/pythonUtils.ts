@@ -1,4 +1,6 @@
-import path from 'path';
+import { spawn } from 'child_process';
+import { mkdir, mkdtemp, rmdir, writeFile } from 'fs/promises';
+import path, { join } from 'path';
 // TODO - check filename locations and usages
 export const ATTEMPTS_DIR = path.join('usr', 'attempts');
 
@@ -10,6 +12,38 @@ export const PYTEST_RESULTS_FILENAME = path.join('reports', 'results.json');
 export const getFunctionName = (snippet: string): string | null => {
   const match = snippet.match(/def (.+)\(.*\).*:/);
   return match && match[1];
+};
+
+export const tryCompile = async (snippet: string): Promise<string> => {
+  await mkdir('tmp', { recursive: true });
+  const tmpPath = await mkdtemp(join('tmp', 'mut-'));
+  await mkdir(join(tmpPath, 'src'));
+  await writeFile(join(tmpPath, SNIPPET_FILENAME), snippet);
+  return new Promise((resolve, reject) => {
+    try {
+      const compile = spawn('python3.7', [
+        '-m',
+        'py_compile',
+        join(tmpPath, SNIPPET_FILENAME),
+      ]);
+
+      let errOutput = '';
+      compile.stderr.on('data', chunk => {
+        errOutput += chunk;
+      });
+
+      compile.on('close', async code => {
+        rmdir(join(tmpPath), { recursive: true });
+        if (code !== 0) {
+          resolve(errOutput);
+        } else {
+          resolve('');
+        }
+      });
+    } catch (error) {
+      reject(error);
+    }
+  });
 };
 
 export const buildTestSnippet = (

@@ -6,7 +6,6 @@ import {
   UpdateDateColumn,
   OneToMany,
   ManyToOne,
-  BaseEntity,
 } from 'typeorm';
 import { TestCase } from './TestCase';
 import { Attempt } from './Attempt';
@@ -15,7 +14,7 @@ import { ExerciseOffering } from './ExerciseOffering';
 import { Mutation } from './Mutation';
 
 @Entity('Exercise')
-export class Exercise extends BaseEntity {
+export class Exercise {
   @PrimaryGeneratedColumn('increment')
   id!: number;
 

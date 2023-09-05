@@ -1,5 +1,4 @@
 import {
-  BaseEntity,
   BeforeInsert,
   BeforeUpdate,
   CreateDateColumn,
@@ -19,7 +18,7 @@ import { TestCase } from './TestCase';
 import { ExerciseOffering } from './ExerciseOffering';
 
 @Entity('Attempt')
-export class Attempt extends BaseEntity {
+export class Attempt {
   @PrimaryGeneratedColumn('increment')
   id!: number;
 

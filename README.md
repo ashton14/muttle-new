@@ -73,12 +73,14 @@ GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA PUBLIC TO professorx;
 
 ### Environment variables
 
-Set the following environment variables:
+Set the following environment variables. It's easiest to do these in an `.env` file in the `backend` directory.
 
-* `MUTTLE_DB_HOST`: `postgresql://localhost:5432`
-* `MUTTLE_DB_USER`: `professorx`
-* `MUTTLE_DB_PW`: `mutants`
-* `JWT_SECRET`: {needed for db seeding, can be set to anything}
+```
+JWT_SECRET=secret
+MUTTLE_DB_HOST="professorx"
+MUTTLE_DB_PW="mutants"
+PORT=3000
+```
 
 These are needed because the values above are referred to by environment variables in the codebase. The same code runs in production, where the values are replaced with values for the production database, which are not visible for obvious reasons.
 

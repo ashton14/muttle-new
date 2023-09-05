@@ -1,30 +1,28 @@
 import express, { Request, Response } from 'express';
-import { IsNull } from 'typeorm';
+import { IsNull, getRepository } from 'typeorm';
 import { Exercise } from '../../entity/Exercise';
 import { Attempt } from '../../entity/Attempt';
 import testCases from './testCases';
 import exerciseOfferings from './exerciseOfferings';
 import { Token } from '../../utils/auth';
-import { writeFile, mkdtemp, mkdir, rmdir } from 'fs/promises';
-import { join } from 'path';
-import { spawn } from 'child_process';
-import { SNIPPET_FILENAME } from '../../utils/pythonUtils';
+import { tryCompile } from '../../utils/pythonUtils';
 
 const exercises = express.Router();
 exercises.use('/:exerciseId/testCases', testCases);
 exercises.use('/:exerciseId/offerings', exerciseOfferings);
 
 exercises.get('/', async (req: Request, res: Response) =>
-  res.json(await Exercise.find())
+  res.json(await getRepository(Exercise).find())
 );
 
-exercises.get('/:id', async (req: Request, res: Response) => (
-  res.json(await Exercise.findOne(req.params.id))
-))
+exercises.get('/:id', async (req: Request, res: Response) =>
+  res.json(await getRepository(Exercise).findOne(req.params.id))
+);
 
 // What about exercise versions?
 exercises.put('/:id', async (req: Request, res: Response) => {
-  const exercise = await Exercise.findOne({
+  const exerciseRepo = getRepository(Exercise);
+  const exercise = await exerciseRepo.findOne({
     where: {
       id: req.params.id,
     },
@@ -36,11 +34,14 @@ exercises.put('/:id', async (req: Request, res: Response) => {
   } else {
     const { name, description, snippet, mutations } = req.body;
     try {
-      exercise.name = name;
-      exercise.description = description;
-      exercise.snippet = snippet;
-      exercise.mutations = mutations;
-      exercise.save();
+      const updatedExercise = {
+        ...exercise,
+        name,
+        description,
+        snippet,
+        mutations,
+      };
+      exerciseRepo.save(updatedExercise);
       res.status(200).json({ exercise });
     } catch (err) {
       res.status(400).json({ error: err });
@@ -49,7 +50,7 @@ exercises.put('/:id', async (req: Request, res: Response) => {
 });
 
 exercises.put('/:id/mutations', async (req: Request, res: Response) => {
-  const exercise = await Exercise.findOne({
+  const exercise = await getRepository(Exercise).findOne({
     where: {
       id: req.params.id,
     },
@@ -64,35 +65,19 @@ exercises.put('/:id/mutations', async (req: Request, res: Response) => {
   }
 });
 
+// Create an exercise if the code snippet compiles.
 exercises.post('/', async (req: Request, res: Response) => {
   const { snippet } = req.body;
   try {
-    await mkdir('tmp', { recursive: true });
-    const tmpPath = await mkdtemp(join('tmp', 'mut-'));
-    await mkdir(join(tmpPath, 'src'));
-    await writeFile(join(tmpPath, SNIPPET_FILENAME), snippet);
-    const compile = spawn('python3.7', [
-      '-m',
-      'py_compile',
-      join(tmpPath, SNIPPET_FILENAME),
-    ]);
-
-    let errOutput = '';
-    compile.stderr.on('data', chunk => {
-      errOutput += chunk;
-    });
-
-    compile.on('close', async code => {
-      rmdir(join(tmpPath), { recursive: true });
-      if (code === 1) {
-        res.status(400).json({ errorMessage: errOutput });
-      } else {
-        res.json(Exercise.save(req.body));
-      }
-    });
+    const error = await tryCompile(snippet);
+    if (error.length) {
+      res.status(400).json({ errorMessage: error });
+    } else {
+      const exercise = await getRepository(Exercise).save(req.body);
+      res.json(exercise);
+    }
   } catch (err) {
     res.status(500).json({ errorMessage: 'An error occurred.' });
-    console.error(err);
   }
 });
 
@@ -103,7 +88,7 @@ exercises.get('/:id/attempts/latest', async (req: Request, res: Response) => {
     return;
   }
 
-  const attempt = await Attempt.findOne({
+  const attempt = await getRepository(Attempt).findOne({
     where: {
       exercise: { id: req.params.id },
       exerciseOffering: IsNull(),

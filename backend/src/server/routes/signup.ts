@@ -51,7 +51,7 @@ signup.post('/', async (req, res) => {
         message: 'There was a problem creating your account',
       });
     }
-  } catch (err) {
+  } catch (err: any) {
     console.log(err.stack);
     return res.status(400).json({
       message: 'There was a problem creating your account',

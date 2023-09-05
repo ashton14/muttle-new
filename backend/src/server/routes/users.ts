@@ -1,6 +1,4 @@
 import express, { Request, Response } from 'express';
-import { getRepository } from 'typeorm';
-import { ExerciseOffering } from '../../entity/ExerciseOffering';
 import { User } from '../../entity/User';
 import { Token } from '../../utils/auth';
 
@@ -31,13 +29,7 @@ users.get('/:id/assignments', async (req: Request, res: Response) => {
   }
 
   try {
-    const user = await getRepository(User).findOneOrFail({
-      where: {
-        id: userId,
-      },
-      relations: ['exerciseOfferings'],
-    });
-
+    const user = await User.withExerciseOfferings(userId);
     res.json(user.exerciseOfferings);
   } catch (err) {
     res.status(400).json({ error: err });
@@ -51,8 +43,6 @@ users.put(
   '/:id/assignments/:inviteCode',
   async (req: Request, res: Response) => {
     const requestingUser = req.user as Token;
-    const userRepo = getRepository(User);
-    const exerciseOfferingRepo = getRepository(ExerciseOffering);
     const userId = +req.params.id;
     const inviteCode = req.params.inviteCode;
 
@@ -64,39 +54,16 @@ users.put(
     }
 
     try {
-      const exerciseOffering = await exerciseOfferingRepo.findOne({
-        where: {
-          inviteCode,
-        },
-      });
-
-      const user = await userRepo.findOne({
-        where: {
-          id: userId,
-        },
-        relations: ['exerciseOfferings'],
-      });
-
-      if (!user) {
-        res.status(401).json({
-          message: 'Error with authentication.',
-        });
-        return;
-      }
-
+      const exerciseOffering = await User.getOrCreateAssignment(
+        userId,
+        inviteCode
+      );
       if (!exerciseOffering) {
         res.status(400).json({
-          message: 'There is no assignment with that invite code.',
+          message: `There is no assignment with the invite code ${inviteCode}.`,
         });
         return;
-      }
-
-      // We have a user and an exerciseOffering
-      if (user.exerciseOfferings.includes(exerciseOffering)) {
-        res.status(200).json(exerciseOffering);
       } else {
-        user.exerciseOfferings.push(exerciseOffering);
-        userRepo.save(user);
         res.status(200).json(exerciseOffering);
       }
     } catch (err) {

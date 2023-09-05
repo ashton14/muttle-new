@@ -175,7 +175,7 @@ const writeExerciseFile = async (
 ): Promise<void> => {
   try {
     await writeFile(filename, snippet);
-  } catch (err) {
+  } catch (err: any) {
     console.log(`Unable to write exercise file: ${filename}`);
     console.log(err.stack);
     throw err;
@@ -301,7 +301,7 @@ const updateTestCases = async (
     });
 
     await testRepo.save(updatedTestCases);
-  } catch (err) {
+  } catch (err: any) {
     console.log('Unable to update test cases');
     console.log(err.stack);
     throw err;
