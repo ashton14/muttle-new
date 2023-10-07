@@ -1,7 +1,5 @@
 import express, { Request, Response } from 'express';
-import { IsNull, getRepository } from 'typeorm';
-import { Exercise } from '../../entity/Exercise';
-import { Attempt } from '../../entity/Attempt';
+import { prisma } from '../../prisma';
 import testCases from './testCases';
 import exerciseOfferings from './exerciseOfferings';
 import { Token } from '../../utils/auth';
@@ -11,22 +9,26 @@ const exercises = express.Router();
 exercises.use('/:exerciseId/testCases', testCases);
 exercises.use('/:exerciseId/offerings', exerciseOfferings);
 
-exercises.get('/', async (req: Request, res: Response) =>
-  res.json(await getRepository(Exercise).find())
-);
+exercises.get('/', async (req: Request, res: Response) => {
+  const exercises = await prisma.exercise.findMany();
+  res.json(exercises);
+});
 
 exercises.get('/:id', async (req: Request, res: Response) =>
-  res.json(await getRepository(Exercise).findOne(req.params.id))
+  res.json(
+    await prisma.exercise.findUnique({
+      where: { id: +req.params.id },
+    })
+  )
 );
 
 // What about exercise versions?
 exercises.put('/:id', async (req: Request, res: Response) => {
-  const exerciseRepo = getRepository(Exercise);
-  const exercise = await exerciseRepo.findOne({
+  const exercise = await prisma.exercise.findUnique({
     where: {
-      id: req.params.id,
+      id: +req.params.id,
     },
-    relations: ['owner'],
+    include: { owner: true },
   });
   const requestingUser = req.user as Token;
   if (exercise?.owner?.email !== requestingUser.email) {
@@ -35,13 +37,15 @@ exercises.put('/:id', async (req: Request, res: Response) => {
     const { name, description, snippet, mutations } = req.body;
     try {
       const updatedExercise = {
-        ...exercise,
         name,
         description,
         snippet,
         mutations,
       };
-      exerciseRepo.save(updatedExercise);
+      await prisma.exercise.update({
+        where: { id: +req.params.id },
+        data: updatedExercise,
+      });
       res.status(200).json({ exercise });
     } catch (err) {
       res.status(400).json({ error: err });
@@ -50,11 +54,11 @@ exercises.put('/:id', async (req: Request, res: Response) => {
 });
 
 exercises.put('/:id/mutations', async (req: Request, res: Response) => {
-  const exercise = await getRepository(Exercise).findOne({
+  const exercise = await prisma.exercise.findUnique({
     where: {
-      id: req.params.id,
+      id: +req.params.id,
     },
-    relations: ['owner'],
+    include: { owner: true },
   });
   const requestingUser = req.user as Token;
   if (exercise?.owner?.email !== requestingUser.email) {
@@ -73,7 +77,7 @@ exercises.post('/', async (req: Request, res: Response) => {
     if (error.length) {
       res.status(400).json({ errorMessage: error });
     } else {
-      const exercise = await getRepository(Exercise).save(req.body);
+      const exercise = await prisma.exercise.create(req.body);
       res.json(exercise);
     }
   } catch (err) {
@@ -88,17 +92,16 @@ exercises.get('/:id/attempts/latest', async (req: Request, res: Response) => {
     return;
   }
 
-  const attempt = await getRepository(Attempt).findOne({
+  const attempt = await prisma.attempt.findFirst({
     where: {
-      exercise: { id: req.params.id },
-      exerciseOffering: IsNull(),
+      exercise: { id: +req.params.id },
+      exerciseOffering: null,
       user: { id: user.subject },
     },
-    relations: ['testCases'],
-    order: {
-      created: 'DESC',
-    },
+    include: { testCases: true },
+    orderBy: { id: 'desc' },
   });
+
   if (attempt) {
     attempt.testCases = attempt?.testCases.filter(t => !t.fixedId);
   }

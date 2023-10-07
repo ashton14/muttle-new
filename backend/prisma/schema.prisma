@@ -1,0 +1,116 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id  Int @id @default(autoincrement())
+  email String @unique
+  password String
+  name  String
+  attempts Attempt[]
+  exercises Exercise[]
+  ownedExerciseOfferings ExerciseOffering[] @relation("Owner")
+  exerciseOfferings ExerciseOffering[] @relation("Assigned")
+  testCases TestCase[]
+}
+
+model Attempt {
+  id Int @id @default(autoincrement())
+  user User @relation(fields: [userId], references: [id])
+  userId Int
+  exercise Exercise? @relation(fields: [exerciseId], references: [id])
+  exerciseId Int?
+  exerciseOffering ExerciseOffering? @relation(fields: [exerciseOfferingId], references: [id])
+  exerciseOfferingId Int?
+  testCases TestCase[]
+  coverageOutcomes CoverageOutcome[]
+  mutationOutcomes MutationOutcome[]
+}
+
+model ExerciseOffering {
+  id Int @id @default(autoincrement())
+  inviteCode String @unique
+  exercise Exercise @relation(fields: [exerciseId], references: [id])
+  exerciseId Int
+  owner User @relation("Owner", fields: [ownerId], references: [id])
+  ownerId Int
+  users User[] @relation("Assigned")
+  conditionCoverage Boolean @default(false)
+  mutators String[] @default([])
+  minTests Int @default(1)
+  attempt Attempt[]
+}
+
+model Exercise {
+  id Int @id @default(autoincrement())
+  name String
+  description String
+  snippet String
+  attempts Attempt[]
+  owner User @relation(fields: [ownerId], references: [id])
+  ownerId Int
+  testCases TestCase[]
+  exerciseOfferings ExerciseOffering[]
+}
+
+model TestCase {
+  id Int @id @default(autoincrement())
+  input String
+  output String
+  passed Boolean
+  actual String
+  visible Boolean
+  errorMessage String?
+  fixed TestCase? @relation("FixedTestCaseHistory", fields: [fixedId], references: [id])
+  fixedFrom TestCase? @relation("FixedTestCaseHistory")
+  fixedId Int? @unique
+  exercise Exercise @relation(fields: [exerciseId], references: [id])
+  exerciseId Int
+  attempt Attempt @relation(fields: [attemptId], references: [id])
+  attemptId Int
+  user User @relation(fields: [userId], references: [id])
+  userId Int
+}
+
+model CoverageOutcome {
+  id Int @id @default(autoincrement())
+  lineNo Int
+  lineCovered Boolean
+  conditions Int @default(0)
+  conditionsCovered Int @default(0)
+  attempt Attempt @relation(fields: [attemptId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  attemptId Int
+}
+
+model MutationOutcome {
+  id Int @id @default(autoincrement())
+  operator String
+  exceptionTraceback String?
+  module String?
+  number Int
+  testsRun Int
+  time Int
+  status MutationStatus
+  killed String?
+  attempt Attempt @relation(fields: [attemptId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  attemptId Int
+  mutatedLines MutatedLine[]
+}
+
+model MutatedLine {
+  id Int @id @default(autoincrement())
+  mutationOutcome MutationOutcome @relation(fields: [mutationOutcomeId], references: [id])
+  mutationOutcomeId Int
+}
+
+enum MutationStatus {
+  SURVIVED
+  TIMEOUT
+  INCOMPETENT
+  KILLED
+}
