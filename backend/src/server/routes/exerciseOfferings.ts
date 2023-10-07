@@ -1,5 +1,6 @@
 import express, { Request, Response } from 'express';
 import { getManager, getRepository } from 'typeorm';
+import { prisma } from '../../prisma';
 import { Attempt } from '../../entity/Attempt';
 import { Exercise } from '../../entity/Exercise';
 import { ExerciseOffering } from '../../entity/ExerciseOffering';
@@ -24,7 +25,7 @@ exerciseOfferings.post('/', async (req: Request, res: Response) => {
     return;
   }
 
-  const user = await getRepository(User).findOne({
+  const user = await prisma.user.findUnique({
     where: {
       email: requestingUser.email,
     },
@@ -35,39 +36,49 @@ exerciseOfferings.post('/', async (req: Request, res: Response) => {
     return;
   }
 
-  const { conditionCoverage, mutators, exerciseId } = req.body;
-  const exercise = await getRepository(Exercise).findOne({
-    where: {
-      id: exerciseId,
-    },
-  });
-
-  const exerciseOffering = {
-    conditionCoverage,
-    mutators,
-    inviteCode,
-    exercise,
-    owner: user,
-  };
-
+  const { conditionCoverage, mutators, minTests, exerciseId } = req.body;
   try {
-    const saved = await getRepository(ExerciseOffering).save(exerciseOffering);
+    const saved = await prisma.exerciseOffering.create({
+      data: {
+        inviteCode,
+        conditionCoverage,
+        minTests,
+        mutators,
+        owner: {
+          connect: {
+            id: user.id,
+          },
+        },
+        exercise: {
+          connect: {
+            id: exerciseId,
+          },
+        },
+      },
+      include: {
+        exercise: true,
+      },
+    });
     res.status(200).json(saved);
   } catch (err) {
     res.status(400).json({ message: err });
   }
 });
 
+// Get the exercise offering with the given id
 exerciseOfferings.get('/:id', async (req: Request, res: Response) => {
   const requestingUser = req.user as Token;
   const exerciseOfferingId = parseInt(req.params.id);
 
   try {
-    const exerciseOffering = await getRepository(ExerciseOffering).findOne({
+    const exerciseOffering = await prisma.exerciseOffering.findUnique({
       where: {
         id: exerciseOfferingId,
       },
-      relations: ['owner', 'exercise'],
+      include: {
+        exercise: true,
+        owner: true,
+      },
     });
 
     if (
@@ -85,28 +96,36 @@ exerciseOfferings.get('/:id', async (req: Request, res: Response) => {
 
 exerciseOfferings.put('/:id', async (req: Request, res: Response) => {
   const requestingUser = req.user as Token;
-  const exerciseOfferingRepo = getRepository(ExerciseOffering);
   try {
-    const exerciseOffering = await exerciseOfferingRepo.findOne({
+    const exerciseOffering = await prisma.exerciseOffering.findUnique({
       where: {
-        id: req.params.id,
+        id: parseInt(req.params.id),
       },
-      relations: ['owner'],
+      include: {
+        owner: true,
+      },
     });
     if (exerciseOffering?.owner.id !== requestingUser.subject) {
       res
         .status(403)
-        .json({ message: 'Unauthorised to update that exercise offering. ' });
+        .json({ message: 'Unauthorised to update that exercise offering.' });
     } else {
       const { conditionCoverage, mutators, minTests } = req.body;
       const updatedOffering = {
-        ...exerciseOffering,
         conditionCoverage,
         mutators,
         minTests,
       };
-      exerciseOfferingRepo.save(updatedOffering);
-      res.status(200).json({ ...updatedOffering });
+      const saved = await prisma.exerciseOffering.update({
+        where: {
+          id: parseInt(req.params.id),
+        },
+        data: updatedOffering,
+        include: {
+          exercise: true,
+        },
+      });
+      res.status(200).json(saved);
     }
   } catch (err) {
     res.status(400).json({ error: err });
@@ -114,10 +133,10 @@ exerciseOfferings.put('/:id', async (req: Request, res: Response) => {
 });
 
 /**
- * True to generate a unique invite code. In the unlikely event
+ * Utility to generate a unique invite code. In the unlikely event
  * that the generated code already exists in the database, try
  * again, a maximum of 5 times. This limit is arbitrarily chosen
- * because I'm not uncomfortable hitting the DB in a (potentially)
+ * because I'm not comfortable hitting the DB in a (potentially)
  * infinite loop.
  *
  * @returns A Promise which resolves to the code or null if a code
@@ -125,22 +144,21 @@ exerciseOfferings.put('/:id', async (req: Request, res: Response) => {
  */
 const getInviteCode = async (): Promise<string | null> => {
   // TODO (Is there a better way to generate URL friendly IDs?)
-  const manager = getManager();
-  let attempts = 0;
-  while (attempts < 5) {
+  for (let i = 0; i < 5; i++) {
     const code = shortId();
-    const existing = await manager.query(
-      `SELECT EXISTS(SELECT 1 FROM "ExerciseOffering" WHERE "inviteCode" = '${code}') AS "exists"`
-    );
-    if (!existing[0].exists) {
+    const existing = await prisma.exerciseOffering.findUnique({
+      where: {
+        inviteCode: code,
+      },
+    });
+    if (!existing) {
       return code;
-    } else {
-      attempts = attempts + 1;
     }
   }
   return null;
 };
 
+// Get the requesting user's latest attempt for the given exercise offering
 exerciseOfferings.get(
   '/:id/attempts/latest',
   async (req: Request, res: Response) => {
@@ -150,18 +168,12 @@ exerciseOfferings.get(
       return;
     }
 
-    res.json(
-      await getRepository(Attempt).findOne({
-        where: {
-          exerciseOffering: { id: req.params.id },
-          user: { id: user.subject },
-        },
-        relations: ['testCases'],
-        order: {
-          id: 'DESC',
-        },
-      })
+    const attempt = await prisma.exerciseOffering.latestAttempt(
+      user.subject,
+      +req.params.id
     );
+
+    res.json(attempt);
   }
 );
 

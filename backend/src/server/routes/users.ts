@@ -1,19 +1,19 @@
 import express, { Request, Response } from 'express';
-import { User } from '../../entity/User';
+import { prisma } from '../../prisma';
 import { Token } from '../../utils/auth';
 
 const users = express.Router();
 
 users.get('/:id/ownedAssignments', async (req: Request, res: Response) => {
   const requestingUser = req.user as Token;
-  const userId = parseInt(req.params.id);
+  const userId = +req.params.id;
   if (!requestingUser || requestingUser.subject !== userId) {
     res.sendStatus(403);
     return;
   }
 
   try {
-    const exerciseOfferings = await User.ownedAssignments(userId);
+    const exerciseOfferings = await prisma.user.ownedAssignments(userId);
     res.json(exerciseOfferings);
   } catch (err) {
     res.status(400).json({ error: err });
@@ -22,15 +22,17 @@ users.get('/:id/ownedAssignments', async (req: Request, res: Response) => {
 
 users.get('/:id/assignments', async (req: Request, res: Response) => {
   const requestingUser = req.user as Token;
-  const userId = parseInt(req.params.id);
+  const userId = +req.params.id;
   if (!requestingUser || requestingUser.subject !== userId) {
     res.sendStatus(403);
     return;
   }
 
   try {
-    const user = await User.withExerciseOfferings(userId);
-    res.json(user.exerciseOfferings);
+    const exerciseOfferings = await prisma.exerciseOffering.assignedToUser(
+      userId
+    );
+    res.json(exerciseOfferings);
   } catch (err) {
     res.status(400).json({ error: err });
   }
@@ -54,7 +56,7 @@ users.put(
     }
 
     try {
-      const exerciseOffering = await User.getOrCreateAssignment(
+      const exerciseOffering = await prisma.exerciseOffering.getOrCreateAssignment(
         userId,
         inviteCode
       );
