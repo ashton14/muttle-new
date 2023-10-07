@@ -4,8 +4,7 @@ import yaml from 'js-yaml';
 import { SNIPPET_FILENAME, TESTS_FILENAME } from '../../../utils/pythonUtils';
 import path from 'path';
 import { readFile } from 'fs/promises';
-import { MutationOutcome } from '../../../entity/MutationOutcome';
-import { DeepPartial } from 'typeorm/common/DeepPartial';
+import { MutationOutcome } from '@prisma/client';
 
 const ModuleType = new yaml.Type('tag:yaml.org,2002:python/module:__init__', {
   kind: 'scalar',
@@ -15,7 +14,7 @@ const SCHEMA = yaml.DEFAULT_SCHEMA.extend(ModuleType);
 export const MUTATION_RESULTS_FILENAME = path.join('reports', 'mutation.yaml');
 
 interface MutationReport {
-  mutations: DeepPartial<MutationOutcome>[];
+  mutations: Partial<MutationOutcome>[];
 }
 
 /**
@@ -70,20 +69,21 @@ export const runMutationAnalysis = (rootDir: string) => {
   });
 };
 
+type PartialMutationOutcome = Omit<
+  MutationOutcome,
+  'id' | 'attemptId' | 'mutatedLines'
+>;
+
 export const getMutationData = async (
   rootDir: string
-): Promise<DeepPartial<MutationOutcome>[]> => {
+): Promise<PartialMutationOutcome[]> => {
   try {
     const resultsData = await readFile(
       path.join(rootDir, MUTATION_RESULTS_FILENAME),
       'utf-8'
     );
     const doc = yaml.load(resultsData, { schema: SCHEMA }) as MutationReport;
-    return doc.mutations.map(
-      (outcome): DeepPartial<MutationOutcome> => ({
-        ...outcome,
-      })
-    );
+    return doc.mutations as PartialMutationOutcome[];
   } catch (err) {
     console.log('Unable to read mutation analysis report');
     throw err;

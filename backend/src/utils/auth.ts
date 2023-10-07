@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
-import { User } from '../entity/User';
 import app from '../server/app';
+import { User } from '@prisma/client';
 
 export interface Token {
   subject: number;
@@ -42,5 +42,5 @@ export const hashPassword = (password: string): Promise<string> => {
   });
 };
 
-export const verifyPassword = (attempt: string, encrypted: string) => 
+export const verifyPassword = (attempt: string, encrypted: string) =>
   bcrypt.compare(attempt, encrypted);

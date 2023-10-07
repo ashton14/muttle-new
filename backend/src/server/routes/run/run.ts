@@ -21,7 +21,7 @@ import { COVERAGE_RESULTS_FILENAME, getCoverageData } from './coverage';
 import { prisma } from '../../../prisma';
 import { mkdir, readFile, writeFile } from 'fs/promises';
 import path from 'path';
-import { TestCase } from '@prisma/client';
+import { MutationOutcome, TestCase } from '@prisma/client';
 import { saveTestCase } from '../testCases';
 
 const run = express.Router();
@@ -85,31 +85,39 @@ run.post('/:id', async (req: Request, res: Response) => {
       const allPassed = await runTests(rootDir, savedTestCases);
 
       if (allPassed) {
-        const mutatedSources = await runMutationAnalysis(rootDir);
-        const [coverageOutcomes, mutationOutcomes] = await Promise.all([
-          getCoverageData(rootDir),
+        const [
+          mutatedSources,
+          mutationOutcomes,
+          coverageOutcomes,
+        ] = await Promise.all([
+          runMutationAnalysis(rootDir),
           getMutationData(rootDir),
+          getCoverageData(rootDir),
         ]);
 
-        // Add the mutatedLine field to the `mutations` in `mutationOutcomes
-        mutationOutcomes.forEach(outcome => {
-          const mutant = mutatedSources.find(m => m.number === outcome.number);
-          // TODO What to do if this is false? Can that happen?
-          if (mutant) {
-            outcome.mutatedLines = mutant.addedLines;
-            outcome.operator = mutant.operator;
-          }
-        });
+        // Add the mutatedLine field to the `mutations` in `mutationOutcomes`
+        const mutationOutcomesWithLines = mutationOutcomes
+          .map(outcome => {
+            const mutant = mutatedSources.find(
+              m => m.number === outcome.number
+            );
+            if (mutant) {
+              return {
+                ...outcome,
+                mutatedLines: { create: mutant.addedLines },
+                attempt: { connect: { id: attempt.id } },
+              };
+            } else {
+              return {} as MutationOutcome;
+            }
+          })
+          .filter(m => m !== null);
 
         const savedAttempt = await prisma.attempt.update({
           where: { id: attempt.id },
           data: {
-            coverageOutcomes: {
-              create: coverageOutcomes,
-            },
-            mutationOutcomes: {
-              create: mutationOutcomes,
-            },
+            coverageOutcomes: { create: coverageOutcomes },
+            mutationOutcomes: { create: mutationOutcomesWithLines },
           },
           include: {
             coverageOutcomes: true,

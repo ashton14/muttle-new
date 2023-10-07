@@ -1,9 +1,8 @@
 import xml2js from 'xml2js';
-import {parseBooleans, parseNumbers} from 'xml2js/lib/processors';
-import {DeepPartial} from 'typeorm';
-import {CoverageOutcome} from '../../../entity/CoverageOutcome';
+import { parseBooleans, parseNumbers } from 'xml2js/lib/processors';
 import path from 'path';
-import {readFile} from 'fs/promises';
+import { readFile } from 'fs/promises';
+import { CoverageOutcome } from '@prisma/client';
 
 export const COVERAGE_RESULTS_FILENAME = path.join('reports', 'coverage.xml');
 
@@ -45,9 +44,11 @@ const parseBranch = (value: string, name: string) => {
   return name === 'branch' ? parseBooleans(value) : value;
 };
 
+type PartialCoverageOutcome = Omit<CoverageOutcome, 'id' | 'attemptId'>;
+
 export const getCoverageData = async (
   rootDir: string
-): Promise<DeepPartial<CoverageOutcome>[]> => {
+): Promise<PartialCoverageOutcome[]> => {
   try {
     const coverageData = await readFile(
       path.join(rootDir, COVERAGE_RESULTS_FILENAME),
