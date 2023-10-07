@@ -1,39 +1,36 @@
 import express, { Request, Response } from 'express';
-import { getManager } from 'typeorm';
-import { Exercise } from '../../entity/Exercise';
-import { TestCase } from '../../entity/TestCase';
-import { User } from '../../entity/User';
+import { prisma } from '../../prisma';
+import { Attempt, Exercise, ExerciseOffering, TestCase } from '@prisma/client';
 
 const exerciseTestCases = express.Router({ mergeParams: true });
 
 exerciseTestCases.get('/', async (req: Request, res: Response) => {
   const {
     params: { exerciseId },
-    query: { userId, actual },
+    query: { userId, actual }, // TODO: Not really using "actual"
   } = req;
 
-  const testCases = await getManager().find(TestCase, {
+  const testCases = await prisma.testCase.findMany({
     where: {
-      exercise: { id: exerciseId },
-      user: { id: userId },
+      exerciseId: parseInt(exerciseId as string),
+      userId: parseInt(userId as string),
     },
   });
-
-  if (actual !== 'true') {
-    testCases.forEach(test => delete test.actual);
-  }
 
   return res.json(testCases);
 });
 
+// Mark the given test case as invisible
 exerciseTestCases.delete('/:id', async (req: Request, res: Response) => {
-  const entityManager = getManager();
-  const testCase = entityManager.create(TestCase, {
-    id: parseInt(req.params.id),
-    visible: false,
+  const testCase = await prisma.testCase.update({
+    where: {
+      id: parseInt(req.params.id),
+    },
+    data: {
+      visible: false,
+    },
   });
   try {
-    await entityManager.save(testCase);
     res.status(200).json(testCase);
   } catch {
     res.sendStatus(500);
@@ -41,7 +38,9 @@ exerciseTestCases.delete('/:id', async (req: Request, res: Response) => {
 });
 
 exerciseTestCases.get('/:id', async (req: Request, res: Response) =>
-  res.json(await getManager().findOne(TestCase, req.params.id))
+  res.json(
+    await prisma.testCase.findUnique({ where: { id: parseInt(req.params.id) } })
+  )
 );
 
 /**
@@ -53,35 +52,59 @@ exerciseTestCases.get('/:id', async (req: Request, res: Response) =>
  * points to the new {@link TestCase}.
  *
  * @param testCase The {@link TestCase} to save
- * @param exerciseId The id for the Exercise
- * @param userId The id for the User
+ * @param attempt The {@link Attempt} for which the {@link TestCase} is being saved
  * @returns The saved test case
  */
 export async function saveTestCase(
   testCase: TestCase,
-  exerciseId: number,
-  userId: number
+  attempt: Attempt & {
+    exercise: Exercise | null;
+    exerciseOffering: ExerciseOffering | null;
+  }
 ): Promise<TestCase> {
   const { id, input, output } = testCase;
-  const entityManager = getManager();
-  const exercise = entityManager.create(Exercise, { id: exerciseId });
-  const user = entityManager.create(User, { id: userId });
-  const newTest = { input, output, exercise, user };
 
-  const existing = id && (await entityManager.findOne(TestCase, id));
+  const existing =
+    id &&
+    (await prisma.testCase.findUnique({
+      where: { id },
+      include: { attempt: true },
+    }));
   if (existing && (existing.input !== input || existing.output !== output)) {
-    const savedNewTest = (await entityManager.save(
-      TestCase,
-      newTest
-    )) as TestCase;
-
-    const updated = entityManager.merge(TestCase, existing, {
-      fixedId: savedNewTest.id,
+    // An existing test case is being modified.
+    const savedNewTest = prisma.testCase.create({
+      data: {
+        input,
+        output,
+        exercise: {
+          connect: {
+            id: attempt.exerciseId || attempt.exerciseOffering?.exerciseId,
+          },
+        },
+        user: { connect: { id: attempt.userId } },
+        attempt: { connect: { id: existing.attempt.id } },
+        fixedFrom: { connect: { id: existing.id } },
+      },
     });
-    await entityManager.save(TestCase, updated);
-    return Promise.resolve(savedNewTest as TestCase);
+    return savedNewTest;
+  } else if (!existing) {
+    // A new test case is being created.
+    return prisma.testCase.create({
+      data: {
+        input,
+        output,
+        exercise: {
+          connect: {
+            id: attempt.exerciseId || attempt.exerciseOffering?.exerciseId,
+          },
+        },
+        user: { connect: { id: attempt.userId } },
+        attempt: { connect: { id: testCase.attemptId } },
+      },
+    });
   } else {
-    return entityManager.save(TestCase, newTest) as Promise<TestCase>;
+    // Nothing is changing, don't create a new record.
+    return Promise.resolve(existing);
   }
 }
 

@@ -1,7 +1,6 @@
 import express from 'express';
 import { createToken, Token, verifyPassword } from '../../utils/auth';
-import { User } from '../../entity/User';
-import { getRepository } from 'typeorm';
+import { prisma } from '../../prisma';
 import jwtDecode from 'jwt-decode';
 
 const login = express.Router();
@@ -9,8 +8,10 @@ const login = express.Router();
 login.post('/', async (req, res) => {
   try {
     const { email, password } = req.body;
-    const user = await getRepository(User).findOne({
-      email,
+    const user = await prisma.user.findUnique({
+      where: {
+        email,
+      },
     });
 
     if (!user) {

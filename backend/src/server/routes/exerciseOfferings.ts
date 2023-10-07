@@ -1,10 +1,5 @@
 import express, { Request, Response } from 'express';
-import { getManager, getRepository } from 'typeorm';
 import { prisma } from '../../prisma';
-import { Attempt } from '../../entity/Attempt';
-import { Exercise } from '../../entity/Exercise';
-import { ExerciseOffering } from '../../entity/ExerciseOffering';
-import { User } from '../../entity/User';
 import { Token } from '../../utils/auth';
 import { shortId } from '../../utils/utils';
 

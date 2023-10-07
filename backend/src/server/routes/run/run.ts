@@ -1,6 +1,4 @@
 import express, { Request, Response } from 'express';
-import { getManager, getRepository } from 'typeorm';
-import { Exercise } from '../../../entity/Exercise';
 import { spawn } from 'child_process';
 
 import {
@@ -13,7 +11,6 @@ import {
   TESTS_FILENAME,
 } from '../../../utils/pythonUtils';
 
-import { TestCase } from '../../../entity/TestCase';
 import { deleteIfExists } from '../../../utils/fsUtils';
 import {
   getMutationData,
@@ -21,12 +18,11 @@ import {
   runMutationAnalysis,
 } from './mutation';
 import { COVERAGE_RESULTS_FILENAME, getCoverageData } from './coverage';
-import { User } from '../../../entity/User';
+import { prisma } from '../../../prisma';
 import { mkdir, readFile, writeFile } from 'fs/promises';
 import path from 'path';
-import { Attempt } from '../../../entity/Attempt';
+import { TestCase } from '@prisma/client';
 import { saveTestCase } from '../testCases';
-import { ExerciseOffering } from '../../../entity/ExerciseOffering';
 
 const run = express.Router();
 
@@ -38,41 +34,43 @@ run.post('/:id', async (req: Request, res: Response) => {
 
     const exerciseId = parseInt(req.params.id as string);
 
-    const entityManager = getManager();
-    const user = entityManager.create(User, { id: userId });
+    const user = await prisma.user.findUnique({ where: { id: userId } });
 
     // If an exerciseOffering is specified, grab that and its exercise.
     // The next two statements should only make one database call.
     const exerciseOffering =
       exerciseOfferingId &&
-      (await entityManager.findOne(ExerciseOffering, {
-        where: {
-          id: exerciseOfferingId,
-        },
-        relations: ['exercise'],
+      (await prisma.exerciseOffering.findUnique({
+        where: { id: exerciseOfferingId },
+        include: { exercise: true },
       }));
 
     const exercise =
       exerciseOffering?.exercise ||
-      (await entityManager.findOne(Exercise, {
+      (await prisma.exercise.findUnique({
         where: { id: exerciseId },
       }));
 
     if (user && exercise) {
+      // Create a new attempt for the user on the exercise, with the new set of
+      // test cases.
+      const attempt = await prisma.attempt.create({
+        data: {
+          exercise: { connect: { id: exerciseId } },
+          exerciseOffering: { connect: { id: exerciseOfferingId } },
+          user: { connect: { id: userId } },
+        },
+        include: {
+          exercise: true,
+          exerciseOffering: true,
+        },
+      });
+
       // Save incoming test cases. After saving, the returned list
       // should only have test cases that should be run and displayed.
       const savedTestCases: TestCase[] = await Promise.all(
-        testCases.map((t: TestCase) => saveTestCase(t, exerciseId, userId))
+        testCases.map((t: TestCase) => saveTestCase(t, attempt))
       );
-
-      // Create a new attempt for the user on the exercise, with the new set of
-      // test cases.
-      const attempt = entityManager.create(Attempt, {
-        user,
-        exercise,
-        exerciseOffering,
-        testCases: savedTestCases,
-      });
 
       // Ready to run tests.
       const functionName = getFunctionName(exercise.snippet) || '';
@@ -103,18 +101,31 @@ run.post('/:id', async (req: Request, res: Response) => {
           }
         });
 
-        const savedAttempt = await entityManager.save(
-          Attempt,
-          entityManager.merge(Attempt, attempt, {
-            coverageOutcomes,
-            mutationOutcomes,
-          })
-        );
+        const savedAttempt = await prisma.attempt.update({
+          where: { id: attempt.id },
+          data: {
+            coverageOutcomes: {
+              create: coverageOutcomes,
+            },
+            mutationOutcomes: {
+              create: mutationOutcomes,
+            },
+          },
+          include: {
+            coverageOutcomes: true,
+            mutationOutcomes: true,
+            testCases: true,
+          },
+        });
 
         res.json({ ...savedAttempt });
       } else {
-        const savedAttempt = entityManager.merge(Attempt, attempt, {
-          testCases: savedTestCases,
+        const savedAttempt = await prisma.attempt.update({
+          where: { id: attempt.id },
+          data: {
+            testCases: { create: savedTestCases },
+          },
+          include: { testCases: true },
         });
         res.json({ ...savedAttempt });
       }
@@ -255,16 +266,6 @@ interface TestReport {
   };
 }
 
-interface TestResult {
-  outcome: string;
-  call: {
-    outcome: string;
-    crash?: {
-      message: string;
-    };
-  };
-}
-
 const getTestResultData = async (rootDir: string): Promise<TestReport> => {
   try {
     const resultsData = await readFile(
@@ -284,23 +285,33 @@ enum TestOutcome {
   ERROR = 'error',
 }
 
+interface TestResult {
+  outcome: string;
+  call: {
+    outcome: string;
+    crash?: {
+      message: string;
+    };
+  };
+}
+
 const updateTestCases = async (
   testCases: TestCase[],
   testResults: TestResult[]
-) => {
+): Promise<void> => {
   try {
-    const testRepo = getRepository(TestCase);
-    const updatedTestCases = testCases.map((test, i) => {
+    testCases.forEach(async (test, i) => {
       const { passed, actual, errorMessage } = parseResult(testResults[i]);
 
-      return testRepo.merge(test, {
-        passed,
-        actual,
-        errorMessage,
+      return await prisma.testCase.update({
+        where: { id: test.id },
+        data: {
+          passed,
+          actual,
+          errorMessage,
+        },
       });
     });
-
-    await testRepo.save(updatedTestCases);
   } catch (err: any) {
     console.log('Unable to update test cases');
     console.log(err.stack);

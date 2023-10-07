@@ -62,9 +62,9 @@ model TestCase {
   id Int @id @default(autoincrement())
   input String
   output String
-  passed Boolean
-  actual String
-  visible Boolean
+  passed Boolean?
+  actual String?
+  visible Boolean @default(true)
   errorMessage String?
   fixed TestCase? @relation("FixedTestCaseHistory", fields: [fixedId], references: [id])
   fixedFrom TestCase? @relation("FixedTestCaseHistory")

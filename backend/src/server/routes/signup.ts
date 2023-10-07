@@ -1,14 +1,12 @@
 import express from 'express';
 import { createToken, hashPassword, Token } from '../../utils/auth';
-import { User } from '../../entity/User';
-import { getRepository } from 'typeorm';
+import { prisma } from '../../prisma';
 import jwtDecode from 'jwt-decode';
 
 const signup = express.Router();
 
 signup.post('/', async (req, res) => {
   try {
-    const userRepo = await getRepository(User);
     const { email, name, password } = req.body;
     const hashedPassword = await hashPassword(password);
 
@@ -18,15 +16,19 @@ signup.post('/', async (req, res) => {
       password: hashedPassword,
     };
 
-    const existingEmail = await userRepo.findOne({
-      email: userData.email,
+    const existingEmail = await prisma.user.findUnique({
+      where: {
+        email: userData.email,
+      },
     });
 
     if (existingEmail) {
       return res.status(409).json({ message: 'Email already exists.' });
     }
 
-    const savedUser = await userRepo.save(userData);
+    const savedUser = await prisma.user.create({
+      data: userData,
+    });
 
     if (savedUser) {
       const token = createToken(savedUser);
