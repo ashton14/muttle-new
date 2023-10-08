@@ -98,7 +98,13 @@ exercises.get('/:id/attempts/latest', async (req: Request, res: Response) => {
       exerciseOffering: null,
       user: { id: user.subject },
     },
-    include: { testCases: true },
+    include: {
+      testCases: true,
+      coverageOutcomes: true,
+      mutationOutcomes: {
+        include: { mutatedLines: true },
+      },
+    },
     orderBy: { id: 'desc' },
   });
 

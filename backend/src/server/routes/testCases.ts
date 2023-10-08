@@ -87,7 +87,13 @@ export async function saveTestCase(
       },
     });
     return savedNewTest;
-  } else if (!existing) {
+  } else if (existing) {
+    // The test case wasn't changed. Update it to point to the latest attempt.
+    return prisma.testCase.update({
+      where: { id: existing.id },
+      data: { attempt: { connect: { id: attempt.id } } },
+    });
+  } else {
     // A new test case is being created.
     return prisma.testCase.create({
       data: {
@@ -102,9 +108,6 @@ export async function saveTestCase(
         attempt: { connect: { id: attempt.id } },
       },
     });
-  } else {
-    // Nothing is changing, don't create a new record.
-    return Promise.resolve(existing);
   }
 }
 

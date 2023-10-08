@@ -21,7 +21,13 @@ import { COVERAGE_RESULTS_FILENAME, getCoverageData } from './coverage';
 import { prisma } from '../../../prisma';
 import { mkdir, readFile, writeFile } from 'fs/promises';
 import path from 'path';
-import { Attempt, Exercise, ExerciseOffering, MutationOutcome, TestCase } from '@prisma/client';
+import {
+  Attempt,
+  Exercise,
+  ExerciseOffering,
+  MutationOutcome,
+  TestCase,
+} from '@prisma/client';
 import { saveTestCase } from '../testCases';
 
 const run = express.Router();

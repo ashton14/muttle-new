@@ -82,11 +82,11 @@ export interface MutatedLine {
 }
 
 export enum Status {
-  KILLED = 'killed',
-  TIMEOUT = 'timeout',
-  INCOMPETENT = 'incompetent',
-  SURVIVED = 'survived',
-  NONE = 'none',
+  KILLED = 'KILLED',
+  TIMEOUT = 'TIMEOUT',
+  INCOMPETENT = 'INCOMPETENT',
+  SURVIVED = 'SURVIVED',
+  NONE = 'NONE',
 }
 
 const values = Object.values(Status);
