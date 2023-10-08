@@ -145,16 +145,9 @@ run.post('/:id', async (req: Request, res: Response) => {
           },
         });
 
-        res.json({ ...savedAttempt });
+        res.json(savedAttempt);
       } else {
-        const savedAttempt = await prisma.attempt.update({
-          where: { id: attempt.id },
-          data: {
-            testCases: { create: savedTestCases },
-          },
-          include: { testCases: true },
-        });
-        res.json({ ...savedAttempt });
+        res.json(attempt);
       }
     } else {
       res.sendStatus(404);

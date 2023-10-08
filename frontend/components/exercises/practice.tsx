@@ -8,6 +8,7 @@ import Row from 'react-bootstrap/Row';
 import Container from 'react-bootstrap/Container';
 import TestCaseTable from '../testCases/TestCaseTable';
 import { UserInfo } from '../../lib/context/AuthContext';
+import { Col } from 'react-bootstrap';
 
 const displayTests = (tests: SavedTestCase[]) =>
   tests
@@ -151,18 +152,18 @@ export default function Practice({ user, exercise, exerciseOffering, initialTest
         className="border rounded h-auto mb-4"
         exerciseOffering={exerciseOffering}
       />
-      <Row>
-        <TestCaseTable
-          savedTests={tests}
-          editSavedTest={editSavedTest}
-          deleteSavedTest={deleteSavedTest}
-          newTests={newTests}
-          createNewTest={createNewTest}
-          editNewTest={editNewTest}
-          deleteNewTest={deleteNewTest}
-          running={running}
-        />        
-      </Row>
+        <Row>
+          <TestCaseTable
+            savedTests={tests}
+            editSavedTest={editSavedTest}
+            deleteSavedTest={deleteSavedTest}
+            newTests={newTests}
+            createNewTest={createNewTest}
+            editNewTest={editNewTest}
+            deleteNewTest={deleteNewTest}
+            running={running}
+          />        
+        </Row>
       {!checkTests() ? <>Minimum Tests: {minTests}</> : <></>}
       <ExerciseFooter
         disabled={running || (!tests.length && !newTests.length) || !checkTests()}

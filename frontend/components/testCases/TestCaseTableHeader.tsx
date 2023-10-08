@@ -6,7 +6,7 @@ const TestCaseTableHeader = () => (
       <th />
       <th>Input</th>
       <th>Output</th>
-      <th className="text-center">Results</th>
+      <th>Result</th>
     </tr>
   </thead>
 );

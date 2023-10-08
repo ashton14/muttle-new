@@ -73,14 +73,14 @@ const TestCaseRow = React.forwardRef<HTMLInputElement, TestCaseProps>(
 );
 
 const Success = () => (
-  <div className="text-center">
-    <i className="text-success fas fa-check-square" aria-hidden="true" />
+  <div className="text-left">
+    <i className="text-success bi bi-check-square-fill" aria-hidden="true" />
   </div>
 );
 
 const Failure = ({actual}: {actual?: string | null}) => (
   <div className={actual ? 'text-left' : 'text-center'}>
-    <i className="text-danger fas fa-ban" aria-hidden="true" />
+    <i className="text-danger bi bi-x-square-fill" aria-hidden="true" />
     {actual ? <span> Expected: {actual}</span> : null}
   </div>
 );
