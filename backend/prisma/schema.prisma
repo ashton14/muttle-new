@@ -91,12 +91,10 @@ model MutationOutcome {
   id Int @id @default(autoincrement())
   operator String
   exceptionTraceback String?
-  module String?
   number Int
   testsRun Int
   time Int
   status MutationStatus
-  killed String?
   attempt Attempt @relation(fields: [attemptId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   attemptId Int
   mutatedLines MutatedLine[]
@@ -104,6 +102,8 @@ model MutationOutcome {
 
 model MutatedLine {
   id Int @id @default(autoincrement())
+  lineNo Int
+  mutatedSource String
   mutationOutcome MutationOutcome @relation(fields: [mutationOutcomeId], references: [id])
   mutationOutcomeId Int
 }

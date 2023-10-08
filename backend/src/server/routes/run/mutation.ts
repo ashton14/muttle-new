@@ -4,7 +4,7 @@ import yaml from 'js-yaml';
 import { SNIPPET_FILENAME, TESTS_FILENAME } from '../../../utils/pythonUtils';
 import path from 'path';
 import { readFile } from 'fs/promises';
-import { MutationOutcome } from '@prisma/client';
+import { MutationOutcome, MutationStatus } from '@prisma/client';
 
 const ModuleType = new yaml.Type('tag:yaml.org,2002:python/module:__init__', {
   kind: 'scalar',
@@ -82,8 +82,31 @@ export const getMutationData = async (
       path.join(rootDir, MUTATION_RESULTS_FILENAME),
       'utf-8'
     );
-    const doc = yaml.load(resultsData, { schema: SCHEMA }) as MutationReport;
-    return doc.mutations as PartialMutationOutcome[];
+    const doc = yaml.load(resultsData, {
+      schema: SCHEMA,
+    }) as any;
+    return doc.mutations.map((outcome: any) => {
+      // The mutation analysis report from MutPy uses snake_case,
+      // but the database uses camelCase. It also has some extra
+      // fields.
+      const {
+        mutations,
+        tests_run,
+        exception_traceback,
+        time,
+        status,
+        killed,
+        number,
+      } = outcome;
+      return {
+        number,
+        time,
+        status: statusToEnum(status),
+        testsRun: tests_run,
+        exceptionTraceback: exception_traceback,
+        operator: mutations[0].operator,
+      };
+    });
   } catch (err) {
     console.log('Unable to read mutation analysis report');
     throw err;
@@ -133,4 +156,13 @@ const getMutatedSource = (output: string): Mutant[] => {
     }
   });
   return mutants;
+};
+
+const statusToEnum = (status: string): MutationStatus | undefined => {
+  return {
+    killed: MutationStatus.KILLED,
+    survived: MutationStatus.SURVIVED,
+    incompetent: MutationStatus.INCOMPETENT,
+    timeout: MutationStatus.TIMEOUT,
+  }[status];
 };

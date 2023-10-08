@@ -58,8 +58,8 @@ exerciseTestCases.get('/:id', async (req: Request, res: Response) =>
 export async function saveTestCase(
   testCase: TestCase,
   attempt: Attempt & {
-    exercise: Exercise | null;
-    exerciseOffering: ExerciseOffering | null;
+    exercise?: Exercise | null;
+    exerciseOffering?: ExerciseOffering | null;
   }
 ): Promise<TestCase> {
   const { id, input, output } = testCase;
@@ -99,7 +99,7 @@ export async function saveTestCase(
           },
         },
         user: { connect: { id: attempt.userId } },
-        attempt: { connect: { id: testCase.attemptId } },
+        attempt: { connect: { id: attempt.id } },
       },
     });
   } else {

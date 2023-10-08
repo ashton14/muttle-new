@@ -21,7 +21,7 @@ import { COVERAGE_RESULTS_FILENAME, getCoverageData } from './coverage';
 import { prisma } from '../../../prisma';
 import { mkdir, readFile, writeFile } from 'fs/promises';
 import path from 'path';
-import { MutationOutcome, TestCase } from '@prisma/client';
+import { Attempt, Exercise, ExerciseOffering, MutationOutcome, TestCase } from '@prisma/client';
 import { saveTestCase } from '../testCases';
 
 const run = express.Router();
@@ -54,17 +54,33 @@ run.post('/:id', async (req: Request, res: Response) => {
     if (user && exercise) {
       // Create a new attempt for the user on the exercise, with the new set of
       // test cases.
-      const attempt = await prisma.attempt.create({
-        data: {
-          exercise: { connect: { id: exerciseId } },
-          exerciseOffering: { connect: { id: exerciseOfferingId } },
-          user: { connect: { id: userId } },
-        },
-        include: {
-          exercise: true,
-          exerciseOffering: true,
-        },
-      });
+      let attempt: Attempt & {
+        exercise?: Exercise | null;
+        exerciseOffering?: ExerciseOffering | null;
+      };
+      if (exerciseOffering) {
+        attempt = await prisma.attempt.create({
+          data: {
+            exercise: { connect: { id: exerciseId } },
+            exerciseOffering: { connect: { id: exerciseOfferingId } },
+            user: { connect: { id: userId } },
+          },
+          include: {
+            exercise: true,
+            exerciseOffering: true,
+          },
+        });
+      } else {
+        attempt = await prisma.attempt.create({
+          data: {
+            exercise: { connect: { id: exerciseId } },
+            user: { connect: { id: userId } },
+          },
+          include: {
+            exercise: true,
+          },
+        });
+      }
 
       // Save incoming test cases. After saving, the returned list
       // should only have test cases that should be run and displayed.
@@ -85,15 +101,9 @@ run.post('/:id', async (req: Request, res: Response) => {
       const allPassed = await runTests(rootDir, savedTestCases);
 
       if (allPassed) {
-        const [
-          mutatedSources,
-          mutationOutcomes,
-          coverageOutcomes,
-        ] = await Promise.all([
-          runMutationAnalysis(rootDir),
-          getMutationData(rootDir),
-          getCoverageData(rootDir),
-        ]);
+        const mutatedSources = await runMutationAnalysis(rootDir);
+        const mutationOutcomes = await getMutationData(rootDir);
+        const coverageOutcomes = await getCoverageData(rootDir);
 
         // Add the mutatedLine field to the `mutations` in `mutationOutcomes`
         const mutationOutcomesWithLines = mutationOutcomes
@@ -105,7 +115,6 @@ run.post('/:id', async (req: Request, res: Response) => {
               return {
                 ...outcome,
                 mutatedLines: { create: mutant.addedLines },
-                attempt: { connect: { id: attempt.id } },
               };
             } else {
               return {} as MutationOutcome;
@@ -121,7 +130,11 @@ run.post('/:id', async (req: Request, res: Response) => {
           },
           include: {
             coverageOutcomes: true,
-            mutationOutcomes: true,
+            mutationOutcomes: {
+              include: {
+                mutatedLines: true,
+              },
+            },
             testCases: true,
           },
         });

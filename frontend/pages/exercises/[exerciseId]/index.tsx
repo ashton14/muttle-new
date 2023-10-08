@@ -48,7 +48,7 @@ const Exercise = () => {
         } else {
           const attempt = await getLatestAttempt({ userId: user.id, exerciseId: exercise.id });
           setExercise(exercise);
-          setTests(attempt.testCases || []);
+          setTests(attempt?.testCases || []);
           setAttemptFeedback(attempt);
         }
       }
