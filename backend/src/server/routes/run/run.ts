@@ -309,6 +309,9 @@ interface TestResult {
     crash?: {
       message: string;
     };
+    traceback?: {
+      message: string;
+    }[];
   };
 }
 
@@ -374,7 +377,9 @@ const getOutcome = (result: TestResult): TestOutcome => {
 
 const isPassed = (result: TestResult) => result.outcome === 'passed';
 const isFailure = (result: TestResult) =>
-  result.call.crash?.message.startsWith('AssertionError');
+  result.outcome === 'failed' &&
+  result.call.traceback?.length &&
+  result.call.traceback[0].message === 'AssertionError';
 const getActual = (result: TestResult) =>
   result.call.crash?.message.split(' ')[1];
 const getErrorMessage = (result: TestResult) => result.call.crash?.message;
