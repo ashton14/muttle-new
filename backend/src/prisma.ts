@@ -54,6 +54,9 @@ export const prisma = new PrismaClient().$extends({
               },
             },
           },
+          include: {
+            exercise: true,
+          },
         });
       },
       /**
@@ -73,6 +76,12 @@ export const prisma = new PrismaClient().$extends({
             id: 'desc',
           },
           include: {
+            coverageOutcomes: true,
+            mutationOutcomes: {
+              include: {
+                mutatedLines: true,
+              },
+            },
             testCases: true,
           },
         });

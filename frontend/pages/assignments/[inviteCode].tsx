@@ -43,7 +43,7 @@ export default function Assignment() {
 
           setExerciseOffering(fetched);
           setAttemptFeedback(attempt);
-          setTests(attempt.testCases || []);
+          setTests(attempt?.testCases || []);
         }
       }
     };

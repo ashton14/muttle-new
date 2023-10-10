@@ -104,7 +104,7 @@ const getUserAssignment =
 
 const getLatestAttempt =
   (api: AxiosInstance) =>
-  ({userId, exerciseId, exerciseOfferingId}: AttemptRequest): Promise<AttemptFeedback> => {
+  async ({userId, exerciseId, exerciseOfferingId}: AttemptRequest): Promise<AttemptFeedback> => {
     if (exerciseId && exerciseOfferingId) {
       return api.get(`exercises/${exerciseId}/offerings/${exerciseOfferingId}/attempts/latest`)
         .then(res => res.data)
