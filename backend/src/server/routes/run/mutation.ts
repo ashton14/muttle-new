@@ -13,12 +13,8 @@ const SCHEMA = yaml.DEFAULT_SCHEMA.extend(ModuleType);
 
 export const MUTATION_RESULTS_FILENAME = path.join('reports', 'mutation.yaml');
 
-interface MutationReport {
-  mutations: Partial<MutationOutcome>[];
-}
-
 /**
- * Format in which mutated source code is extraced from stdout.
+ * Format in which mutated source code is extracted from stdout.
  */
 interface MutatedLine {
   lineNo: number;
@@ -40,6 +36,8 @@ export const runMutationAnalysis = (rootDir: string) => {
       path.join(rootDir, SNIPPET_FILENAME),
       '--unit-test',
       path.join(rootDir, TESTS_FILENAME),
+      '--runner',
+      'pytest',
       '--coverage',
       '--show-mutants',
       '-r',
