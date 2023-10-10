@@ -34,7 +34,6 @@ const Exercise = () => {
 
   const {
     getExercise,
-    getTestCases,
     getLatestAttempt,
   } = useAuthenticatedApi();
   const exerciseId = parseInt(idParam);
@@ -55,7 +54,7 @@ const Exercise = () => {
     }
 
     fetchData();
-  }, [router, exerciseId, user, getExercise, getTestCases, getLatestAttempt]);
+  }, [router, exerciseId, user, getExercise, getLatestAttempt]);
 
   if (!user) {
     router.push('/');

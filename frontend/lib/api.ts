@@ -154,12 +154,6 @@ export interface AuthenticatedApi {
   // Assignments
   getUserAssignment(userId: number, inviteCode: string): Promise<SavedExerciseOffering & { message?: string }>;
   // Test Cases
-  getTestCases(
-    exerciseId: number,
-    userId: number,
-    attemptId: number,
-    actual?: boolean
-  ): Promise<SavedTestCase[]>;
   deleteTestCase(testCase: SavedTestCase): Promise<number | null>;
   // Misc
   runTests(params: RunTestRequest): Promise<AttemptFeedback>;

@@ -4,22 +4,6 @@ import { Attempt, Exercise, ExerciseOffering, TestCase } from '@prisma/client';
 
 const exerciseTestCases = express.Router({ mergeParams: true });
 
-exerciseTestCases.get('/', async (req: Request, res: Response) => {
-  const {
-    params: { exerciseId },
-    query: { userId, actual }, // TODO: Not really using "actual"
-  } = req;
-
-  const testCases = await prisma.testCase.findMany({
-    where: {
-      exerciseId: parseInt(exerciseId as string),
-      userId: parseInt(userId as string),
-    },
-  });
-
-  return res.json(testCases);
-});
-
 // Mark the given test case as invisible
 exerciseTestCases.delete('/:id', async (req: Request, res: Response) => {
   const testCase = await prisma.testCase.update({
@@ -36,12 +20,6 @@ exerciseTestCases.delete('/:id', async (req: Request, res: Response) => {
     res.sendStatus(500);
   }
 });
-
-exerciseTestCases.get('/:id', async (req: Request, res: Response) =>
-  res.json(
-    await prisma.testCase.findUnique({ where: { id: parseInt(req.params.id) } })
-  )
-);
 
 /**
  * Saves the specified TestCase for the Exercise with the given id and the User
