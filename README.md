@@ -81,6 +81,8 @@ JWT_SECRET=secret
 MUTTLE_DB_HOST="professorx"
 MUTTLE_DB_PW="mutants"
 PORT=3000
+
+DATABASE_URL="postgresql://professorx:mutants@localhost:5432/muttle"
 ```
 
 These are needed because the values above are referred to by environment variables in the codebase. The same code runs in production, where the values are replaced with values for the production database, which are not visible for obvious reasons.
@@ -93,11 +95,15 @@ In the `backend` folder, do the following to set up and seed the database:
 yarn db:populate
 ```
 
-This drops the schema, re-creates it based on the entities in [backend/src/entity](src/entity), and seeds it with some dummy data (see [backend/src/seeds](backend/src/seeds)).
+<span style="color: red;">
+Don't use this command in a production environment.
+</span>
+
+It drops the schema, re-creates it based on the models in [backend/prisma/schema.prisma](backend/prisma/schema.prisma), and seeds it with some dummy data (see [backend/prisma/seed.ts](backend/prisma/seed.ts)).
 
 ## Run servers
 
-When everything is set up, do the following to run servers:
+When everything is set up, do the following to run servers.
 
 ```
 cd backend
