@@ -61,8 +61,9 @@ run.post('/:id', async (req: Request, res: Response) => {
       // Create a new attempt for the user on the exercise, with the new set of
       // test cases.
       let attempt: Attempt & {
-        exercise?: Exercise | null;
+        exercise: Exercise;
         exerciseOffering?: ExerciseOffering | null;
+        testCases?: TestCase[];
       };
       if (exerciseOffering) {
         attempt = await prisma.attempt.create({
@@ -106,6 +107,10 @@ run.post('/:id', async (req: Request, res: Response) => {
 
       const allPassed = await runTests(rootDir, savedTestCases);
 
+      const updatedTestCases = await prisma.testCase.findMany({
+        where: { attemptId: attempt.id },
+      });
+
       if (allPassed) {
         const mutatedSources = await runMutationAnalysis(rootDir);
         const mutationOutcomes = await getMutationData(rootDir);
@@ -147,13 +152,13 @@ run.post('/:id', async (req: Request, res: Response) => {
 
         res.json(savedAttempt);
       } else {
+        attempt.testCases = updatedTestCases;
         res.json(attempt);
       }
     } else {
       res.sendStatus(404);
     }
   } catch (err) {
-    console.log(err);
     res.sendStatus(500);
   } finally {
     await deleteIfExists(SNIPPET_FILENAME);
@@ -234,26 +239,23 @@ const writeTestFile = async (
   }
 };
 
-const runTests = (rootDir: string, testCases: TestCase[]) => {
+const runTests = async (rootDir: string, testCases: TestCase[]) => {
+  const python = spawn('python3.7', [
+    '-m',
+    'pytest',
+    path.join(rootDir, TESTS_FILENAME),
+    `--cov=${path.join(rootDir, 'src')}`,
+    '--cov-branch',
+    '--cov-report',
+    `xml:${path.join(rootDir, COVERAGE_RESULTS_FILENAME)}`,
+    '--json-report',
+    `--json-report-file=${path.join(rootDir, PYTEST_RESULTS_FILENAME)}`,
+    '--json-report-omit',
+    'keywords',
+    'collectors',
+  ]);
+
   return new Promise<boolean>((resolve, reject) => {
-    const python = spawn('python3.7', [
-      '-m',
-      'pytest',
-      path.join(rootDir, TESTS_FILENAME),
-      `--cov=${path.join(rootDir, 'src')}`,
-      '--cov-branch',
-      '--cov-report',
-      `xml:${path.join(rootDir, COVERAGE_RESULTS_FILENAME)}`,
-      '--json-report',
-      `--json-report-file=${path.join(rootDir, PYTEST_RESULTS_FILENAME)}`,
-      '--json-report-omit',
-      'keywords',
-      'collectors',
-    ]);
-
-    python.stderr.on('data', chunk => console.log(chunk.toString()));
-    python.stdout.on('data', chunk => console.log(chunk.toString()));
-
     python.on('close', async () => {
       try {
         const { exitcode, summary, tests } = await getTestResultData(rootDir);
@@ -261,16 +263,11 @@ const runTests = (rootDir: string, testCases: TestCase[]) => {
           await updateTestCases(testCases, tests);
           resolve(summary.passed === summary.total);
         } else {
-          reject('Unable to run test cases');
+          reject('Unable to run test cases.');
         }
-      } catch (err) {
-        reject(err);
+      } catch (error: any) {
+        reject(error);
       }
-    });
-
-    python.on('error', (err: Error) => {
-      console.log(err);
-      reject(err);
     });
   });
 };
@@ -320,10 +317,12 @@ const updateTestCases = async (
   testResults: TestResult[]
 ): Promise<void> => {
   try {
-    testCases.forEach(async (test, i) => {
+    // Using a regular for loop because forEach doesn't wait for async functions.
+    for (let i = 0; i < testCases.length; i++) {
+      const test = testCases[i];
       const { passed, actual, errorMessage } = parseResult(testResults[i]);
 
-      return await prisma.testCase.update({
+      await prisma.testCase.update({
         where: { id: test.id },
         data: {
           passed,
@@ -331,7 +330,7 @@ const updateTestCases = async (
           errorMessage,
         },
       });
-    });
+    }
   } catch (err: any) {
     console.log('Unable to update test cases');
     console.log(err.stack);

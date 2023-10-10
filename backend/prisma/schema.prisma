@@ -23,8 +23,8 @@ model Attempt {
   id Int @id @default(autoincrement())
   user User @relation(fields: [userId], references: [id])
   userId Int
-  exercise Exercise? @relation(fields: [exerciseId], references: [id])
-  exerciseId Int?
+  exercise Exercise @relation(fields: [exerciseId], references: [id])
+  exerciseId Int
   exerciseOffering ExerciseOffering? @relation(fields: [exerciseOfferingId], references: [id])
   exerciseOfferingId Int?
   testCases TestCase[]

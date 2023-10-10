@@ -8,11 +8,9 @@ import Row from 'react-bootstrap/Row';
 import Container from 'react-bootstrap/Container';
 import TestCaseTable from '../testCases/TestCaseTable';
 import { UserInfo } from '../../lib/context/AuthContext';
-import { Col } from 'react-bootstrap';
 
 const displayTests = (tests: SavedTestCase[]) =>
-  tests
-    .filter(test => test.visible && !test.fixedId)
+  tests.filter(test => test.visible && !test.fixedId)
     .sort((t1, t2) =>
       t1.passed && !t2.passed ? -1 : !t1.passed && t2.passed ? 1 : 0
     );

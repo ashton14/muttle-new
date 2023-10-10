@@ -53,14 +53,11 @@ export const buildTestSnippet = (
   output: string,
   isFloat = false
 ): string => {
-  const assertionType = isFloat
-    ? 'npt.assert_approx_equal'
-    : 'self.assertEqual';
-  const precision = isFloat ? ', 4' : '';
-  return `\tdef test_${index}(self):\n\t\t${assertionType}(${functionName}(${input}), ${output}${precision})\n`;
+  const expected = isFloat ? `pytest.approx(${output})` : `${output}`;
+  return `def test_${index}():\n\tassert ${functionName}(${input}) == ${expected}\n`;
 };
 
 export const buildTestsFile = (functionName: string, testSnippets: string[]) =>
-  `import unittest\nimport numpy.testing as npt\nfrom src import ${functionName}\n\nclass Test${functionName}(unittest.TestCase):\n${testSnippets.join(
+  `import pytest\nfrom src import ${functionName}\n\n\n${testSnippets.join(
     '\n'
   )}`;
