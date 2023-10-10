@@ -108,7 +108,6 @@ export default function Practice({ user, exercise, exerciseOffering, initialTest
   const runTests = async () => {
     const testsToSave = newTests.filter(({ input, output }) => input || output);
     const testsToUpdate = tests
-      .filter(({ passed }) => passed)
       .map(test => ({ ...test, exerciseId, userId: user.id }));
 
     setRunning(true);
