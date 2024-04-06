@@ -4,7 +4,7 @@ import yaml from 'js-yaml';
 import { SNIPPET_FILENAME, TESTS_FILENAME } from '../../../utils/pythonUtils';
 import path from 'path';
 import { readFile } from 'fs/promises';
-import { MutationOutcome, MutationStatus } from '@prisma/client';
+import { MutatedLine, MutationOutcome, MutationStatus } from '@prisma/client';
 
 const ModuleType = new yaml.Type('tag:yaml.org,2002:python/module:__init__', {
   kind: 'scalar',
@@ -13,22 +13,16 @@ const SCHEMA = yaml.DEFAULT_SCHEMA.extend(ModuleType);
 
 export const MUTATION_RESULTS_FILENAME = path.join('reports', 'mutation.yaml');
 
-/**
- * Format in which mutated source code is extracted from stdout.
- */
-interface MutatedLine {
-  lineNo: number;
-  mutatedSource: string;
-}
+type PartialMutatedLine = Omit<MutatedLine, 'id' | 'mutationId'>;
 
 interface Mutant {
   operator: string;
   number: number;
-  addedLines: MutatedLine[];
-  removedLines: MutatedLine[];
+  addedLines: PartialMutatedLine[];
+  removedLines: PartialMutatedLine[];
 }
 
-export const runMutationAnalysis = (rootDir: string) => {
+export const runMutationAnalysis = (rootDir: string): Promise<Mutant[]> => {
   return new Promise<Mutant[]>((resolve, reject) => {
     const python = spawn('mut.py', [
       '-e',
@@ -68,7 +62,7 @@ export const runMutationAnalysis = (rootDir: string) => {
 
 type PartialMutationOutcome = Omit<
   MutationOutcome,
-  'id' | 'attemptId' | 'mutatedLines'
+  'id' | 'attemptId' | 'mutationId'
 >;
 
 export const getMutationData = async (
@@ -141,7 +135,7 @@ const getMutatedSource = (output: string): Mutant[] => {
       // in the MutPy output.
       const lineSource: string = mutantMatches[3].replace(' ', '');
 
-      const newMutatedLine: MutatedLine = {
+      const newMutatedLine: PartialMutatedLine = {
         lineNo: Number(lineNumber),
         mutatedSource: lineSource,
       };

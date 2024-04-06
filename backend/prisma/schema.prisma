@@ -56,6 +56,18 @@ model Exercise {
   ownerId Int
   testCases TestCase[]
   exerciseOfferings ExerciseOffering[]
+  mutations Mutation[]
+}
+
+model Mutation {
+  id String @id
+  operator String
+  number Int
+  description String
+  mutatedLines MutatedLine[]
+  mutationOutcomes MutationOutcome[]
+  exercise Exercise @relation(fields: [exerciseId], references: [id])
+  exerciseId Int
 }
 
 model TestCase {
@@ -97,15 +109,16 @@ model MutationOutcome {
   status MutationStatus
   attempt Attempt @relation(fields: [attemptId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   attemptId Int
-  mutatedLines MutatedLine[]
+  mutation Mutation @relation(fields: [mutationId], references: [id])
+  mutationId String 
 }
 
 model MutatedLine {
   id Int @id @default(autoincrement())
   lineNo Int
   mutatedSource String
-  mutationOutcome MutationOutcome @relation(fields: [mutationOutcomeId], references: [id])
-  mutationOutcomeId Int
+  Mutation Mutation @relation(fields: [mutationId], references: [id])
+  mutationId String 
 }
 
 enum MutationStatus {

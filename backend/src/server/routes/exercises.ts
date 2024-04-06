@@ -4,6 +4,8 @@ import testCases from './testCases';
 import exerciseOfferings from './exerciseOfferings';
 import { Token } from '../../utils/auth';
 import { tryCompile } from '../../utils/pythonUtils';
+import { deleteIfExists } from '../../utils/fsUtils';
+import { runMutationAnalysis } from './run/mutation';
 
 const exercises = express.Router();
 exercises.use('/:exerciseId/testCases', testCases);
@@ -73,10 +75,14 @@ exercises.put('/:id/mutations', async (req: Request, res: Response) => {
 exercises.post('/', async (req: Request, res: Response) => {
   const { snippet } = req.body;
   try {
-    const error = await tryCompile(snippet);
+    const { error, path } = await tryCompile(snippet);
     if (error.length) {
+      // The code didn't compile successfully. Delete the files.
+      deleteIfExists(path);
       res.status(400).json({ errorMessage: error });
     } else {
+      // TODO: The code compiled successfully. Generate mutations.
+      // Use writeTestFiles method to set this up with one dummy TestCase if needed
       const exercise = await prisma.exercise.create(req.body);
       res.json(exercise);
     }
@@ -102,7 +108,7 @@ exercises.get('/:id/attempts/latest', async (req: Request, res: Response) => {
       testCases: true,
       coverageOutcomes: true,
       mutationOutcomes: {
-        include: { mutatedLines: true },
+        include: { mutation: true },
       },
     },
     orderBy: { id: 'desc' },

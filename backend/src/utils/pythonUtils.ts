@@ -14,10 +14,16 @@ export const getFunctionName = (snippet: string): string | null => {
   return match && match[1];
 };
 
-export const tryCompile = async (snippet: string): Promise<string> => {
+// TODO: Use write_____Files methods to set this up
+export const tryCompile = async (
+  snippet: string
+): Promise<{ error: string; path: string }> => {
   await mkdir('tmp', { recursive: true });
   const tmpPath = await mkdtemp(join('tmp', 'mut-'));
-  await mkdir(join(tmpPath, 'src'));
+  await Promise.all([
+    mkdir(join(tmpPath, 'src')),
+    mkdir(join(tmpPath, 'reports')), // needed for generating mutants
+  ]);
   await writeFile(join(tmpPath, SNIPPET_FILENAME), snippet);
   return new Promise((resolve, reject) => {
     try {
@@ -35,9 +41,9 @@ export const tryCompile = async (snippet: string): Promise<string> => {
       compile.on('close', async code => {
         rmdir(join(tmpPath), { recursive: true });
         if (code !== 0) {
-          resolve(errOutput);
+          resolve({ error: errOutput, path: tmpPath });
         } else {
-          resolve('');
+          resolve({ error: '', path: tmpPath });
         }
       });
     } catch (error) {
