@@ -13,6 +13,7 @@ import {
   buildTestsFile,
   buildTestSnippet,
   getFunctionName,
+  buildDummyTestSnippet,
 } from './pythonUtils';
 import { COVERAGE_RESULTS_FILENAME } from './coverage';
 
@@ -46,7 +47,7 @@ export const createWorkspace = async (
 export const writeFiles = async (
   rootDir: string,
   snippet: string,
-  testCases: TestCase[]
+  testCases: Pick<TestCase, 'input' | 'output'>[]
 ) => {
   const functionName = getFunctionName(snippet);
   if (functionName !== null) {
@@ -79,7 +80,7 @@ const writeExerciseFile = async (
 const writeTestFile = async (
   filename: string,
   functionName: string,
-  testCases: TestCase[]
+  testCases: Pick<TestCase, 'input' | 'output'>[]
 ): Promise<void> => {
   try {
     const testSnippets = testCases.map(({ input, output }, i) => {
@@ -88,7 +89,7 @@ const writeTestFile = async (
         !Number.isNaN(resultAsNumber) && !Number.isSafeInteger(resultAsNumber);
 
       return buildTestSnippet(i, functionName, input, output, isFloat);
-    });
+    }) || [buildDummyTestSnippet()];
 
     await writeFile(filename, buildTestsFile(functionName, testSnippets));
   } catch (err) {

@@ -1,6 +1,8 @@
 import { spawn } from 'child_process';
 import { mkdir, mkdtemp, rmdir, writeFile } from 'fs/promises';
 import path, { join } from 'path';
+import { Mutant, runMutationAnalysis } from './mutation';
+import { writeFiles } from './testRunner';
 
 export const ATTEMPTS_DIR = path.join('usr', 'attempts');
 
@@ -15,16 +17,16 @@ export const getFunctionName = (snippet: string): string | null => {
 };
 
 // TODO: Use write_____Files methods to set this up
-export const tryCompile = async (
+export const compileSnippetAndGenerateMutations = async (
   snippet: string
-): Promise<{ error: string; path: string }> => {
+): Promise<Mutant[]> => {
   await mkdir('tmp', { recursive: true });
   const tmpPath = await mkdtemp(join('tmp', 'mut-'));
   await Promise.all([
     mkdir(join(tmpPath, 'src')),
     mkdir(join(tmpPath, 'reports')), // needed for generating mutants
   ]);
-  await writeFile(join(tmpPath, SNIPPET_FILENAME), snippet);
+  await writeFiles(tmpPath, snippet, []);
   return new Promise((resolve, reject) => {
     try {
       const compile = spawn('python3.7', [
@@ -39,11 +41,13 @@ export const tryCompile = async (
       });
 
       compile.on('close', async code => {
-        rmdir(join(tmpPath), { recursive: true });
         if (code !== 0) {
-          resolve({ error: errOutput, path: tmpPath });
+          rmdir(join(tmpPath), { recursive: true });
+          reject(errOutput);
         } else {
-          resolve({ error: '', path: tmpPath });
+          const mutants = await runMutationAnalysis(tmpPath, false);
+          rmdir(join(tmpPath), { recursive: true });
+          resolve(mutants);
         }
       });
     } catch (error) {
@@ -67,3 +71,6 @@ export const buildTestsFile = (functionName: string, testSnippets: string[]) =>
   `import pytest\nfrom src import ${functionName}\n\n\n${testSnippets.join(
     '\n'
   )}`;
+
+export const buildDummyTestSnippet = (): string =>
+  'def test_dummy():\n\tassert True\n';
