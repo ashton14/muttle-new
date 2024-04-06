@@ -1,4 +1,4 @@
-import {buildTestSnippet, getFunctionName} from '../../src/utils/pythonUtils';
+import {buildTestSnippet, getFunctionName} from '../../src/utils/py/pythonUtils';
 import {
   TEST_NUMERIC_INPUT_OUTPUT,
   TEST_STRING_INPUT_OUTPUT,

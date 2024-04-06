@@ -1,7 +1,7 @@
 import { spawn } from 'child_process';
 import yaml from 'js-yaml';
 
-import { SNIPPET_FILENAME, TESTS_FILENAME } from '../../../utils/pythonUtils';
+import { SNIPPET_FILENAME, TESTS_FILENAME } from '../py/pythonUtils';
 import path from 'path';
 import { readFile } from 'fs/promises';
 import { MutatedLine, MutationOutcome, MutationStatus } from '@prisma/client';

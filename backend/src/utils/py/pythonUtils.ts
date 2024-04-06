@@ -1,10 +1,10 @@
 import { spawn } from 'child_process';
 import { mkdir, mkdtemp, rmdir, writeFile } from 'fs/promises';
 import path, { join } from 'path';
-// TODO - check filename locations and usages
+
 export const ATTEMPTS_DIR = path.join('usr', 'attempts');
 
-// filenames relative to the run directory
+// filenames relative to the exercise root directory
 export const SNIPPET_FILENAME = path.join('src', '__init__.py');
 export const TESTS_FILENAME = 'tests.py';
 export const PYTEST_RESULTS_FILENAME = path.join('reports', 'results.json');

@@ -56,10 +56,8 @@ users.put(
     }
 
     try {
-      const exerciseOffering = await prisma.exerciseOffering.getOrCreateAssignment(
-        userId,
-        inviteCode
-      );
+      const exerciseOffering =
+        await prisma.exerciseOffering.getOrCreateAssignment(userId, inviteCode);
       if (!exerciseOffering) {
         res.status(400).json({
           message: `There is no assignment with the invite code ${inviteCode}.`,
