@@ -61,7 +61,6 @@ export const runMutationAnalysis = (rootDir: string) => {
     });
 
     python.on('error', (err: Error) => {
-      console.log(err);
       reject(err);
     });
   });
@@ -115,7 +114,7 @@ const getMutatedSource = (output: string): Mutant[] => {
   // Group 1: mutant number, Group 2: operator
   const reOperator = /^\s+-\s\[#\s+(\d+)\] (\w+)/;
   // Group 1: + or -, Group 2: line number, Group 3: source
-  const reMutatedLine = /^.*(\+|-)\s+(\d+):\s+(.+)$/;
+  const reMutatedLine = /^.*(\+|-)\s+(\d+):(\s+.+)$/;
 
   const mutants: Mutant[] = [];
   let current = -1;
@@ -137,7 +136,10 @@ const getMutatedSource = (output: string): Mutant[] => {
     if (mutantMatches) {
       const addedOrRemoved: string = mutantMatches[1];
       const lineNumber: string = mutantMatches[2];
-      const lineSource: string = mutantMatches[3];
+
+      // The mutated source will have an extra space at the front
+      // in the MutPy output.
+      const lineSource: string = mutantMatches[3].replace(' ', '');
 
       const newMutatedLine: MutatedLine = {
         lineNo: Number(lineNumber),

@@ -39,6 +39,14 @@ To avoid downgrading your preferred Python version, it's recommended that you us
 # assuming you're in the muttle/backend directory
 pyenv install 3.7.12 # this will take some time
 pyenv local 3.7.12
+
+python --version # check that your python version is 3.7.12
+```
+
+Once this is done, install the Python dependencies listed in `requirements.txt` so that the backend can run tests and mutation analysis.
+
+```bash
+python -m pip install -r requirements.txt
 ```
 
 ### Set up the database
@@ -52,7 +60,7 @@ brew install postgresql@14
 Start the Postgres server:
 
 ```
-brew services postgresql@14 start
+brew services start postgresql@14
 ```
 
 This will start your database server at `localhost:5432`

@@ -83,8 +83,7 @@ const Highlighter = (props: HighlighterProps) => {
       const editorLines = initialValue.split(/\n/);
       mutatedLines.forEach(({lineNo, mutatedSource}) => {
         const currLine = editorLines[lineNo - 1];
-        const edit = currLine.length ? mutatedSource.trim() : mutatedSource;
-        editorLines[lineNo - 1] = `${editorLines[lineNo - 1]} ${edit}`;
+        editorLines[lineNo - 1] = `${mutatedSource} ${currLine.trim()}`;
       });
       setValue(editorLines.join('\n'));
     } else {
@@ -99,10 +98,10 @@ const Highlighter = (props: HighlighterProps) => {
     const editor = codeMirrorRef.current?.editor;
     if (selectedMutant) {
       markRef.current?.clear();
-      selectedMutant.mutatedLines.forEach(({lineNo}) => {
+      selectedMutant.mutatedLines.forEach(({lineNo, mutatedSource}) => {
         if (editor) {
-          const textAtLine = initialValue.split(/\n/)[lineNo - 1];
-          const fromChar = /\w/.exec(textAtLine)?.index || 0;
+          const textAtLine = value.split(/\n/)[lineNo - 1];
+          const fromChar = mutatedSource.length + 1;
           const toChar = textAtLine.length;
           markRef.current = editor.markText(
             {line: lineNo - 1, ch: fromChar},
