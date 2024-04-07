@@ -1,5 +1,5 @@
 import { spawn } from 'child_process';
-import { mkdir, mkdtemp, rmdir, writeFile } from 'fs/promises';
+import { mkdir, mkdtemp, rmdir } from 'fs/promises';
 import path, { join } from 'path';
 import { Mutant, runMutationAnalysis } from './mutation';
 import { writeFiles } from './testRunner';
@@ -10,6 +10,8 @@ export const ATTEMPTS_DIR = path.join('usr', 'attempts');
 export const SNIPPET_FILENAME = path.join('src', '__init__.py');
 export const TESTS_FILENAME = 'tests.py';
 export const PYTEST_RESULTS_FILENAME = path.join('reports', 'results.json');
+
+export const PYTHON = 'python3.7';
 
 export const getFunctionName = (snippet: string): string | null => {
   const match = snippet.match(/def (.+)\(.*\).*:/);
@@ -29,7 +31,7 @@ export const compileSnippetAndGenerateMutations = async (
   await writeFiles(tmpPath, snippet, []);
   return new Promise((resolve, reject) => {
     try {
-      const compile = spawn('python3.7', [
+      const compile = spawn(PYTHON, [
         '-m',
         'py_compile',
         join(tmpPath, SNIPPET_FILENAME),

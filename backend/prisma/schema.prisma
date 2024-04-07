@@ -63,6 +63,7 @@ model Mutation {
   id Int @id @default(autoincrement())
   operator String
   number Int
+  equivalent Boolean @default(false)
   mutatedLines MutatedLine[]
   mutationOutcomes MutationOutcome[]
   exercise Exercise @relation(fields: [exerciseId], references: [id])
@@ -102,7 +103,6 @@ model CoverageOutcome {
 
 model MutationOutcome {
   id Int @id @default(autoincrement())
-  operator String
   exceptionTraceback String?
   number Int
   testsRun Int

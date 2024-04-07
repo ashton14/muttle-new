@@ -95,45 +95,53 @@ run.post('/:id', async (req: Request, res: Response) => {
       await writeFiles(rootDir, exercise.snippet, savedTestCases);
 
       const { allPassed, testResults } = await runTests(rootDir);
-      await updateTestCases(testCases, testResults);
+      await updateTestCases(savedTestCases, testResults);
 
       const updatedTestCases = await prisma.testCase.findMany({
         where: { attemptId: attempt.id },
       });
 
       if (allPassed) {
-        const mutatedSources = await runMutationAnalysis(rootDir);
+        // Run mutation analysis and save the results.
+        // No need to save the mutated sources, since the mutations were saved
+        // when the exercise was created.
+        await runMutationAnalysis(rootDir);
         const mutationOutcomes = await getMutationData(rootDir);
         const coverageOutcomes = await getCoverageData(rootDir);
 
-        // Add the mutatedLine field to the `mutations` in `mutationOutcomes`
-        // const mutationOutcomesWithLines = mutationOutcomes
-        //   .map(outcome => {
-        //     const mutant = mutatedSources.find(
-        //       m => m.number === outcome.number
-        //     );
-        //     if (mutant) {
-        //       return {
-        //         ...outcome,
-        //         mutatedLines: { create: mutant.addedLines },
-        //       };
-        //     } else {
-        //       return {} as MutationOutcome;
-        //     }
-        //   })
-        //   .filter(m => m !== null);
+        // Tie mutation outcomes to mutations
+        const mutations = await prisma.mutation.findMany({
+          where: { exerciseId },
+        });
+        const mutationOutcomesWithMutations = mutationOutcomes.map(
+          (outcome: Partial<MutationOutcome>) => {
+            const mutation = mutations.find(m => m.number === outcome.number);
+            if (mutation) {
+              return {
+                ...outcome,
+                mutationId: mutation.id,
+              };
+            } else {
+              return {} as MutationOutcome;
+            }
+          }
+        );
 
         const savedAttempt = await prisma.attempt.update({
           where: { id: attempt.id },
           data: {
             coverageOutcomes: { create: coverageOutcomes },
-            // mutationOutcomes: { create: mutationOutcomes },
+            mutationOutcomes: { create: mutationOutcomesWithMutations },
           },
           include: {
             coverageOutcomes: true,
             mutationOutcomes: {
               include: {
-                mutation: true,
+                mutation: {
+                  include: {
+                    mutatedLines: true,
+                  },
+                },
               },
             },
             testCases: true,

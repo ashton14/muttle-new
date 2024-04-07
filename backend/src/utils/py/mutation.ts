@@ -73,14 +73,17 @@ export const runMutationAnalysis = (
   });
 };
 
-type PartialMutationOutcome = Omit<
+export type PartialMutationOutcome = Pick<
   MutationOutcome,
-  'id' | 'attemptId' | 'mutationId'
+  | 'number'
+  | 'time'
+  | 'status'
+  | 'testsRun'
+  | 'exceptionTraceback'
+  | 'mutationId'
 >;
 
-export const getMutationData = async (
-  rootDir: string
-): Promise<PartialMutationOutcome[]> => {
+export const getMutationData = async (rootDir: string) => {
   try {
     const resultsData = await readFile(
       path.join(rootDir, MUTATION_RESULTS_FILENAME),
@@ -93,22 +96,14 @@ export const getMutationData = async (
       // The mutation analysis report from MutPy uses snake_case,
       // but the database uses camelCase. It also has some extra
       // fields.
-      const {
-        mutations,
-        tests_run,
-        exception_traceback,
-        time,
-        status,
-        killed,
-        number,
-      } = outcome;
+      const { tests_run, exception_traceback, time, status, number } = outcome;
       return {
         number,
         time,
         status: statusToEnum(status),
         testsRun: tests_run,
         exceptionTraceback: exception_traceback,
-        operator: mutations[0].operator,
+        // operator: mutations[0].operator,
       };
     });
   } catch (err) {
