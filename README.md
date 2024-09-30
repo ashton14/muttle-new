@@ -77,6 +77,7 @@ Run the following SQL queries to create the database and user.
 CREATE DATABASE muttle;
 CREATE USER professorx WITH PASSWORD 'mutants';
 \c muttle;
+CREATE SCHEMA IF NOT EXISTS public;
 GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA PUBLIC TO professorx; 
 ```
 
