@@ -76,6 +76,11 @@ export interface CoverageOutcome {
   conditionsCovered: number;
 }
 
+export interface Mutation {
+  mutatedLines: MutatedLine[]
+  mutationOutcomes: MutationOutcome[]
+}
+
 export interface MutatedLine {
   lineNo: number;
   mutatedSource: string;
@@ -145,6 +150,8 @@ export interface AuthenticatedApi {
     exerciseId: number,
     exercise: SavedExercise
   ): Promise<SavedExercise>;
+  //Mutations
+  getMutations(exerciseId: number): Promise<Mutation[]>
   // ExerciseOfferings
   createExerciseOffering(exerciseOffering: ExerciseOffering): Promise<SavedExerciseOffering>;
   updateExerciseOffering(exerciseOffering: SavedExerciseOffering): Promise<SavedExerciseOffering>;

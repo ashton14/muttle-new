@@ -20,6 +20,8 @@ const NewExercise = () => {
 
   const router = useRouter();
   const { createExercise } = useAuthenticatedApi();
+  const { getMutations } = useAuthenticatedApi();
+
 
   const disabled = !name || !description || !snippet;
 
@@ -29,7 +31,25 @@ const NewExercise = () => {
       setError(res.errorMessage.replace(/\\n/g, '\n'));
     } else {
       const { id } = res;
-      router.push(`/exercises/${id}`);
+      
+      try {
+      const mutations = await getMutations(id);
+      
+      // Reroute and pass mutations as query params 
+      router.push({
+        pathname: `/exercises/${id}/mutations`,
+        query: { mutations: JSON.stringify(mutations) }, 
+      });
+    } catch (error) {
+      console.error('Error:', error);  
+    }
+
+      //print mutations
+    //   getMutations(id).then(data => {
+    //   console.log(data);  
+    // }).catch(error => {
+    //   console.error('Error:', error);  
+    // });
     }
   };
 

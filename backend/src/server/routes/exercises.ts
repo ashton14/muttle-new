@@ -29,6 +29,7 @@ exercises.get('/:id', async (req: Request, res: Response) =>
   )
 );
 
+
 // What about exercise versions?
 exercises.put('/:id', async (req: Request, res: Response) => {
   const exercise = await prisma.exercise.findUnique({
@@ -60,6 +61,25 @@ exercises.put('/:id', async (req: Request, res: Response) => {
   }
 });
 
+exercises.get('/:id/mutations', async (req: Request, res: Response) => {
+  const exercise = await prisma.exercise.findUnique({
+    where: {
+      id: +req.params.id,
+    },
+    include: {
+      owner: true,
+      mutations: true
+     },
+  });
+  const requestingUser = req.user as Token;
+  if (exercise?.owner?.email !== requestingUser.email) {
+    res.status(403).json({ message: 'Unauthorised to retrieve mutations for that exercise.' });
+  } else {
+    res.json(exercise.mutations)
+  }
+});
+
+
 exercises.put('/:id/mutations', async (req: Request, res: Response) => {
   const exercise = await prisma.exercise.findUnique({
     where: {
@@ -79,9 +99,11 @@ exercises.put('/:id/mutations', async (req: Request, res: Response) => {
 // Create an exercise if the code snippet compiles.
 exercises.post('/', async (req: Request, res: Response) => {
   const { snippet } = req.body;
-  let mutants = [];
+  let mutants = []; 
+  
   try {
     mutants = await compileSnippetAndGenerateMutations(snippet);
+    
   } catch (error) {
     res.status(400).json({
       errorMessage: `An error occurred while compiling the exercise and generating mutations:\n${error}`,

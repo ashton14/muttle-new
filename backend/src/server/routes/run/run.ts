@@ -54,7 +54,6 @@ run.post('/:id', async (req: Request, res: Response) => {
       (await prisma.exercise.findUnique({
         where: { id: exerciseId },
       }));
-
     if (user && exercise) {
       // Create a new attempt for the user on the exercise, with the new set of
       // test cases.
@@ -157,7 +156,8 @@ run.post('/:id', async (req: Request, res: Response) => {
       res.sendStatus(404);
     }
   } catch (err) {
-    res.sendStatus(500);
+    res.status(500).json(err);
+
   } finally {
     await deleteIfExists(SNIPPET_FILENAME);
     await deleteIfExists(TESTS_FILENAME);
