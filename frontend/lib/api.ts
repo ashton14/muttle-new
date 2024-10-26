@@ -79,6 +79,11 @@ export interface CoverageOutcome {
 export interface Mutation {
   mutatedLines: MutatedLine[]
   mutationOutcomes: MutationOutcome[]
+  number: number;
+  id: number;
+  exerciseId: number;
+  operator: string;
+  equivalent: boolean;
 }
 
 export interface MutatedLine {

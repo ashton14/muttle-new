@@ -68,7 +68,12 @@ exercises.get('/:id/mutations', async (req: Request, res: Response) => {
     },
     include: {
       owner: true,
-      mutations: true
+      mutations: {
+        include: {
+          mutationOutcomes: true,
+          mutatedLines: true
+        }
+      }
      },
   });
   const requestingUser = req.user as Token;

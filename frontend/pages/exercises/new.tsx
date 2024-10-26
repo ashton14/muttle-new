@@ -32,26 +32,10 @@ const NewExercise = () => {
     } else {
       const { id } = res;
       
-      try {
-      const mutations = await getMutations(id);
-      
-      // Reroute and pass mutations as query params 
-      router.push({
-        pathname: `/exercises/${id}/mutations`,
-        query: { mutations: JSON.stringify(mutations) }, 
-      });
-    } catch (error) {
-      console.error('Error:', error);  
+      router.push(`/exercises/${id}/mutations`);
     }
-
-      //print mutations
-    //   getMutations(id).then(data => {
-    //   console.log(data);  
-    // }).catch(error => {
-    //   console.error('Error:', error);  
-    // });
     }
-  };
+  
 
   return (
     <Container>
@@ -70,5 +54,6 @@ const NewExercise = () => {
     </Container>
   );
 };
+
 
 export default NewExercise;
