@@ -2,7 +2,7 @@
     background-color: rgb(205, 205, 205);
     border: 2px black solid;
     border-radius: 10px;
-    width: 600px; 
+    width: 700px; 
     margin: 30px auto; 
     padding: 20px;
 }
@@ -18,11 +18,32 @@
     padding: 5px;
 }
 
-.cardContainer{
+.cardContainer {
     display: inline-block;
     justify-content: center;
-    margin-top: 50px;
+    margin-top: 30px;
+    margin-right: 50px;
 }
+
+/* Header Section with centered title and right-aligned button */
+.headerSection {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center; /* Centers the title */
+    margin-bottom: 20px;
+}
+
+.headerSection h1 {
+    margin: 0;
+}
+
+.buttonContainer {
+    display: flex;
+    flex-direction: column; /* Stack button and note vertically */
+    align-items: flex-end; /* Right-align the button and note */
+}
+
 .operation {
     font-size: 20px;
     font-weight: 500;
@@ -57,7 +78,7 @@
     padding: 10px;
 }
 
-.code-box-header{
+.code-box-header {
     text-align: center;
     text-decoration: underline;
 }
@@ -66,29 +87,35 @@ li {
     list-style-type: none;
 }
 
-.codeLine{
-    padding: 3px;
-    margin: 0;
-    font-family: 'Courier New', Courier, monospace;
-    line-height: normal;
-}
-
-.markEquivButton{
+/* Styling for "Mark as equivalent" button */
+.markEquivButton {
     background-color: white;
     border: 2px black solid;
     border-radius: 10px;
     padding: 10px;
     text-align: center;
-    margin: 0;
     transition: 0.3s;
 }
 
-.markEquivButton:hover{
+.markEquivButton:hover {
     background-color: rgb(132, 163, 248);
     cursor: pointer;
 }
 
-.markEquivButton:active{
+.markEquivButton:active {
     background-color: blue;
     color: white;
+}
+
+.buttonNote {
+    font-size: 12px;
+    color: gray;
+    margin-top: 5px;
+    text-align: right; /* Right-aligns the note */
+}
+
+.authError {
+    font-size: 30px;
+    color: red;
+    font-style: bold;
 }
