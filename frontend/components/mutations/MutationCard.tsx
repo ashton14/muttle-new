@@ -1,6 +1,5 @@
-import React, { Children, useState, useCallback, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 
-import {Controlled as CodeMirror} from 'react-codemirror2';
 import codemirror from 'codemirror';
 import dynamic from 'next/dynamic';
 
@@ -10,41 +9,16 @@ import { HighlighterProps } from '../../components/code/Highlighter';
 const Highlighter = dynamic<HighlighterProps>(() => import('../../components/code/Highlighter'), { ssr: false });
 
 
-import {
-  //LANGUAGE,
-  responsiveEditorHeight,
-  //THEME,
-} from '../../lib/codeMirrorSetup';
-
-//imports not working? 
-
-const LANGUAGE = 'python'
-const THEME = 'idea'
-
-
-const baseOptions: Partial<codemirror.EditorConfiguration> = {
-  readOnly: true,
-  cursorHeight: 0,
-  theme: THEME,
-  mode: LANGUAGE,
-};
-
-
 interface MutationCardProps {
     operation: React.ReactNode
     original: React.ReactNodeArray
     mutated: React.ReactNodeArray
-    //options?: Partial<codemirror.EditorConfiguration>;
-
+    highlightedLines?: number[]
 }
 
-const MutationCard: React.FC<MutationCardProps> = ({operation, original, mutated, /*options*/}) => {
+const MutationCard: React.FC<MutationCardProps> = ({operation, original, mutated, highlightedLines}) => {
 
     const [isChecked, setIsChecked] = useState(false);
-
-    const codeMirrorRef = useRef<CodeMirror & {editor: codemirror.Editor}>(null);
-    const widgetsRef = useRef<codemirror.LineWidget[]>([]);
-    const markRef = useRef<codemirror.TextMarker | null>(null);
 
     
   const handleCheckboxChange = () => {
@@ -78,7 +52,7 @@ const MutationCard: React.FC<MutationCardProps> = ({operation, original, mutated
 
         <div className='mutated-code'>
           <h5 className='code-box-header'>Mutated</h5>
-                    <Highlighter value={mutated.join('\n')} options={options} />
+            <Highlighter value={mutated.join('\n')} options={options} highlightedLines={highlightedLines} />
                     
         </div>
       </div>

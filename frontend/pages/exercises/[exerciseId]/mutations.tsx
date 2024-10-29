@@ -69,13 +69,12 @@ const Mutations = () => {
   return (
     <div style={{ display: 'flex', justifyContent: 'center' }}>
   <div className="cardContainer">
-    {/* Header Section */}
     <div className="headerSection">
           <h1>Mutations</h1>
       
           <div className="buttonContainer">
             {!notAuthorized && (
-                <button className="markEquivButton">Mark as equivalent</button>
+                <button className="markEquivButton">Mark selected as equivalent</button>
               )}
                 <p className="buttonNote">*Equivalent mutations will not be displayed</p>
           </div>
@@ -99,6 +98,7 @@ const Mutations = () => {
               operation={mutation.operator}
               original={original}
               mutated={getMutatedExercise(mutation)}
+              highlightedLines={mutation.mutatedLines.map(line => line.lineNo)}
             />
           </li>
         ))}

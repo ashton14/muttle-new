@@ -34,6 +34,8 @@ export interface HighlighterProps {
   mutationOutcomes?: MutationOutcome[];
   className?: string;
   exerciseOffering?: SavedExerciseOffering;
+  highlightedLines?: number[];
+
 }
 
 const Highlighter = (props: HighlighterProps) => {
@@ -169,6 +171,23 @@ const Highlighter = (props: HighlighterProps) => {
       }
     }
   }, [value, showFeedback, coverageOutcomes, exerciseOffering]);
+
+  useEffect(() => {
+  const editor = codeMirrorRef.current?.editor;
+
+  // Clear any previous highlights
+  if (editor) {
+    editor.eachLine(line => editor.removeLineClass(line, 'background', 'highlighted-line'));
+  }
+
+  // Apply the 'highlighted-line' class to each line in highlightedLines array
+  if (editor && props.highlightedLines?.length) {
+    props.highlightedLines.forEach(lineNo => {
+      editor.addLineClass(lineNo - 1, 'background', 'highlighted-line');
+    });
+  }
+}, [props.highlightedLines, value]); // Dependencies on highlightedLines and value
+
 
   return (
     <>
