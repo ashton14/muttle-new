@@ -26,6 +26,8 @@ const Exercise = () => {
   const [exercise, setExercise] = useState<SavedExercise>();
   const [tests, setTests] = useState<SavedTestCase[]>([]);
   const [attemptFeedback, setAttemptFeedback] = useState<AttemptFeedback>();
+  const [alertMessage, setAlertMessage] = useState('');
+
 
   const router = useRouter();
   const idParam = router.query.exerciseId as string;
@@ -38,6 +40,15 @@ const Exercise = () => {
   } = useAuthenticatedApi();
   const exerciseId = parseInt(idParam);
 
+
+  useEffect(() => {
+        const message = localStorage.getItem('alertMessage');
+        if (message) {
+            setAlertMessage(message);
+            localStorage.removeItem('alertMessage'); // Clear message after showing
+        }
+    }, []);
+  
   useEffect(() => {
     const fetchData = async () => {
       if (user) {
@@ -66,12 +77,17 @@ const Exercise = () => {
   }
 
   return (
-    <Practice
-      user={user}
-      exercise={exercise}
-      initialAttemptFeedback={attemptFeedback}
-      initialTests={tests}
-    />
+  <><div>
+      {alertMessage && (
+        <div className="alert alert-danger" role="alert">
+          {alertMessage}
+        </div>
+      )}
+    </div><Practice
+        user={user}
+        exercise={exercise}
+        initialAttemptFeedback={attemptFeedback}
+        initialTests={tests} /></>
   );
 };
 

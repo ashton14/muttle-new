@@ -47,6 +47,8 @@ const Mutations = () => {
         setMutations(fetchedMutations);
 
       } catch (error) {
+        localStorage.setItem('alertMessage', 'You are not authorized to view this exercise\'s mutations.');
+        router.push(`/exercises/${exerciseId}`);
         setNotAuthorized(true);
         console.error(error.message);
       }
@@ -71,14 +73,7 @@ const Mutations = () => {
   <div className="cardContainer">
     <div className="headerSection">
           <h1>Mutations</h1>
-      
-          <div className="buttonContainer">
-            {!notAuthorized && (
-                <button className="markEquivButton">Mark selected as equivalent</button>
-              )}
-                <p className="buttonNote">*Equivalent mutations will not be displayed</p>
-          </div>
-
+    
       </div>
     </div>
 

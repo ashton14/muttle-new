@@ -37,12 +37,19 @@ const MutationCard: React.FC<MutationCardProps> = ({operation, original, mutated
                     <u style={{ fontSize: "20px" }}>Mutation Operation</u>
                     <div className="operation">{operation}</div>
                     </div>
-                <input
+                <div className="checkbox-container">
+            <input
                 className="select"
                 type="checkbox"
                 checked={isChecked}
                 onChange={handleCheckboxChange}
-                />
+                id="mark-equiv"
+            />
+            <div className="label-container">
+                <label htmlFor="mark-equiv">Mark as Equivalent</label>
+                <span className="secondary-text">Equivalent mutations will not be displayed</span>
+            </div>
+        </div>
             </div>
             <div className="code-container">
         <div className='original-code'>

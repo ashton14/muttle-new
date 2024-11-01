@@ -25,7 +25,6 @@
     margin-right: 50px;
 }
 
-/* Header Section with centered title and right-aligned button */
 .headerSection {
     position: relative;
     display: flex;
@@ -38,11 +37,6 @@
     margin: 0;
 }
 
-.buttonContainer {
-    display: flex;
-    flex-direction: column; /* Stack button and note vertically */
-    align-items: flex-end; /* Right-align the button and note */
-}
 
 .operation {
     font-size: 20px;
@@ -87,36 +81,29 @@ li {
     list-style-type: none;
 }
 
-/* Styling for "Mark as equivalent" button */
-.markEquivButton {
-    background-color: white;
-    border: 2px black solid;
-    border-radius: 10px;
-    padding: 9px;
-    margin-left: 40px;
-    text-align: center;
-    transition: 0.3s;
-}
-
-.markEquivButton:hover {
-    background-color: rgb(132, 163, 248);
-    cursor: pointer;
-}
-
-.markEquivButton:active {
-    background-color: blue;
-    color: white;
-}
-
-.buttonNote {
-    font-size: 12px;
-    color: gray;
-    margin-top: 5px;
-    text-align: right; /* Right-aligns the note */
-}
 
 .authError {
     font-size: 30px;
     color: red;
     font-style: bold;
+}
+
+.checkbox-container {
+    display: flex;
+    align-items: center;
+}
+
+.label-container {
+    display: flex;
+    flex-direction: column;
+    margin-left: 8px;
+}
+
+.secondary-text {
+    font-size: 0.8em;
+    color: rgb(255, 94, 94);
+}
+
+label{
+    margin: 0;
 }
