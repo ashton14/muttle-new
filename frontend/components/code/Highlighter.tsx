@@ -81,7 +81,7 @@ const Highlighter = (props: HighlighterProps) => {
    */
   useEffect(() => {
     if (selectedMutant) {
-      const {mutatedLines} = selectedMutant;
+      const {mutatedLines} = selectedMutant.mutation;
       const editorLines = initialValue.split(/\n/);
       mutatedLines.forEach(({lineNo, mutatedSource}) => {
         const currLine = editorLines[lineNo - 1];
@@ -100,7 +100,7 @@ const Highlighter = (props: HighlighterProps) => {
     const editor = codeMirrorRef.current?.editor;
     if (selectedMutant) {
       markRef.current?.clear();
-      selectedMutant.mutatedLines.forEach(({lineNo, mutatedSource}) => {
+      selectedMutant.mutation.mutatedLines.forEach(({lineNo, mutatedSource}) => {
         if (editor) {
           const textAtLine = value.split(/\n/)[lineNo - 1];
           const fromChar = mutatedSource.length + 1;
@@ -229,14 +229,14 @@ const displayMutationCoverage = (
 ) => {
   const mutationResultsByLine = _.groupBy(
     mutationOutcomes,
-    mutationOutcome => mutationOutcome.mutatedLines[0].lineNo
+    mutationOutcome => mutationOutcome.mutation.mutatedLines[0].lineNo
   );
 
   const newWidgets: codemirror.LineWidget[] = [];
 
   const struckLinesSet: Set<string> = new Set<string>();
   if (selectedMutant !== null) {
-    selectedMutant.mutatedLines.forEach(mutatedLine =>
+    selectedMutant.mutation.mutatedLines.forEach(mutatedLine =>
       struckLinesSet.add(mutatedLine.lineNo.toString())
     );
   }
@@ -253,13 +253,13 @@ const displayMutationCoverage = (
         )
         .sort(({status: o1}, {status: o2}) => sortStatus(o1, o2))
         .map((mutationResult, i) => {
-          const {status, operator, mutatedLines} = mutationResult;
+          const {status, operator, mutation} = mutationResult;
           const isSelected = _.isEqual(mutationResult, selectedMutant);
           return (
             <MutantBadge
               status={status}
               operator={operator}
-              mutatedLines={mutatedLines}
+              mutatedLines={mutation.mutatedLines}
               isSelected={isSelected}
               handleClick={() => handleMutantClick(mutationResult)}
               key={`mutant-${i}`}

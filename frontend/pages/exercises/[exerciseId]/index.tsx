@@ -53,7 +53,7 @@ const Exercise = () => {
     const fetchData = async () => {
       if (user) {
         const exercise = await getExercise(exerciseId);
-        if (!exercise) {
+       if (!exercise) {
           router.push('/exercises');
         } else {
           const attempt = await getLatestAttempt({ userId: user.id, exerciseId: exercise.id });

@@ -108,7 +108,7 @@ export interface MutationOutcome {
   exception_traceback: string;
   killer: string;
   operator: string;
-  mutatedLines: MutatedLine[];
+  mutation: Mutation;
   number: number;
   status: Status;
   tests_run: number;

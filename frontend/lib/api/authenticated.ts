@@ -115,10 +115,29 @@ const getOwnedAssignments =
       api.get(`users/${userId}/ownedAssignments`).then(res => res.data);
 
 const runTests =
-  (api: AxiosInstance) =>
-  ({ exerciseId, exerciseOfferingId, userId, testCases }: RunTestRequest):
-    Promise<AttemptFeedback> =>
-    api.post(`run/${exerciseId}`, { userId, exerciseOfferingId, testCases }).then(res => res.data);
+
+ (api: AxiosInstance) =>
+  async ({ exerciseId, exerciseOfferingId, userId, testCases }: RunTestRequest): Promise<AttemptFeedback> => {
+    console.log('Running tests with the following parameters:');
+    console.log('exerciseId:', exerciseId);
+    console.log('exerciseOfferingId:', exerciseOfferingId);
+    console.log('userId:', userId);
+    console.log('testCases:', testCases);
+    
+    try {
+      const response = await api.post(`run/${exerciseId}`, { userId, exerciseOfferingId, testCases });
+      console.log('Response from API:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error during API call:', error);
+      throw error; // Rethrow to handle it later if needed
+    }
+  };
+
+  // (api: AxiosInstance) =>
+  // ({ exerciseId, exerciseOfferingId, userId, testCases }: RunTestRequest):
+  //   Promise<AttemptFeedback> => 
+  //   api.post(`run/${exerciseId}`, { userId, exerciseOfferingId, testCases }).then(res => res.data);
 
 const getUserAssignment =
     (api: AxiosInstance) => 
