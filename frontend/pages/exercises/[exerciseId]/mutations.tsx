@@ -13,8 +13,10 @@ const Mutations = () => {
   const [original, setOriginal] = useState<string[]>([]);
   const exerciseId = router.query.exerciseId as string;
   const [notAuthorized, setNotAuthorized] = useState<Boolean>(false);
+  const [marked, setMarked] = useState<number[]>([]);
 
-  const {getExercise, getMutations} = useAuthenticatedApi();
+  const { getExercise, getMutations } = useAuthenticatedApi();
+
     
   useEffect(() => {
       //Get exercise
@@ -68,12 +70,27 @@ const Mutations = () => {
     return mutatedSnippet
   }
   
+  
+  const handleMarkedCard = (mutationNumber: number, isMarked: boolean) => {
+    if (isMarked) {
+      console.log('isMarked:',isMarked)
+      setMarked([...marked, mutationNumber]);
+    } else {
+      setMarked(marked.filter(id => id !== mutationNumber));
+    }
+  };
+
+  const handleSave = () => {
+    console.log('Selected Mutation Cards:', marked);
+    // Here you can handle the selectedCards (e.g., send them to an API)
+  };
+
   return (
     <div style={{ display: 'flex', justifyContent: 'center' }}>
   <div className="cardContainer">
     <div className="headerSection">
           <h1>Mutations</h1>
-    
+          <button className='saveButton' onClick={handleSave}>Save</button>
       </div>
     </div>
 
@@ -90,16 +107,18 @@ const Mutations = () => {
         {mutations.map((mutation, index) => (
           <li key={index}>
             <MutationCard
+              mutationNumber={mutation.number}
               operation={mutation.operator}
               original={original}
               mutated={getMutatedExercise(mutation)}
               highlightedLines={mutation.mutatedLines.map(line => line.lineNo)}
+              onMarked={handleMarkedCard}
             />
           </li>
         ))}
       </ul>
     )}
-  </div>
+    </div>
 
 
   );

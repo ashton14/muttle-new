@@ -158,11 +158,17 @@ exercises.get('/:id/attempts/latest', async (req: Request, res: Response) => {
       testCases: true,
       coverageOutcomes: true,
       mutationOutcomes: {
-        include: { mutation: true },
-      },
+        include: {
+          mutation: {
+            include: {
+              mutatedLines: true
+            }
+          },
+        },
+      }
     },
     orderBy: { id: 'desc' },
-  });
+  }); 
 
   if (attempt) {
     attempt.testCases = attempt?.testCases.filter(t => !t.fixedId);

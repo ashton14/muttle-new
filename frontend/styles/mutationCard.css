@@ -1,10 +1,15 @@
+h1{
+    width: 300px;
+}
+
 .card {
-    background-color: rgb(205, 205, 205);
+    background-color: rgb(194, 194, 194);
     border: 2px black solid;
     border-radius: 10px;
-    width: 700px; 
+    width: 850px; 
     margin: 30px auto; 
     padding: 20px;
+    box-shadow: 8px 8px grey;
 }
 
 /* Flexbox for the header to align text and checkbox on the same line */
@@ -22,7 +27,7 @@
     display: inline-block;
     justify-content: center;
     margin-top: 30px;
-    margin-right: 50px;
+    margin-right: 30px;
 }
 
 .headerSection {
@@ -101,9 +106,30 @@ li {
 
 .secondary-text {
     font-size: 0.8em;
-    color: rgb(255, 94, 94);
+    color: rgb(255, 255,255);
+    font-style: italic;
 }
 
 label{
     margin: 0;
+}
+
+.saveButton{
+    border-radius: 10px;
+    border: black solid 2px;
+    transition: 0.2s;
+    margin: 10px;
+    margin-left: 20px;
+    font-size: 25px;
+    font-weight: 500;
+}
+
+.saveButton:hover{
+    background-color: rgb(44, 44, 255);
+    cursor: pointer;
+    color: white;
+}
+
+.saveButton:active{
+    transform: scale(0.95);
 }

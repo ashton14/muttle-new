@@ -10,25 +10,27 @@ const Highlighter = dynamic<HighlighterProps>(() => import('../../components/cod
 
 
 interface MutationCardProps {
+    mutationNumber: number
     operation: React.ReactNode
     original: React.ReactNodeArray
     mutated: React.ReactNodeArray
     highlightedLines?: number[]
+    onMarked: (mutationNumber: number, isMarked: boolean) => void
 }
 
-const MutationCard: React.FC<MutationCardProps> = ({operation, original, mutated, highlightedLines}) => {
+const MutationCard: React.FC<MutationCardProps> = ({mutationNumber, operation, original, mutated, highlightedLines, onMarked}) => {
 
     const [isChecked, setIsChecked] = useState(false);
 
-    
-  const handleCheckboxChange = () => {
-    setIsChecked(!isChecked);
+    const handleCheckboxChange = () => {
+        setIsChecked(!isChecked);
+        onMarked(mutationNumber, !isChecked)
     };
 
     const options = {
-    lineNumbers: true,
-    mode: 'python',
-  };
+        lineNumbers: true,
+        mode: 'python',
+    };
     
     return (
         <div className="card">

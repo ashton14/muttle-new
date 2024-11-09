@@ -19,6 +19,7 @@ import {
 import MutantBadge from '../feedback/Mutant';
 import _ from 'lodash';
 import { Button } from 'react-bootstrap';
+import exerciseOfferings from '../../../backend/src/server/routes/exerciseOfferings';
 
 const baseOptions: Partial<codemirror.EditorConfiguration> = {
   readOnly: true,
@@ -142,7 +143,6 @@ const Highlighter = (props: HighlighterProps) => {
         setSelectedMutant(mutant);
       }
     };
-
     if (showFeedback && mutationOutcomes) {
       const editor = codeMirrorRef.current?.editor;
       widgetsRef.current?.forEach(w => w.clear());
@@ -150,7 +150,8 @@ const Highlighter = (props: HighlighterProps) => {
         editor,
         mutationOutcomes,
         selectedMutant,
-        handleMutantSelect
+        handleMutantSelect,
+        exerciseOffering?.mutators
       );
     } else {
       widgetsRef.current?.forEach(w => w.clear());
@@ -225,8 +226,10 @@ const displayMutationCoverage = (
   editor: codemirror.Editor | undefined,
   mutationOutcomes: MutationOutcome[],
   selectedMutant: MutationOutcome | null,
-  handleMutantClick: Function
+  handleMutantClick: Function,
+  displayedMutators: string[] | undefined
 ) => {
+  
   const mutationResultsByLine = _.groupBy(
     mutationOutcomes,
     mutationOutcome => mutationOutcome.mutation.mutatedLines[0].lineNo
@@ -245,6 +248,7 @@ const displayMutationCoverage = (
     _.mapValues(mutationResultsByLine, (mutants, lineNo, _object) =>
       mutants
         .filter(mutationOutcome => mutationOutcome.status !== Status.KILLED)
+        .filter(mutationOutcome => displayedMutators?.includes(mutationOutcome.mutation.operator))
         .filter(
           mutationOutcome =>
             struckLinesSet.size === 1 ||

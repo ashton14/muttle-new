@@ -30,12 +30,16 @@ import { deleteIfExists } from '../../../utils/fsUtils';
 
 const run = express.Router();
 
+
 run.post('/:id', async (req: Request, res: Response) => {
+
   try {
     const {
       body: { userId, testCases, exerciseOfferingId },
     } = req;
 
+
+    
     const exerciseId = parseInt(req.params.id as string);
 
     const user = await prisma.user.findUnique({ where: { id: userId } });
@@ -48,12 +52,14 @@ run.post('/:id', async (req: Request, res: Response) => {
         where: { id: exerciseOfferingId },
         include: { exercise: true },
       }));
+    
 
     const exercise =
       exerciseOffering?.exercise ||
       (await prisma.exercise.findUnique({
         where: { id: exerciseId },
       }));
+    
     if (user && exercise) {
       // Create a new attempt for the user on the exercise, with the new set of
       // test cases.
@@ -86,6 +92,7 @@ run.post('/:id', async (req: Request, res: Response) => {
         });
       }
 
+
       const savedTestCases = await Promise.all(
         testCases.map((t: TestCase) => saveTestCase(t, attempt))
       );
@@ -101,6 +108,7 @@ run.post('/:id', async (req: Request, res: Response) => {
       });
 
       if (allPassed) {
+        
         // Run mutation analysis and save the results.
         // No need to save the mutated sources, since the mutations were saved
         // when the exercise was created.
@@ -112,6 +120,7 @@ run.post('/:id', async (req: Request, res: Response) => {
         const mutations = await prisma.mutation.findMany({
           where: { exerciseId },
         });
+        
         const mutationOutcomesWithMutations = mutationOutcomes.map(
           (outcome: Partial<MutationOutcome>) => {
             const mutation = mutations.find(m => m.number === outcome.number);
@@ -125,6 +134,7 @@ run.post('/:id', async (req: Request, res: Response) => {
             }
           }
         );
+        console.log(mutationOutcomesWithMutations)
 
         const savedAttempt = await prisma.attempt.update({
           where: { id: attempt.id },
@@ -166,6 +176,7 @@ run.post('/:id', async (req: Request, res: Response) => {
     await deleteIfExists(COVERAGE_RESULTS_FILENAME);
   }
 });
+
 
 enum TestOutcome {
   PASSED = 'passed',
