@@ -14,8 +14,10 @@ const Mutations = () => {
   const exerciseId = router.query.exerciseId as string;
   const [notAuthorized, setNotAuthorized] = useState<Boolean>(false);
   const [marked, setMarked] = useState<number[]>([]);
+  const [showAlert, setShowAlert] = useState(false);
 
-  const { getExercise, getMutations } = useAuthenticatedApi();
+  const { getExercise, getMutations, updateMutation } = useAuthenticatedApi();
+  
 
     
   useEffect(() => {
@@ -73,19 +75,42 @@ const Mutations = () => {
   
   const handleMarkedCard = (mutationNumber: number, isMarked: boolean) => {
     if (isMarked) {
-      console.log('isMarked:',isMarked)
       setMarked([...marked, mutationNumber]);
     } else {
       setMarked(marked.filter(id => id !== mutationNumber));
     }
   };
 
-  const handleSave = () => {
-    console.log('Selected Mutation Cards:', marked);
-    // Here you can handle the selectedCards (e.g., send them to an API)
+  const handleSave = async () => {
+ 
+    const updatedMutations = mutations.map((m) => ({
+        ...m,
+        equivalent: marked.includes(m.number), 
+    }));
+
+   for (const m of updatedMutations) {
+    await updateMutation({
+      ...m,
+      equivalent: m.equivalent,
+    });
+    }
+    
+    setMutations(updatedMutations);
+
+    setShowAlert(true);
+    setTimeout(() => {
+      setShowAlert(false);
+    }, 3000);
+    
   };
 
   return (
+  <div>
+    {showAlert && (
+        <div style={{position:"fixed"}} className="alert alert-success alert-dismissible fade show" role="alert">
+          Your changes have been saved.
+        </div>
+      )}
     <div style={{ display: 'flex', justifyContent: 'center' }}>
   <div className="cardContainer">
     <div className="headerSection">
@@ -113,13 +138,14 @@ const Mutations = () => {
               mutated={getMutatedExercise(mutation)}
               highlightedLines={mutation.mutatedLines.map(line => line.lineNo)}
               onMarked={handleMarkedCard}
+              equivalent={mutation.equivalent}
             />
           </li>
         ))}
       </ul>
     )}
     </div>
-
+</div>
 
   );
 };

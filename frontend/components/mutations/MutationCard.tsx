@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import codemirror from 'codemirror';
 import dynamic from 'next/dynamic';
@@ -16,11 +16,12 @@ interface MutationCardProps {
     mutated: React.ReactNodeArray
     highlightedLines?: number[]
     onMarked: (mutationNumber: number, isMarked: boolean) => void
+    equivalent: boolean
 }
 
-const MutationCard: React.FC<MutationCardProps> = ({mutationNumber, operation, original, mutated, highlightedLines, onMarked}) => {
+const MutationCard: React.FC<MutationCardProps> = ({mutationNumber, operation, original, mutated, highlightedLines, onMarked, equivalent}) => {
 
-    const [isChecked, setIsChecked] = useState(false);
+    const [isChecked, setIsChecked] = useState(equivalent);
 
     const handleCheckboxChange = () => {
         setIsChecked(!isChecked);

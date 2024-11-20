@@ -157,6 +157,7 @@ export interface AuthenticatedApi {
   ): Promise<SavedExercise>;
   //Mutations
   getMutations(exerciseId: number): Promise<Mutation[]>
+  updateMutation(mutation: Mutation): Promise<Mutation>
   // ExerciseOfferings
   createExerciseOffering(exerciseOffering: ExerciseOffering): Promise<SavedExerciseOffering>;
   updateExerciseOffering(exerciseOffering: SavedExerciseOffering): Promise<SavedExerciseOffering>;

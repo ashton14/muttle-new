@@ -101,14 +101,63 @@ exercises.put('/:id/mutations', async (req: Request, res: Response) => {
   }
 });
 
+exercises.put('/:id/mutations/:mutationId',async (req: Request, res: Response) => {
+    try {
+      const exercise = await prisma.exercise.findUnique({
+        where: {
+          id: +req.params.id,
+        },
+        include: { owner: true },
+      });
+
+      const requestingUser = req.user as Token;
+
+      if (!exercise) {
+        return res.status(404).json({ message: 'Exercise not found.' });
+      }
+
+      if (exercise.owner?.email !== requestingUser.email) {
+        return res
+          .status(403)
+          .json({ message: 'Unauthorized to update that mutation.' });
+      }
+
+      const { equivalent } = req.body;
+
+      if (typeof equivalent !== 'boolean') {
+        return res.status(400).json({
+          message: 'Value of equivalent must be a boolean',
+        });
+      }
+
+      const updatedMutation = await prisma.mutation.update({
+        where: { id: +req.params.mutationId },
+        data: { equivalent },
+      });
+
+      return res.status(200).json({
+        message: 'Mutation updated successfully.',
+        updatedMutation,
+      });
+    } catch (error) {
+      console.error('Error updating mutation:', error);
+      return res
+        .status(500)
+        .json({ message: 'An error occurred while updating the mutation.' });
+    }
+  }
+);
+
+
+
 // Create an exercise if the code snippet compiles.
 exercises.post('/', async (req: Request, res: Response) => {
   const { snippet } = req.body;
   let mutants = []; 
-  
   try {
+    console.log('generating mutants...')
     mutants = await compileSnippetAndGenerateMutations(snippet);
-    
+    console.log('mutants:',mutants)
   } catch (error) {
     res.status(400).json({
       errorMessage: `An error occurred while compiling the exercise and generating mutations:\n${error}`,

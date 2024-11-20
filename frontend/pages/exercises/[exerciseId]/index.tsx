@@ -9,6 +9,8 @@ import {
 } from '../../../lib/api';
 import { Auth, useAuth } from '../../../lib/context/AuthContext';
 import { useAuthenticatedApi } from '../../../lib/context/AuthenticatedApiContext';
+import Button from 'react-bootstrap/Button';
+
 
 const Practice = dynamic<PracticeProps>(
   () => import('../../../components/exercises/practice'),
@@ -83,6 +85,9 @@ const Exercise = () => {
           {alertMessage}
         </div>
       )}
+      <Button style={{margin:'15px', right: '0px'}} onClick={() => { router.push(`/exercises/${exerciseId}/mutations`) }}>
+        Mutations
+      </Button>
     </div><Practice
         user={user}
         exercise={exercise}

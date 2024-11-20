@@ -57,6 +57,7 @@ export const runMutationAnalysis = (
       console.log(chunk.toString());
       output = output + chunk;
     });
+    console.log('YAML:',output) //OUTPUT IS EMPTY
 
     mutationTask.on('close', async () => {
       try {

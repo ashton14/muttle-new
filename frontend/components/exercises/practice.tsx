@@ -137,8 +137,6 @@ export default function Practice({ user, exercise, exerciseOffering, initialTest
     mutationOutcomes : 
     mutationOutcomes.filter(o => operatorsToShow.includes(o.mutation.operator));
   
-    console.log('filteredMutationOutcomes:', filteredMutationOutcomes)
-
 
   return (
     <Container>

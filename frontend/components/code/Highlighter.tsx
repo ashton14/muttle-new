@@ -248,6 +248,7 @@ const displayMutationCoverage = (
     _.mapValues(mutationResultsByLine, (mutants, lineNo, _object) =>
       mutants
         .filter(mutationOutcome => mutationOutcome.status !== Status.KILLED)
+        .filter(mutationOutcome => mutationOutcome.mutation.equivalent == false)
         .filter(mutationOutcome => displayedMutators?.includes(mutationOutcome.mutation.operator))
         .filter(
           mutationOutcome =>

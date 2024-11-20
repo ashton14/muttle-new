@@ -21,6 +21,7 @@ export const getAuthenticatedEndpoints = (
   getExercise: getExercise(api),
   getExercises: getExercises(api),
   getMutations: getMutations(api),
+  updateMutation: updateMutation(api),
   createExerciseOffering: createExerciseOffering(api),
   updateExerciseOffering: updateExerciseOffering(api),
   getExerciseOffering: getExerciseOffering(api),
@@ -76,6 +77,13 @@ const getMutations =
       api.get(`exercises/${exerciseId}/mutations`).then(res => {
         return res.data;
       });
+
+const updateMutation =
+  (api: AxiosInstance) =>
+    (data: Mutation): Promise <Mutation> =>
+    api.put(`exercises/${data.exerciseId}/mutations/${data.id}`, data)
+        .then(res => res.data);
+
 
 const deleteTestCase =
   (api: AxiosInstance) =>
@@ -160,3 +168,5 @@ const getLatestAttempt =
       return Promise.resolve({} as AttemptFeedback);
     }
   }
+
+
