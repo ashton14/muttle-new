@@ -20,7 +20,7 @@ const OwnedAssignments = () => {
   const [exerciseOfferings, setExerciseOfferings] = useState<SavedExerciseOffering[]>([]);
   const { getOwnedAssignments } = useAuthenticatedApi();
   const { authInfo: { userInfo } } = useAuth();
-
+  
   useEffect(() => {
     if (userInfo) {
       getOwnedAssignments(userInfo.id)

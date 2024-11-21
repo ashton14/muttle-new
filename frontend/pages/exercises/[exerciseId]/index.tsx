@@ -59,7 +59,7 @@ const Exercise = () => {
           router.push('/exercises');
         } else {
           const attempt = await getLatestAttempt({ userId: user.id, exerciseId: exercise.id });
-          setExercise(exercise);
+         setExercise(exercise);
           setTests(attempt?.testCases || []);
           setAttemptFeedback(attempt);
         }
@@ -85,9 +85,7 @@ const Exercise = () => {
           {alertMessage}
         </div>
       )}
-      <Button style={{margin:'15px', right: '0px'}} onClick={() => { router.push(`/exercises/${exerciseId}/mutations`) }}>
-        Mutations
-      </Button>
+      
     </div><Practice
         user={user}
         exercise={exercise}
