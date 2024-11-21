@@ -13,6 +13,7 @@ export interface Exercise {
 
 export interface SavedExercise extends Exercise {
   id: number;
+  hasAccess: boolean;
   errorMessage?: string;
 }
 
@@ -76,6 +77,16 @@ export interface CoverageOutcome {
   conditionsCovered: number;
 }
 
+export interface Mutation {
+  mutatedLines: MutatedLine[]
+  mutationOutcomes: MutationOutcome[]
+  number: number;
+  id: number;
+  exerciseId: number;
+  operator: string;
+  equivalent: boolean;
+}
+
 export interface MutatedLine {
   lineNo: number;
   mutatedSource: string;
@@ -98,7 +109,7 @@ export interface MutationOutcome {
   exception_traceback: string;
   killer: string;
   operator: string;
-  mutatedLines: MutatedLine[];
+  mutation: Mutation;
   number: number;
   status: Status;
   tests_run: number;
@@ -145,6 +156,9 @@ export interface AuthenticatedApi {
     exerciseId: number,
     exercise: SavedExercise
   ): Promise<SavedExercise>;
+  //Mutations
+  getMutations(exerciseId: number): Promise<Mutation[]>
+  updateMutation(mutation: Mutation): Promise<Mutation>
   // ExerciseOfferings
   createExerciseOffering(exerciseOffering: ExerciseOffering): Promise<SavedExerciseOffering>;
   updateExerciseOffering(exerciseOffering: SavedExerciseOffering): Promise<SavedExerciseOffering>;

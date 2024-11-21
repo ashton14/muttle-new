@@ -3,6 +3,7 @@ import React from 'react';
 import Layout from '../components/layout';
 import 'bootstrap/dist/css/bootstrap.css';
 import '../styles/global.css'
+import '../styles/mutationCard.css'
 import { Cookies, CookiesProvider } from 'react-cookie';
 import { AuthProvider } from '../lib/context/AuthContext';
 

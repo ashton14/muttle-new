@@ -10,6 +10,8 @@ import {
   SavedExerciseOffering,
   AttemptRequest,
   RunTestRequest,
+  MutatedLine,
+  Mutation,
 } from '../api';
 
 export const getAuthenticatedEndpoints = (
@@ -18,6 +20,8 @@ export const getAuthenticatedEndpoints = (
   createExercise: createExercise(api),
   getExercise: getExercise(api),
   getExercises: getExercises(api),
+  getMutations: getMutations(api),
+  updateMutation: updateMutation(api),
   createExerciseOffering: createExerciseOffering(api),
   updateExerciseOffering: updateExerciseOffering(api),
   getExerciseOffering: getExerciseOffering(api),
@@ -34,8 +38,23 @@ const createExercise =
   (api: AxiosInstance) =>
   (data: Exercise): Promise<SavedExercise> =>
     api.post('exercises', data)
-      .then(res => res.data)
-      .catch(err => err.response.data);
+    .then(res => res.data)
+    .catch(err => {
+    if (err.response) {
+      // If response exists, handle the response error
+      console.error('Error response:', err.response.data);
+      return err.response.data;
+    } else if (err.request) {
+      // The request was made but no response was received
+      console.error('No response received:', err.request);
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      console.error('Error setting up request:', err.message);
+    }
+    // Optionally, you can return or throw a more general error message
+    return { error: 'Something went wrong. Please try again later.' };
+  });
+
 
 const updateExercise =
   (api: AxiosInstance) =>
@@ -51,6 +70,20 @@ const getExercise =
 
 const getExercises = (api: AxiosInstance) => (): Promise<SavedExercise[]> =>
   api.get('exercises').then(res => res.data);
+
+const getMutations =
+  (api: AxiosInstance) =>
+    (exerciseId: number): Promise<Mutation[]> =>
+      api.get(`exercises/${exerciseId}/mutations`).then(res => {
+        return res.data;
+      });
+
+const updateMutation =
+  (api: AxiosInstance) =>
+    (data: Mutation): Promise <Mutation> =>
+    api.put(`exercises/${data.exerciseId}/mutations/${data.id}`, data)
+        .then(res => res.data);
+
 
 const deleteTestCase =
   (api: AxiosInstance) =>
@@ -90,10 +123,29 @@ const getOwnedAssignments =
       api.get(`users/${userId}/ownedAssignments`).then(res => res.data);
 
 const runTests =
-  (api: AxiosInstance) =>
-  ({ exerciseId, exerciseOfferingId, userId, testCases }: RunTestRequest):
-    Promise<AttemptFeedback> =>
-    api.post(`run/${exerciseId}`, { userId, exerciseOfferingId, testCases }).then(res => res.data);
+
+ (api: AxiosInstance) =>
+  async ({ exerciseId, exerciseOfferingId, userId, testCases }: RunTestRequest): Promise<AttemptFeedback> => {
+    console.log('Running tests with the following parameters:');
+    console.log('exerciseId:', exerciseId);
+    console.log('exerciseOfferingId:', exerciseOfferingId);
+    console.log('userId:', userId);
+    console.log('testCases:', testCases);
+    
+    try {
+      const response = await api.post(`run/${exerciseId}`, { userId, exerciseOfferingId, testCases });
+      console.log('Response from API:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error during API call:', error);
+      throw error; // Rethrow to handle it later if needed
+    }
+  };
+
+  // (api: AxiosInstance) =>
+  // ({ exerciseId, exerciseOfferingId, userId, testCases }: RunTestRequest):
+  //   Promise<AttemptFeedback> => 
+  //   api.post(`run/${exerciseId}`, { userId, exerciseOfferingId, testCases }).then(res => res.data);
 
 const getUserAssignment =
     (api: AxiosInstance) => 
@@ -116,3 +168,5 @@ const getLatestAttempt =
       return Promise.resolve({} as AttemptFeedback);
     }
   }
+
+

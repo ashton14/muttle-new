@@ -106,6 +106,11 @@ export default function Practice({ user, exercise, exerciseOffering, initialTest
    * Saves and runs the current set of tests for the exercise.
    */
   const runTests = async () => {
+
+    //runs this function then runTests from authenticated.ts.
+    //Uses exerciseOffering prop from Practice component but value is not supplied
+    //when Practice component is created in index.tsx
+
     const testsToSave = newTests.filter(({ input, output }) => input || output);
     const testsToUpdate = tests
       .map(test => ({ ...test, exerciseId, userId: user.id }));
@@ -127,9 +132,11 @@ export default function Practice({ user, exercise, exerciseOffering, initialTest
   const coverageOutcomes = attemptFeedback?.coverageOutcomes || [];
   const mutationOutcomes = attemptFeedback?.mutationOutcomes || [];
 
+
   const filteredMutationOutcomes = operatorsToShow == undefined ?
     mutationOutcomes : 
-    mutationOutcomes.filter(o => operatorsToShow.includes(o.operator));
+    mutationOutcomes.filter(o => operatorsToShow.includes(o.mutation.operator));
+  
 
   return (
     <Container>

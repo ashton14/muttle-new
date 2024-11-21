@@ -56,6 +56,20 @@ model Exercise {
   ownerId Int
   testCases TestCase[]
   exerciseOfferings ExerciseOffering[]
+  mutations Mutation[]
+}
+
+model Mutation {
+  id Int @id @default(autoincrement())
+  operator String
+  number Int
+  equivalent Boolean @default(false)
+  mutatedLines MutatedLine[]
+  mutationOutcomes MutationOutcome[]
+  exercise Exercise @relation(fields: [exerciseId], references: [id])
+  exerciseId Int
+
+  @@unique([operator, number, exerciseId])
 }
 
 model TestCase {
@@ -89,7 +103,6 @@ model CoverageOutcome {
 
 model MutationOutcome {
   id Int @id @default(autoincrement())
-  operator String
   exceptionTraceback String?
   number Int
   testsRun Int
@@ -97,15 +110,16 @@ model MutationOutcome {
   status MutationStatus
   attempt Attempt @relation(fields: [attemptId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   attemptId Int
-  mutatedLines MutatedLine[]
+  mutation Mutation @relation(fields: [mutationId], references: [id])
+  mutationId Int 
 }
 
 model MutatedLine {
   id Int @id @default(autoincrement())
   lineNo Int
   mutatedSource String
-  mutationOutcome MutationOutcome @relation(fields: [mutationOutcomeId], references: [id])
-  mutationOutcomeId Int
+  Mutation Mutation @relation(fields: [mutationId], references: [id])
+  mutationId Int 
 }
 
 enum MutationStatus {

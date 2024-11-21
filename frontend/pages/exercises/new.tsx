@@ -20,6 +20,8 @@ const NewExercise = () => {
 
   const router = useRouter();
   const { createExercise } = useAuthenticatedApi();
+  const { getMutations } = useAuthenticatedApi();
+
 
   const disabled = !name || !description || !snippet;
 
@@ -29,9 +31,11 @@ const NewExercise = () => {
       setError(res.errorMessage.replace(/\\n/g, '\n'));
     } else {
       const { id } = res;
-      router.push(`/exercises/${id}`);
+      
+      router.push(`/exercises/${id}/mutations`);
     }
-  };
+    }
+  
 
   return (
     <Container>
@@ -50,5 +54,6 @@ const NewExercise = () => {
     </Container>
   );
 };
+
 
 export default NewExercise;

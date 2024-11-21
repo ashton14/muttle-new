@@ -5,7 +5,7 @@ import { SavedExerciseOffering } from '../../lib/api';
 import { useAuth } from '../../lib/context/AuthContext';
 import { useAuthenticatedApi } from '../../lib/context/AuthenticatedApiContext';
 import ExerciseOfferingList from '../../components/exercises/offerings/ExerciseOfferingList';
-import { Container } from 'react-bootstrap';
+import {  Container } from 'react-bootstrap';
 
 /**
  * A page a containing the ExerciseOfferings that have been

@@ -30,6 +30,7 @@ export default function NewExerciseOfferingForm() {
   }, [exerciseId, getExercise]);
 
   const submit = async () => {
+
     const savedOffering = await createExerciseOffering({
       exerciseId,
       conditionCoverage,

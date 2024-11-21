@@ -3,7 +3,14 @@ import { prisma } from '../../prisma';
 import testCases from './testCases';
 import exerciseOfferings from './exerciseOfferings';
 import { Token } from '../../utils/auth';
-import { tryCompile } from '../../utils/pythonUtils';
+import {
+  getFunctionName,
+  compileSnippetAndGenerateMutations,
+} from '../../utils/py/pythonUtils';
+import { deleteIfExists } from '../../utils/fsUtils';
+import { writeFiles } from '../../utils/py/testRunner';
+import path from 'path';
+import { runMutationAnalysis } from '../../utils/py/mutation';
 
 const exercises = express.Router();
 exercises.use('/:exerciseId/testCases', testCases);
@@ -21,6 +28,7 @@ exercises.get('/:id', async (req: Request, res: Response) =>
     })
   )
 );
+
 
 // What about exercise versions?
 exercises.put('/:id', async (req: Request, res: Response) => {
@@ -53,6 +61,30 @@ exercises.put('/:id', async (req: Request, res: Response) => {
   }
 });
 
+exercises.get('/:id/mutations', async (req: Request, res: Response) => {
+  const exercise = await prisma.exercise.findUnique({
+    where: {
+      id: +req.params.id,
+    },
+    include: {
+      owner: true,
+      mutations: {
+        include: {
+          mutationOutcomes: true,
+          mutatedLines: true
+        }
+      }
+     },
+  });
+  const requestingUser = req.user as Token;
+  if (exercise?.owner?.email !== requestingUser.email) {
+    res.status(403).json({ message: 'Unauthorised to retrieve mutations for that exercise.' });
+  } else {
+    res.json(exercise.mutations)
+  }
+});
+
+
 exercises.put('/:id/mutations', async (req: Request, res: Response) => {
   const exercise = await prisma.exercise.findUnique({
     where: {
@@ -69,19 +101,92 @@ exercises.put('/:id/mutations', async (req: Request, res: Response) => {
   }
 });
 
+exercises.put('/:id/mutations/:mutationId',async (req: Request, res: Response) => {
+    try {
+      const exercise = await prisma.exercise.findUnique({
+        where: {
+          id: +req.params.id,
+        },
+        include: { owner: true },
+      });
+
+      const requestingUser = req.user as Token;
+
+      if (!exercise) {
+        return res.status(404).json({ message: 'Exercise not found.' });
+      }
+
+      if (exercise.owner?.email !== requestingUser.email) {
+        return res
+          .status(403)
+          .json({ message: 'Unauthorized to update that mutation.' });
+      }
+
+      const { equivalent } = req.body;
+
+      if (typeof equivalent !== 'boolean') {
+        return res.status(400).json({
+          message: 'Value of equivalent must be a boolean',
+        });
+      }
+
+      const updatedMutation = await prisma.mutation.update({
+        where: { id: +req.params.mutationId },
+        data: { equivalent },
+      });
+
+      return res.status(200).json({
+        message: 'Mutation updated successfully.',
+        updatedMutation,
+      });
+    } catch (error) {
+      console.error('Error updating mutation:', error);
+      return res
+        .status(500)
+        .json({ message: 'An error occurred while updating the mutation.' });
+    }
+  }
+);
+
+
+
 // Create an exercise if the code snippet compiles.
 exercises.post('/', async (req: Request, res: Response) => {
   const { snippet } = req.body;
+  let mutants = []; 
   try {
-    const error = await tryCompile(snippet);
-    if (error.length) {
-      res.status(400).json({ errorMessage: error });
-    } else {
-      const exercise = await prisma.exercise.create(req.body);
-      res.json(exercise);
-    }
+    console.log('generating mutants...')
+    mutants = await compileSnippetAndGenerateMutations(snippet);
+    console.log('mutants:',mutants)
+  } catch (error) {
+    res.status(400).json({
+      errorMessage: `An error occurred while compiling the exercise and generating mutations:\n${error}`,
+    });
+    return;
+  }
+  try {
+    // The code compiled successfully. Generate mutations and save the exercise.
+    const exercise = {
+      ...req.body,
+      owner: { connect: { email: (req.user as Token).email } },
+      mutations: {
+        create: mutants.map(
+          ({ operator, number, addedLines: mutatedLines }) => ({
+            operator,
+            number,
+            mutatedLines: {
+              create: mutatedLines,
+            },
+          })
+        ),
+      },
+    };
+    const savedExercise = await prisma.exercise.create({ data: exercise });
+    res.json(savedExercise);
   } catch (err) {
-    res.status(500).json({ errorMessage: 'An error occurred.' });
+    res.status(500).json({
+      errorMessage: `An error occurred while saving the exercise.\n${err}`,
+    });
   }
 });
 
@@ -102,11 +207,17 @@ exercises.get('/:id/attempts/latest', async (req: Request, res: Response) => {
       testCases: true,
       coverageOutcomes: true,
       mutationOutcomes: {
-        include: { mutatedLines: true },
-      },
+        include: {
+          mutation: {
+            include: {
+              mutatedLines: true
+            }
+          },
+        },
+      }
     },
     orderBy: { id: 'desc' },
-  });
+  }); 
 
   if (attempt) {
     attempt.testCases = attempt?.testCases.filter(t => !t.fixedId);
