@@ -35,6 +35,7 @@ model Attempt {
 model ExerciseOffering {
   id Int @id @default(autoincrement())
   inviteCode String @unique
+  created DateTime @default(now())
   exercise Exercise @relation(fields: [exerciseId], references: [id])
   exerciseId Int
   owner User @relation("Owner", fields: [ownerId], references: [id])
