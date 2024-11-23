@@ -12,6 +12,7 @@ import {
   RunTestRequest,
   MutatedLine,
   Mutation,
+  User
 } from '../api';
 
 export const getAuthenticatedEndpoints = (
@@ -25,6 +26,7 @@ export const getAuthenticatedEndpoints = (
   createExerciseOffering: createExerciseOffering(api),
   updateExerciseOffering: updateExerciseOffering(api),
   getExerciseOffering: getExerciseOffering(api),
+  getUsers: getUsers(api),
   getUserAssignments: getUserAssignments(api),
   getUserAssignment: getUserAssignment(api),
   getOwnedAssignments: getOwnedAssignments(api),
@@ -32,6 +34,7 @@ export const getAuthenticatedEndpoints = (
   deleteTestCase: deleteTestCase(api),
   runTests: runTests(api),
   getLatestAttempt: getLatestAttempt(api),
+  getLatestAttemptByUser: getLatestAttemptByUser(api)
 });
 
 const createExercise =
@@ -167,6 +170,23 @@ const getLatestAttempt =
     } else {
       return Promise.resolve({} as AttemptFeedback);
     }
-  }
+    }
+  
+const getLatestAttemptByUser =
+  (api: AxiosInstance) =>
+  async ({ userId, exerciseId, exerciseOfferingId }: AttemptRequest): Promise<AttemptFeedback> => {
+    if (exerciseId && userId && exerciseOfferingId) {
+      return api
+        .get(`exercises/${exerciseId}/attempts/latest/user/${userId}/offering/${exerciseOfferingId}`)
+        .then(res => res.data);
+    } else {
+      return Promise.resolve({} as AttemptFeedback);
+    }
+  };
 
+
+
+const getUsers = (api: AxiosInstance) => (): Promise<User[]> =>
+        api.get(`users`).then(res => res.data).catch(err => err.response.data);  
+          
 
