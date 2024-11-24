@@ -38,13 +38,30 @@ const Scores: React.FC = () => {
           exerciseId: Number(exerciseId), // Replace with dynamic value if needed
           exerciseOfferingId: Number(offeringID) // Replace with dynamic value if needed
         });
+          
+        const numLines = attempt?.coverageOutcomes?.length || 0; 
+        let numLinesCovered = 0;
 
-        // Return scores for this user, even if no attempt exists
+        attempt?.coverageOutcomes?.forEach((l) => {
+        numLinesCovered += l.lineCovered ? 1 : 0; 
+        });
+
+        const codeCoverage = (numLines > 0 ? numLinesCovered / numLines : 0) * 100;
+          
+        const numMutations = attempt?.mutationOutcomes?.length || 0; 
+        let numMutationsKilled = 0;
+
+        attempt?.mutationOutcomes?.forEach((m) => {
+        numMutationsKilled += m.status === "KILLED" ? 1 : 0; 
+        });
+
+        const mutationCoverage = (numMutations > 0 ? numMutationsKilled / numMutations : 0) * 100;
+        
         return {
-          student: `${user.name} (${user.email})`, // Format name and email
-          tests: attempt?.testCases?.length || 0, // Number of test cases, default to 0
-          codeCoverage: '0',//attempt?.coverageOutcomes?.[0] || 'N/A', // Default to 'N/A'
-          mutationCoverage: '0'//attempt?.mutationOutcomes?.[0] || 'N/A', // Default to 'N/A'
+          student: `${user.name} (${user.email})`, 
+          tests: attempt?.testCases?.length || 0, // Number of test cases
+          codeCoverage: `${codeCoverage.toFixed(2)}%` || 'N/A', 
+          mutationCoverage: `${mutationCoverage.toFixed(2)}%` || 'N/A'
         };
       })
     );
