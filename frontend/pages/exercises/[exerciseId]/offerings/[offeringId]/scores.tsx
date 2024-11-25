@@ -9,6 +9,7 @@ interface Score {
   tests: number;
   codeCoverage: string;
   mutationCoverage: string;
+  date: string
 }
 
 const Scores: React.FC = () => {
@@ -57,11 +58,21 @@ const Scores: React.FC = () => {
 
         const mutationCoverage = (numMutations > 0 ? numMutationsKilled / numMutations : 0) * 100;
         
+        const attemptDate = attempt?.created
+        ? new Intl.DateTimeFormat('en-US', {
+            weekday: 'short',
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric'
+            }).format(new Date(attempt.created))
+        : 'N/A'; 
+                
         return {
           student: `${user.name} (${user.email})`, 
-          tests: attempt?.testCases?.length || 0, // Number of test cases
+          tests: attempt?.testCases?.length  || 0, // Number of test cases
           codeCoverage: `${codeCoverage.toFixed(2)}%` || 'N/A', 
-          mutationCoverage: `${mutationCoverage.toFixed(2)}%` || 'N/A'
+          mutationCoverage: `${mutationCoverage.toFixed(2)}%` || 'N/A',
+          date: attemptDate
         };
       })
     );

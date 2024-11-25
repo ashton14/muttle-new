@@ -29,6 +29,7 @@ const Exercise = () => {
   const [tests, setTests] = useState<SavedTestCase[]>([]);
   const [attemptFeedback, setAttemptFeedback] = useState<AttemptFeedback>();
   const [alertMessage, setAlertMessage] = useState('');
+  const [notAuthorized, setNotAuthorized] = useState<Boolean>(false);
 
 
   const router = useRouter();
@@ -42,7 +43,6 @@ const Exercise = () => {
   } = useAuthenticatedApi();
   const exerciseId = parseInt(idParam);
 
-
   useEffect(() => {
         const message = localStorage.getItem('alertMessage');
         if (message) {
@@ -55,6 +55,7 @@ const Exercise = () => {
     const fetchData = async () => {
       if (user) {
         const exercise = await getExercise(exerciseId);
+        setNotAuthorized(!(exercise.owner.email == user.email))
        if (!exercise) {
           router.push('/exercises');
         } else {
@@ -85,6 +86,11 @@ const Exercise = () => {
           {alertMessage}
         </div>
       )}
+      { !notAuthorized &&
+        <Button onClick={() => router.push(`/exercises/${exerciseId}/mutations`)} style={{ margin: '10px' }}>
+          Mutations
+        </Button>
+      }
       
     </div><Practice
         user={user}

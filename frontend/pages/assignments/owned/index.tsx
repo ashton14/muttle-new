@@ -5,7 +5,8 @@ import { SavedExerciseOffering } from '../../../lib/api';
 import { useAuth } from '../../../lib/context/AuthContext';
 import { useAuthenticatedApi } from '../../../lib/context/AuthenticatedApiContext';
 import ExerciseOfferingList from '../../../components/exercises/offerings/ExerciseOfferingList';
-import { Container } from 'react-bootstrap';
+import { Button, Container } from 'react-bootstrap';
+import { useRouter } from 'next/router';
 
 /**
  * A page a containing the ExerciseOfferings that are 
@@ -20,6 +21,8 @@ const OwnedAssignments = () => {
   const [exerciseOfferings, setExerciseOfferings] = useState<SavedExerciseOffering[]>([]);
   const { getOwnedAssignments } = useAuthenticatedApi();
   const { authInfo: { userInfo } } = useAuth();
+  const router = useRouter();
+
   
   useEffect(() => {
     if (userInfo) {
@@ -45,7 +48,10 @@ const OwnedAssignments = () => {
               <p>
                 A list of exercises you own assigned.
                 You can copy the invite code and share it with your students.
-              </p>
+                </p>
+                {/* <Button onClick={router.push(``)} style={{marginBottom:'20px'}}>
+                  New Assignment
+                </Button> */}
               <ExerciseOfferingList
                 exerciseOfferings={exerciseOfferings}
                 loadingState={loadingState}

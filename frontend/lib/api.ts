@@ -15,6 +15,7 @@ export interface Exercise {
   name: string;
   description: string;
   snippet: string;
+  owner: User;
 }
 
 export interface SavedExercise extends Exercise {
@@ -71,6 +72,7 @@ export interface AttemptFeedback {
   testCases: SavedTestCase[];
   coverageOutcomes?: CoverageOutcome[];
   mutationOutcomes?: MutationOutcome[];
+  created: Date;
 }
 
 export interface CoverageOutcome {

@@ -6,6 +6,7 @@ interface Score {
   tests: number;
   codeCoverage: string; // e.g., "85%"
   mutationCoverage: string; // e.g., "90%"
+  date: string;
 }
 
 interface ScoresTableProps {
@@ -21,6 +22,7 @@ const ScoresTable: React.FC<ScoresTableProps> = ({ scores }) => {
           <th>Number of Tests</th>
           <th>Code Coverage</th>
           <th>Mutation Coverage</th>
+          <th>Latest Attempt</th>
         </tr>
       </thead>
       <tbody>
@@ -30,6 +32,7 @@ const ScoresTable: React.FC<ScoresTableProps> = ({ scores }) => {
             <td>{score.tests}</td>
             <td>{score.codeCoverage}</td>
             <td>{score.mutationCoverage}</td>
+            <td>{score.date}</td>
           </tr>
         ))}
       </tbody>
