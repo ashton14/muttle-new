@@ -59,7 +59,9 @@ export default function ExerciseOfferingList(
                     </Link>
                   </td>
                   <td>
-                    <b>TODO</b>
+                    <Link href={`/exercises/${o.exerciseId}/offerings/${o.id}/scores`}>
+                      View Scores
+                    </Link>
                   </td>
                 </>
               ) : ''

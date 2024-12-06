@@ -5,15 +5,21 @@ import {getAuthenticatedEndpoints} from './api/authenticated';
 
 const baseURL = process.env.NEXT_PUBLIC_API_URL;
 
+export interface User{
+  id: number,
+  email: string,
+  name: string
+}
+
 export interface Exercise {
   name: string;
   description: string;
   snippet: string;
+  owner: User;
 }
 
 export interface SavedExercise extends Exercise {
   id: number;
-  hasAccess: boolean;
   errorMessage?: string;
 }
 
@@ -65,6 +71,7 @@ export interface AttemptFeedback {
   testCases: SavedTestCase[];
   coverageOutcomes?: CoverageOutcome[];
   mutationOutcomes?: MutationOutcome[];
+  created: Date;
 }
 
 export interface CoverageOutcome {
@@ -172,6 +179,8 @@ export interface AuthenticatedApi {
   // Misc
   runTests(params: RunTestRequest): Promise<AttemptFeedback>;
   getLatestAttempt(options: AttemptRequest): Promise<AttemptFeedback>;
+  getLatestAttemptByUser(options: AttemptRequest): Promise<AttemptFeedback>;
+  getUsers(): Promise<User[]>;
 }
 
 /**

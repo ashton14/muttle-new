@@ -37,7 +37,7 @@ exerciseOfferings.post('/', async (req: Request, res: Response) => {
       data: {
         inviteCode,
         conditionCoverage,
-        minTests,
+        minTests: parseInt(minTests),
         mutators,
         owner: {
           connect: {
