@@ -35,6 +35,7 @@ export interface SavedExerciseOffering extends ExerciseOffering {
   inviteCode: string;
   exercise: SavedExercise;
   created: Date;
+  users: User[];
 }
 
 export interface NewTestCase {
