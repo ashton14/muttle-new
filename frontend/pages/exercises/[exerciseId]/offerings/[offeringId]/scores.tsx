@@ -21,9 +21,11 @@ const Scores: React.FC = () => {
   const offeringID = params[params.length - 1];
 
   const [scores, setScores] = useState<Score[]>([]);
-  const { getUsers, getLatestAttemptByUser } = useAuthenticatedApi();
+  const { getUsers, getLatestAttemptByUser, getExerciseOffering } = useAuthenticatedApi();
 
   const fetchScores = async () => {
+    const offering = await getExerciseOffering(Number(exerciseId), Number(offeringID));
+    
     try {
       const fetchedUsers = await getUsers();
 
@@ -31,8 +33,12 @@ const Scores: React.FC = () => {
         throw new Error(`Error fetching users`);
       }
 
+      const filteredUsers = fetchedUsers.filter(user =>
+        offering.users.some(u => u.id == user.id)
+      );
+
       const scoresData = await Promise.all(
-        fetchedUsers.map(async (user) => {
+        filteredUsers.map(async (user) => {
           const attempt: AttemptFeedback | null = await getLatestAttemptByUser({
             userId: user.id,
             exerciseId: Number(exerciseId),
