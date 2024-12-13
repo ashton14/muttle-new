@@ -25,6 +25,7 @@ exercises.get('/:id', async (req: Request, res: Response) =>
   res.json(
     await prisma.exercise.findUnique({
       where: { id: +req.params.id },
+      include: {owner: true}
     })
   )
 );
