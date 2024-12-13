@@ -25,7 +25,7 @@ const Scores: React.FC = () => {
 
   const fetchScores = async () => {
     const offering = await getExerciseOffering(Number(exerciseId), Number(offeringID));
-    
+
     try {
       const fetchedUsers = await getUsers();
 
@@ -33,9 +33,16 @@ const Scores: React.FC = () => {
         throw new Error(`Error fetching users`);
       }
 
-      const filteredUsers = fetchedUsers.filter(user =>
-        offering.users.some(u => u.id == user.id)
-      );
+      const filteredUsers = fetchedUsers.filter(user => {
+
+        for (const u of offering.users) {
+          if (u.id === user.id) {
+            return true;
+          }
+        }
+        return false; 
+      });
+
 
       const scoresData = await Promise.all(
         filteredUsers.map(async (user) => {
