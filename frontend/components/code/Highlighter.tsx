@@ -230,7 +230,6 @@ const displayMutationCoverage = (
   displayedMutators: string[] | undefined
 ) => {
   
-
   const mutationResultsByLine = _.groupBy(
     mutationOutcomes,
     mutationOutcome => mutationOutcome.mutation.mutatedLines[0].lineNo
