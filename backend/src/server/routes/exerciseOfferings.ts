@@ -73,6 +73,7 @@ exerciseOfferings.get('/:id', async (req: Request, res: Response) => {
       include: {
         exercise: true,
         owner: true,
+        users: true
       },
     });
 
