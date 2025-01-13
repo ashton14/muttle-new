@@ -34,7 +34,7 @@ export const getAuthenticatedEndpoints = (
   deleteTestCase: deleteTestCase(api),
   runTests: runTests(api),
   getLatestAttempt: getLatestAttempt(api),
-  getLatestAttemptByUser: getLatestAttemptByUser(api)
+  getAllLatestAttempts: getAllLatestAttempts(api)
 });
 
 const createExercise =
@@ -176,18 +176,17 @@ const getLatestAttempt =
     }
     }
   
-const getLatestAttemptByUser =
+const getAllLatestAttempts =
   (api: AxiosInstance) =>
-  async ({ userId, exerciseId, exerciseOfferingId }: AttemptRequest): Promise<AttemptFeedback> => {
-    if (exerciseId && userId && exerciseOfferingId) {
+  async ({userId, exerciseId, exerciseOfferingId}: AttemptRequest ): Promise<AttemptFeedback[]> => {
+    if (exerciseId && exerciseOfferingId) {
       return api
-        .get(`exercises/${exerciseId}/attempts/latest/user/${userId}/offering/${exerciseOfferingId}`)
+        .get(`exercises/${exerciseId}/offerings/${exerciseOfferingId}/attempts/allLatest`)
         .then(res => res.data);
     } else {
-      return Promise.resolve({} as AttemptFeedback);
+      return Promise.resolve({} as AttemptFeedback[]);
     }
   };
-
 
 
 const getUsers = (api: AxiosInstance) => (): Promise<User[]> =>

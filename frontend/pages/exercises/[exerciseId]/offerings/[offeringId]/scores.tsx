@@ -21,7 +21,7 @@ const Scores: React.FC = () => {
   const offeringID = params[params.length - 1];
 
   const [scores, setScores] = useState<Score[]>([]);
-  const { getUsers, getLatestAttemptByUser, getExerciseOffering } = useAuthenticatedApi();
+  const { getUsers, getAllLatestAttempts, getExerciseOffering } = useAuthenticatedApi();
 
   const fetchScores = async () => {
     const offering = await getExerciseOffering(Number(exerciseId), Number(offeringID));
@@ -43,51 +43,54 @@ const Scores: React.FC = () => {
         return false; 
       });
 
-
-      const scoresData = await Promise.all(
-        filteredUsers.map(async (user) => {
-          const attempt: AttemptFeedback | null = await getLatestAttemptByUser({
-            userId: user.id,
+      const attempts: AttemptFeedback[] = await getAllLatestAttempts({
+            userId: -1,
             exerciseId: Number(exerciseId),
             exerciseOfferingId: Number(offeringID),
           });
 
-          const numLines = attempt?.coverageOutcomes?.length || 0;
-          let numLinesCovered = 0;
+      console.log("attempts: ", attempts)
 
-          attempt?.coverageOutcomes?.forEach((l) => {
-            numLinesCovered += l.lineCovered ? 1 : 0;
-          });
+      var scoresData: Score[] = [];
+      filteredUsers.map(async (user) => {
+        const attempt: AttemptFeedback | null =
+          attempts.find(a => a.userId == user.id) ?? null;
 
-          const codeCoverage = (numLines > 0 ? numLinesCovered / numLines : 0) * 100;
+        const numLines = attempt?.coverageOutcomes?.length || 0;
+        let numLinesCovered = 0;
 
-          const numMutations = attempt?.mutationOutcomes?.length || 0;
-          let numMutationsKilled = 0;
+        attempt?.coverageOutcomes?.forEach((l) => {
+          numLinesCovered += l.lineCovered ? 1 : 0;
+        });
 
-          attempt?.mutationOutcomes?.forEach((m) => {
-            numMutationsKilled += m.status === 'KILLED' ? 1 : 0;
-          });
+        const codeCoverage = (numLines > 0 ? numLinesCovered / numLines : 0) * 100;
 
-          const mutationCoverage = (numMutations > 0 ? numMutationsKilled / numMutations : 0) * 100;
+        const numMutations = attempt?.mutationOutcomes?.length || 0;
+        let numMutationsKilled = 0;
 
-          const attemptDate = attempt?.created
-            ? new Intl.DateTimeFormat('en-US', {
-                weekday: 'short',
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric',
-              }).format(new Date(attempt.created))
-            : 'N/A';
+        attempt?.mutationOutcomes?.forEach((m) => {
+          numMutationsKilled += m.status === 'KILLED' ? 1 : 0;
+        });
 
-          return {
-            student: `${user.name} (${user.email})`,
-            tests: attempt?.testCases?.length || 0,
-            codeCoverage: `${codeCoverage.toFixed(2)}%` || 'N/A',
-            mutationCoverage: `${mutationCoverage.toFixed(2)}%` || 'N/A',
-            date: attemptDate,
-          };
-        })
-      );
+        const mutationCoverage = (numMutations > 0 ? numMutationsKilled / numMutations : 0) * 100;
+
+        const attemptDate = attempt?.created
+          ? new Intl.DateTimeFormat('en-US', {
+            weekday: 'short',
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+          }).format(new Date(attempt.created))
+          : 'N/A';
+
+        scoresData.push({
+          student: `${user.name} (${user.email})`,
+          tests: attempt?.testCases?.length || 0,
+          codeCoverage: `${codeCoverage.toFixed(2)}%` || 'N/A',
+          mutationCoverage: `${mutationCoverage.toFixed(2)}%` || 'N/A',
+          date: attemptDate,
+        });
+      });
 
       setScores(scoresData);
     } catch (error) {
