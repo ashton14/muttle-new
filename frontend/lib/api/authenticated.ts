@@ -169,7 +169,7 @@ const getLatestAttempt =
   });
     } else if (exerciseId) {
       return api
-        .get(`exercises/${exerciseId}/attempts/latest?userId=${userId}`)
+        .get(`exercises/${exerciseId}/attempts/latest`)
         .then(res => res.data);
     } else {
       return Promise.resolve({} as AttemptFeedback);
