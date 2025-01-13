@@ -49,8 +49,6 @@ const Scores: React.FC = () => {
             exerciseOfferingId: Number(offeringID),
           });
 
-      console.log("attempts: ", attempts)
-
       var scoresData: Score[] = [];
       filteredUsers.map(async (user) => {
         const attempt: AttemptFeedback | null =
