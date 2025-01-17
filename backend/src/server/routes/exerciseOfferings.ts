@@ -73,6 +73,7 @@ exerciseOfferings.get('/:id', async (req: Request, res: Response) => {
       include: {
         exercise: true,
         owner: true,
+        users: true
       },
     });
 
@@ -170,6 +171,25 @@ exerciseOfferings.get(
 
     res.json(attempt);
   }
+);
+
+exerciseOfferings.get(
+  ':id/attempts/latestByUser/:userId',
+  async (req: Request, res: Response) => {
+    const requestingUser = req.user as Token;
+    if (!requestingUser) {
+      res.sendStatus(403);
+      return;
+    }
+
+    // Does the requestingUser own the offering? If not, send back a 403 error message.
+    // If it is the owner, **in a single database call** find ALL latest attempts for users
+    // who have attempted the exercise.
+    // Send all back in a JSON array.
+    //
+    // Resources:
+    //    https://stackoverflow.com/questions/70834547/prisma-client-query-for-latest-values-of-each-user
+    //    https://www.prisma.io/docs/orm/prisma-client/queries/aggregation-grouping-summarizing#select-distinct
 );
 
 export default exerciseOfferings;

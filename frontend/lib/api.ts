@@ -67,8 +67,10 @@ export interface RunTestRequest {
   testCases: (NewTestCase | SavedTestCase)[]
 };
 
+
 export interface AttemptFeedback {
   id: number;
+  userId: number;
   testCases: SavedTestCase[];
   coverageOutcomes?: CoverageOutcome[];
   mutationOutcomes?: MutationOutcome[];
@@ -180,7 +182,7 @@ export interface AuthenticatedApi {
   // Misc
   runTests(params: RunTestRequest): Promise<AttemptFeedback>;
   getLatestAttempt(options: AttemptRequest): Promise<AttemptFeedback>;
-  getLatestAttemptByUser(options: AttemptRequest): Promise<AttemptFeedback>;
+  getAllLatestAttempts(options: AttemptRequest): Promise<AttemptFeedback[]>;
   getUsers(): Promise<User[]>;
 }
 

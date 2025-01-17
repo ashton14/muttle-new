@@ -79,7 +79,11 @@ export const prisma = new PrismaClient().$extends({
             coverageOutcomes: true,
             mutationOutcomes: {
               include: {
-                mutation: true,
+                mutation: {
+                  include: {
+                    mutatedLines: true
+                  }
+                },
               },
             },
             testCases: true,
