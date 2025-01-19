@@ -30,6 +30,7 @@ model Attempt {
   testCases TestCase[]
   coverageOutcomes CoverageOutcome[]
   mutationOutcomes MutationOutcome[]
+  created DateTime @default(now())
 }
 
 model ExerciseOffering {

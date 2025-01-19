@@ -4,6 +4,11 @@ import { Token } from '../../utils/auth';
 
 const users = express.Router();
 
+users.get('/', async (req: Request, res: Response) => {
+  const users = await prisma.user.findMany();
+  res.json(users);
+})
+
 users.get('/:id/ownedAssignments', async (req: Request, res: Response) => {
   const requestingUser = req.user as Token;
   const userId = +req.params.id;

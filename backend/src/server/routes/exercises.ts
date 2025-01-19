@@ -11,6 +11,7 @@ import { deleteIfExists } from '../../utils/fsUtils';
 import { writeFiles } from '../../utils/py/testRunner';
 import path from 'path';
 import { runMutationAnalysis } from '../../utils/py/mutation';
+import { at } from 'lodash';
 
 const exercises = express.Router();
 exercises.use('/:exerciseId/testCases', testCases);
@@ -200,8 +201,10 @@ exercises.get('/:id/attempts/latest', async (req: Request, res: Response) => {
 
   const attempt = await prisma.attempt.findFirst({
     where: {
-      exercise: { id: +req.params.id },
-      exerciseOffering: null,
+      exercise: { id: +req.params.exerciseId },
+      exerciseOffering: req.params.exerciseOfferingId
+        ? { id: +req.params.exerciseOfferingId }
+        : null,
       user: { id: user.subject },
     },
     include: {
@@ -211,11 +214,11 @@ exercises.get('/:id/attempts/latest', async (req: Request, res: Response) => {
         include: {
           mutation: {
             include: {
-              mutatedLines: true
-            }
+              mutatedLines: true,
+            },
           },
         },
-      }
+      },
     },
     orderBy: { id: 'desc' },
   }); 
@@ -224,6 +227,43 @@ exercises.get('/:id/attempts/latest', async (req: Request, res: Response) => {
     attempt.testCases = attempt?.testCases.filter(t => !t.fixedId);
   }
   res.json(attempt);
+
 });
+
+exercises.get(
+  '/:exerciseId/attempts/latest/user/:userId/offering/:exerciseOfferingId',
+  async (req: Request, res: Response) => {
+
+     const { exerciseId, userId, exerciseOfferingId } = req.params;
+
+    const attempt = await prisma.attempt.findFirst({
+      where: {
+        exerciseId: +exerciseId,
+        userId: +userId,
+        exerciseOfferingId: +exerciseOfferingId
+      },
+      include: {
+        testCases: true,
+        coverageOutcomes: true,
+        mutationOutcomes: {
+          include: {
+            mutation: {
+              include: {
+                mutatedLines: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: { id: 'desc' },
+    });
+
+    if (attempt) {
+      attempt.testCases = attempt?.testCases.filter(t => !t.fixedId);
+    }
+    res.json(attempt);
+  }
+);
+
 
 export default exercises;
