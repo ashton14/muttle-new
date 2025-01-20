@@ -201,7 +201,7 @@ exercises.get('/:id/attempts/latest', async (req: Request, res: Response) => {
 
   const attempt = await prisma.attempt.findFirst({
     where: {
-      exercise: { id: +req.params.exerciseId },
+      exercise: { id: +req.params.id },
       exerciseOffering: req.params.exerciseOfferingId
         ? { id: +req.params.exerciseOfferingId }
         : null,
@@ -230,40 +230,6 @@ exercises.get('/:id/attempts/latest', async (req: Request, res: Response) => {
 
 });
 
-exercises.get(
-  '/:exerciseId/attempts/latest/user/:userId/offering/:exerciseOfferingId',
-  async (req: Request, res: Response) => {
-
-     const { exerciseId, userId, exerciseOfferingId } = req.params;
-
-    const attempt = await prisma.attempt.findFirst({
-      where: {
-        exerciseId: +exerciseId,
-        userId: +userId,
-        exerciseOfferingId: +exerciseOfferingId
-      },
-      include: {
-        testCases: true,
-        coverageOutcomes: true,
-        mutationOutcomes: {
-          include: {
-            mutation: {
-              include: {
-                mutatedLines: true,
-              },
-            },
-          },
-        },
-      },
-      orderBy: { id: 'desc' },
-    });
-
-    if (attempt) {
-      attempt.testCases = attempt?.testCases.filter(t => !t.fixedId);
-    }
-    res.json(attempt);
-  }
-);
 
 
 export default exercises;
