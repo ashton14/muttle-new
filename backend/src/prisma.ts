@@ -81,8 +81,8 @@ export const prisma = new PrismaClient().$extends({
               include: {
                 mutation: {
                   include: {
-                    mutatedLines: true
-                  }
+                    mutatedLines: true,
+                  },
                 },
               },
             },
@@ -90,6 +90,31 @@ export const prisma = new PrismaClient().$extends({
           },
         });
         return attempt;
+      },
+
+      async allLatestAttempts(exerciseOfferingId: number) {
+        const attempts = await prisma.attempt.findMany({
+          where: {
+            exerciseOfferingId,
+          },
+          orderBy: [{ userId: 'asc' }, { id: 'desc' }],
+          distinct: ['userId'],
+          include: {
+            coverageOutcomes: true,
+            mutationOutcomes: {
+              include: {
+                mutation: {
+                  include: {
+                    mutatedLines: true,
+                  },
+                },
+              },
+            },
+            testCases: true,
+          },
+        });
+
+        return attempts;
       },
     },
   },

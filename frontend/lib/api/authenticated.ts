@@ -161,7 +161,6 @@ const getLatestAttempt =
   (api: AxiosInstance) =>
   async ({userId, exerciseId, exerciseOfferingId}: AttemptRequest): Promise<AttemptFeedback> => {
     if (exerciseId && exerciseOfferingId) {
-      console.log(exerciseId, exerciseOfferingId)
       return api.get(`exercises/${exerciseId}/offerings/${exerciseOfferingId}/attempts/latest`)
         .then(res => {
     console.log('API Response:', res.data); // Log the response data
