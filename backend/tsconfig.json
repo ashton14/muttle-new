@@ -6,10 +6,17 @@
     "outDir": "build",
     "esModuleInterop": true,
     "emitDecoratorMetadata": true,
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
+    "skipLibCheck": true, // Skipping lib checks for better performance
+    "resolveJsonModule": true, // Allows importing JSON files
+    "strict": true // Enabling strict type-checking
   },
   "include": [
     "src/**/*.ts",
-    "test/**/*.ts"
+    "test/**/*.ts",
+    "node_modules/next/types/**/*.d.ts" // **Added to include Next.js types**
+  ],
+  "exclude": [
+    "node_modules" // Ensure node_modules is excluded from TypeScript compilation
   ]
 }

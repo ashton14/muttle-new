@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 import path from 'path';
 import api from './api';
 import env from 'dotenv';
+import next from 'next'; // **Added Next.js import**
 
 const app = express();
 const { error, parsed } = env.config();
@@ -16,42 +17,61 @@ if (!process.env.JWT_SECRET) {
   throw Error('Requires JWT_SECRET to be set in .env file');
 }
 
-app.set('port', process.env.PORT || 80);
-app.set('secret', process.env.JWT_SECRET);
+const dev = process.env.NODE_ENV !== 'production'; // **Set the environment for Next.js**
+const nextApp = next({ dev }); // **Initialize the Next.js app**
+const handle = nextApp.getRequestHandler(); // **Next.js request handler**
 
-const publicDir = path.join(__dirname, '../..', 'public');
-app.use(express.static(publicDir));
+nextApp.prepare().then(() => {
+  // **Wait for Next.js to prepare before starting the server**
+  app.set('port', process.env.PORT || 80);
+  app.set('secret', process.env.JWT_SECRET);
 
-app.use((req, res, next) => {
-  console.log(`Handling ${req.path}/${req.method}`);
-  const allowedOrigins = [
-    'http://localhost:3001',
-    'https://muttle.ayaankazerouni.org',
-    'https://muttle.vercel.app',
-  ];
-  const origin = req.headers.origin;
+  const publicDir = path.join(__dirname, '../..', 'public');
+  app.use(express.static(publicDir));
 
-  if (origin && allowedOrigins.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-  }
+  app.use((req, res, next) => {
+    console.log(`Handling ${req.path}/${req.method}`);
+    const allowedOrigins = [
+      'http://localhost:3001',
+      'https://muttle.ayaankazerouni.org',
+      'https://muttle.vercel.app',
+    ];
+    const origin = req.headers.origin;
 
-  res.header('Access-Control-Allow-Credentials', 'true');
-  res.header('Access-Control-Allow-Headers', ['Authorization', 'Content-Type']);
-  res.header('Access-Control-Expose-Headers', 'Content-Type, Location');
-  res.header('Access-Control-Allow-Methods', 'POST, GET, PUT, DELETE');
-  return next();
+    if (origin && allowedOrigins.includes(origin)) {
+      res.setHeader('Access-Control-Allow-Origin', origin);
+    }
+
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Allow-Headers', [
+      'Authorization',
+      'Content-Type',
+    ]);
+    res.header('Access-Control-Expose-Headers', 'Content-Type, Location');
+    res.header('Access-Control-Allow-Methods', 'POST, GET, PUT, DELETE');
+    return next();
+  });
+
+  app.options('/*', (req, res) => res.status(200).end());
+  app.use(express.json());
+
+  // API routes
+  app.use('/api', api);
+
+  // **Serve Next.js pages for all non-API routes**
+  app.all('*', (req, res) => {
+    return handle(req, res); // **Let Next.js handle all requests**
+  });
+
+  // Handler of last resort. Send a 500 response with stacktrace as the body.
+  app.use((err: Error, req: Request, res: Response) =>
+    res.status(500).json(err.stack)
+  );
+
+  const port = app.get('port');
+  app.listen(port, () => {
+    console.log(`Server running on http://localhost:${port}`);
+  });
 });
-
-app.options('/*', (req, res) => res.status(200).end());
-app.use(express.json());
-
-app.use('/api', api);
-
-app.use((req, res) => res.sendFile(path.join(publicDir, 'index.html')));
-
-// Handler of last resort.  Send a 500 response with stacktrace as the body.
-app.use((err: Error, req: Request, res: Response) =>
-  res.status(500).json(err.stack)
-);
 
 export default app;

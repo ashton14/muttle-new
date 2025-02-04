@@ -6,6 +6,7 @@
   "main": "src/index.ts",
   "scripts": {
     "start": "ts-node src/index.ts",
+    "heroku-postbuild": "cd ../frontend && yarn && yarn build",
     "start-dev": "ts-node-dev src/index.ts",
     "build": "yarn run test && yarn run compile",
     "test": "jest",
@@ -22,6 +23,9 @@
     "@prisma/client": "^5.4.1",
     "@types/bcrypt": "^5.0.0",
     "@types/jsonwebtoken": "^8.5.1",
+    "@types/next": "^9.0.0",
+    "@types/react": "^19.0.7",
+    "@types/react-dom": "^19.0.3",
     "bcrypt": "^5.1.1",
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
@@ -30,7 +34,10 @@
     "jsonwebtoken": "^9.0.2",
     "jwt-decode": "^3.1.2",
     "lodash": "^4.17.20",
+    "next": "^15.1.5",
     "pg": "^8.8.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
     "reflect-metadata": "^0.1.13",
     "ts-node": "^10.9.1",
     "xml2js": "^0.6.2"
