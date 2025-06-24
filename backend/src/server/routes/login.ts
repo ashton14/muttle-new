@@ -8,6 +8,14 @@ const login = express.Router();
 login.post('/', async (req, res) => {
   try {
     const { email, password } = req.body;
+    
+    if (!email || !password) {
+      return res.status(400).json({ 
+        message: 'Email and password are required.',
+        received: { email: !!email, password: !!password }
+      });
+    }
+
     const user = await prisma.user.findUnique({
       where: {
         email,
@@ -40,7 +48,11 @@ login.post('/', async (req, res) => {
       });
     }
   } catch (err) {
-    return res.status(400).json({ message: 'Something went wrong.' });
+    console.error('Login error:', err);
+    return res.status(400).json({ 
+      message: 'Something went wrong.',
+      error: err instanceof Error ? err.message : 'Unknown error'
+    });
   }
 });
 

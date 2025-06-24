@@ -5,13 +5,8 @@
   "author": "Jon Lai",
   "main": "src/index.ts",
   "scripts": {
-<<<<<<< Updated upstream
-    "start": "ts-node src/index.ts",
-    "heroku-postbuild": "cd ../frontend && yarn && yarn build",
-=======
     "build": "tsc",
     "start": "set JWT_SECRET=secret && node build/src/index.js",
->>>>>>> Stashed changes
     "start-dev": "ts-node-dev src/index.ts",
     "test": "jest",
     "lint": "gts lint",
@@ -25,14 +20,8 @@
     "@types/bcrypt": "^5.0.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/jsonwebtoken": "^8.5.1",
-<<<<<<< Updated upstream
-    "@types/next": "^9.0.0",
-    "@types/react": "^19.0.7",
-    "@types/react-dom": "^19.0.3",
     "bcrypt": "^5.1.1",
-=======
     "bcryptjs": "^3.0.2",
->>>>>>> Stashed changes
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
     "express-jwt": "^8.4.1",
@@ -40,14 +29,7 @@
     "jsonwebtoken": "^9.0.2",
     "jwt-decode": "^3.1.2",
     "lodash": "^4.17.20",
-<<<<<<< Updated upstream
-    "next": "^15.1.5",
-=======
-    "next": "^15.1.7",
->>>>>>> Stashed changes
     "pg": "^8.8.0",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
     "reflect-metadata": "^0.1.13",
     "ts-node": "^10.9.1",
     "xml2js": "^0.6.2"
