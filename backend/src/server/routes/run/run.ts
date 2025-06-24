@@ -121,20 +121,25 @@ run.post('/:id', async (req: Request, res: Response) => {
           where: { exerciseId },
         });
         
+        console.log('Available mutations:', mutations.map(m => ({ id: m.id, number: m.number, operator: m.operator })));
+        console.log('Mutation outcomes from mutpy:', mutationOutcomes.map((o: any) => ({ number: o.number, status: o.status })));
+        
         const mutationOutcomesWithMutations = mutationOutcomes.map(
           (outcome: Partial<MutationOutcome>) => {
             const mutation = mutations.find(m => m.number === outcome.number);
             if (mutation) {
+              console.log(`Matched mutation outcome ${outcome.number} to mutation ${mutation.id}`);
               return {
                 ...outcome,
                 mutationId: mutation.id,
               };
             } else {
+              console.log(`No mutation found for outcome number ${outcome.number}`);
               return {} as MutationOutcome;
             }
           }
         );
-        console.log(mutationOutcomesWithMutations)
+        console.log('Final mutation outcomes with mutations:', mutationOutcomesWithMutations);
 
         const savedAttempt = await prisma.attempt.update({
           where: { id: attempt.id },

@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import app from '../server/app';
 import { User } from '@prisma/client';
 
@@ -25,21 +25,10 @@ export const createToken = ({ id, email }: Omit<User, 'password'>) => {
   );
 };
 
-export const hashPassword = (password: string): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    // Generate a salt at level 12 strength
-    bcrypt.genSalt(12, (err, salt) => {
-      if (err) {
-        reject(err);
-      }
-      bcrypt.hash(password, salt, (err, hash) => {
-        if (err) {
-          reject(err);
-        }
-        resolve(hash);
-      });
-    });
-  });
+export const hashPassword = async (password: string): Promise<string> => {
+  // Generate a salt at level 12 strength
+  const salt = await bcrypt.genSalt(12);
+  return bcrypt.hash(password, salt);
 };
 
 export const verifyPassword = (attempt: string, encrypted: string) =>

@@ -21,7 +21,12 @@ const Mutations = () => {
 
     
   useEffect(() => {
-      //Get exercise
+    // Only proceed if exerciseId is valid
+    if (!exerciseId || isNaN(parseInt(exerciseId))) {
+      return;
+    }
+
+    //Get exercise
     const fetchExercise = async () => {
       try {
         const exercise = await getExercise(parseInt(exerciseId));
@@ -51,7 +56,7 @@ const Mutations = () => {
         setMutations(fetchedMutations);
 
       } catch (error) {
-        localStorage.setItem('alertMessage', 'You are not authorized to view this exercise\'s mutations.');
+        localStorage.setItem('alertMessage', 'You are not authorized to view this exercise&apos;s mutations.');
         router.push(`/exercises/${exerciseId}`);
         setNotAuthorized(true);
         console.error(error.message);
@@ -60,16 +65,25 @@ const Mutations = () => {
 
     fetchMutations();
     
-  }, [exerciseId]);
+  }, [exerciseId, getExercise, getMutations, router]);
 
   function getMutatedExercise(m: Mutation): string[] {
-    const mutatedLines = m.mutatedLines; 
-    const mutatedSnippet = original.slice()
-    mutatedLines.forEach((line) => {
-      mutatedSnippet[line.lineNo - 1] = line.mutatedSource
+    // Prefer addedLines if present, otherwise fallback to mutatedLines
+    const addedLines = m.addedLines && m.addedLines.length > 0 ? m.addedLines : m.mutatedLines;
+    const removedLines = m.removedLines || [];
+    const mutatedSnippet = original.slice();
+
+    // Remove lines (set to empty string or original, depending on UI preference)
+    removedLines.forEach(line => {
+      mutatedSnippet[line.lineNo - 1] = '';
     });
 
-    return mutatedSnippet
+    // Add/replace lines
+    addedLines.forEach(line => {
+      mutatedSnippet[line.lineNo - 1] = line.mutatedSource;
+    });
+
+    return mutatedSnippet;
   }
   
   
@@ -122,7 +136,7 @@ const Mutations = () => {
     {/* Authorization Message */}
     {notAuthorized && (
       <p className="authError">
-        You are not authorized to view this exercise's mutations
+        You are not authorized to view the mutations for this exercise.
       </p>
     )}
 

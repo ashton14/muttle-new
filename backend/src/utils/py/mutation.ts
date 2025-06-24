@@ -1,7 +1,7 @@
 import { spawn } from 'child_process';
 import yaml from 'js-yaml';
 
-import { SNIPPET_FILENAME, TESTS_FILENAME } from '../py/pythonUtils';
+import { SNIPPET_FILENAME, TESTS_FILENAME, PYTHON } from '../py/pythonUtils';
 import path from 'path';
 import { readFile } from 'fs/promises';
 import { MutatedLine, MutationOutcome, MutationStatus } from '@prisma/client';
@@ -13,7 +13,7 @@ const SCHEMA = yaml.DEFAULT_SCHEMA.extend(ModuleType);
 
 export const MUTATION_RESULTS_FILENAME = path.join('reports', 'mutation.yaml');
 
-type PartialMutatedLine = Omit<MutatedLine, 'id' | 'mutationId'>;
+type PartialMutatedLine = Omit<MutatedLine, 'id' | 'mutationId'> & { type?: string };
 
 export interface Mutant {
   operator: string;
@@ -34,41 +34,99 @@ export const runMutationAnalysis = (
   onlyCovered = true
 ): Promise<Mutant[]> => {
   return new Promise<Mutant[]>((resolve, reject) => {
-    const mutpyArgs = [
-      '-e',
-      '--target',
-      path.join(rootDir, SNIPPET_FILENAME),
-      '--unit-test',
-      path.join(rootDir, TESTS_FILENAME),
-      '--runner',
-      'pytest',
-      '--show-mutants',
-      '-r',
-      path.join(rootDir, MUTATION_RESULTS_FILENAME),
-    ];
-    if (onlyCovered) {
-      mutpyArgs.push('--coverage');
+    // rootDir is already the full path to the directory containing the files
+    const target = path.resolve(rootDir, SNIPPET_FILENAME);
+    const unitTest = path.resolve(rootDir, TESTS_FILENAME);
+    const reportFile = path.resolve(rootDir, MUTATION_RESULTS_FILENAME);
+    
+    // Create reports directory if it doesn't exist
+    const reportsDir = path.join(rootDir, 'reports');
+    const fs = require('fs');
+    if (!fs.existsSync(reportsDir)) {
+      fs.mkdirSync(reportsDir, { recursive: true });
     }
-    const mutationTask = spawn('mut.py', mutpyArgs);
+
+    // Create a Python script to run mutpy directly
+    const pythonScript = `
+import sys
+import os
+sys.path.append('${rootDir}')
+
+try:
+    import mutpy
+    from mutpy import commandline
+    
+    # Use the absolute paths passed from Node.js, convert backslashes to forward slashes
+    target_path = '${target.replace(/\\/g, '/')}'
+    test_path = '${unitTest.replace(/\\/g, '/')}'
+    report_path = '${reportFile.replace(/\\/g, '/')}'
+    
+    sys.argv = [
+        'mutpy',
+        '--target', target_path,
+        '--unit-test', test_path,
+        '--runner', 'pytest',
+        '--report', report_path,
+        '--show-mutants',
+        '--colored-output'
+    ]
+    
+    ${onlyCovered ? "sys.argv.append('--coverage')" : ''}
+    
+    print("RootDir:", '${rootDir}')
+    print("Target:", target_path)
+    print("Test:", test_path)
+    print("Report:", report_path)
+    print("Args:", sys.argv)
+    
+    # Run mutpy
+    commandline.main(sys.argv)
+    print("MUTPY_SUCCESS")
+    
+except Exception as e:
+    print(f"MUTPY_ERROR: {str(e)}")
+    import traceback
+    traceback.print_exc()
+    sys.exit(1)
+`;
+
+    console.log('Running mutpy with script');
+    console.log('RootDir:', rootDir);
+    console.log('Target:', target);
+    console.log('UnitTest:', unitTest);
+    console.log('ReportFile:', reportFile);
+    
+    const python = spawn(PYTHON, ['-c', pythonScript], { cwd: rootDir });
 
     let output = '';
-    mutationTask.stderr.on('data', chunk => console.log(chunk.toString()));
-    mutationTask.stdout.on('data', chunk => {
-      console.log(chunk.toString());
-      output = output + chunk;
+    python.stderr.on('data', chunk => {
+      const data = chunk.toString();
+      console.log('mutpy stderr:', data);
+      output += data;
     });
-    console.log('YAML:',output) //OUTPUT IS EMPTY
+    python.stdout.on('data', chunk => {
+      const data = chunk.toString();
+      console.log('mutpy stdout:', data);
+      output += data;
+    });
 
-    mutationTask.on('close', async () => {
-      try {
-        const mutatedSources = getMutatedSource(output);
-        resolve(mutatedSources);
-      } catch (err) {
-        reject(err);
+    python.on('close', async (code) => {
+      console.log('mutpy exited with code:', code);
+      console.log('Full output:', output);
+      
+      if (code === 0) {
+        try {
+          const mutatedSources = getMutatedSource(output);
+          resolve(mutatedSources);
+        } catch (err) {
+          reject(err);
+        }
+      } else {
+        reject(new Error(`Mutpy failed with code ${code}: ${output}`));
       }
     });
 
-    mutationTask.on('error', (err: Error) => {
+    python.on('error', (err: Error) => {
       reject(err);
     });
   });
@@ -106,7 +164,7 @@ export const getMutationData = async (rootDir: string) => {
         exceptionTraceback: exception_traceback,
         // operator: mutations[0].operator,
       };
-    });
+    }).filter((mutationOutcome: any) => mutationOutcome.mutation?.equivalent == false);
   } catch (err) {
     console.log('Unable to read mutation analysis report');
     throw err;
@@ -115,16 +173,36 @@ export const getMutationData = async (rootDir: string) => {
 
 const getMutatedSource = (output: string): Mutant[] => {
   // Group 1: mutant number, Group 2: operator
-  const reOperator = /^\s+-\s\[#\s+(\d+)\] (\w+)/;
+  const reOperator = /^\s*-\s*\[#\s*(\d+)\]\s*(\w+)\s*__init__:\s*$/;
   // Group 1: + or -, Group 2: line number, Group 3: source
-  const reMutatedLine = /^.*(\+|-)\s+(\d+):(\s+.+)$/;
+  const reMutatedLine = /^\s*(\+|-)\s(\d+):\s*(.+)$/;
+
+  // Test the regex pattern
+  const testLine = "- 2:     return x * c";
+  console.log(`Testing regex on: "${testLine}"`);
+  console.log(`Regex test result:`, reMutatedLine.test(testLine));
+  const testMatch = reMutatedLine.exec(testLine);
+  console.log(`Regex match result:`, testMatch);
 
   const mutants: Mutant[] = [];
   let current = -1;
 
-  output.split(/\n|\r/).forEach(l => {
-    const opMatches = reOperator.exec(l);
+  console.log('Parsing mutpy output:');
+  console.log('Output lines:', output.split(/\n|\r/).length);
+
+  // Utility to strip ANSI color codes
+  const stripAnsi = (str: string) => str.replace(/\x1b\[[0-9;]*m/g, '');
+
+  output.split(/\n|\r/).forEach((l, index) => {
+    const line = stripAnsi(l);
+    const trimmedLine = line.trim();
+    console.log(`Line ${index}: RAW="${l}" | STRIPPED="${line}" | TRIMMED="${trimmedLine}" | length=${line.length}`);
+    console.log(`Current state: current=${current}, mutants.length=${mutants.length}`);
+    
+    // Test the regex pattern
+    const opMatches = reOperator.exec(trimmedLine);
     if (opMatches) {
+      console.log(`Found operator: ${opMatches[2]} (number: ${opMatches[1]})`);
       mutants.push({} as Mutant);
       current = mutants.length - 1;
       mutants[current] = {
@@ -133,31 +211,63 @@ const getMutatedSource = (output: string): Mutant[] => {
         addedLines: [],
         removedLines: [],
       };
+      console.log(`Set current to: ${current}`);
+    } else if (trimmedLine.includes('[#') && trimmedLine.includes(']') && trimmedLine.includes('__init__:')) {
+      // Fallback pattern for debugging
+      console.log(`Line contains operator pattern but regex didn't match: "${trimmedLine}"`);
+      console.log(`Regex test:`, reOperator.test(trimmedLine));
+      
+      // Try a simpler pattern
+      const simpleMatch = trimmedLine.match(/\[#\s*(\d+)\]\s*(\w+)/);
+      if (simpleMatch) {
+        console.log(`Simple match found: ${simpleMatch[2]} (number: ${simpleMatch[1]})`);
+        mutants.push({} as Mutant);
+        current = mutants.length - 1;
+        mutants[current] = {
+          operator: simpleMatch[2],
+          number: parseInt(simpleMatch[1]),
+          addedLines: [],
+          removedLines: [],
+        };
+        console.log(`Set current to: ${current}`);
+      }
     }
 
-    const mutantMatches = reMutatedLine.exec(l);
-    if (mutantMatches) {
+    const mutantMatches = reMutatedLine.exec(trimmedLine);
+    if (mutantMatches && current >= 0) {
+      console.log(`Found mutation line: ${mutantMatches[1]} ${mutantMatches[2]}: ${mutantMatches[3]}`);
       const addedOrRemoved: string = mutantMatches[1];
       const lineNumber: string = mutantMatches[2];
-
-      // The mutated source will have an extra space at the front
-      // in the MutPy output.
-      const lineSource: string = mutantMatches[3].replace(' ', '');
+      const lineSource: string = mutantMatches[3];
 
       const newMutatedLine: PartialMutatedLine = {
         lineNo: Number(lineNumber),
         mutatedSource: lineSource,
+        type: addedOrRemoved === '+' ? 'ADDED' : 'REMOVED',
       };
 
       const currentMutant: Mutant = mutants[current];
 
       if (addedOrRemoved === '+') {
         currentMutant.addedLines.push(newMutatedLine);
+        console.log(`Added line to mutant ${current}:`, newMutatedLine);
       } else if (addedOrRemoved === '-') {
         currentMutant.removedLines.push(newMutatedLine);
+        console.log(`Removed line from mutant ${current}:`, newMutatedLine);
       }
+    } else if ((trimmedLine.includes('+') || trimmedLine.includes('-')) && trimmedLine.includes(':') && current >= 0) {
+      // Debug: check if this looks like a mutation line but didn't match
+      console.log(`Line looks like mutation but didn't match regex: "${trimmedLine}"`);
+      console.log(`Regex test:`, reMutatedLine.test(trimmedLine));
+    } else if ((trimmedLine.includes('+') || trimmedLine.includes('-')) && trimmedLine.includes(':')) {
+      // Debug: check if this looks like a mutation line but current is not set
+      console.log(`Line looks like mutation but current is ${current}: "${trimmedLine}"`);
+      // Show character codes for debugging
+      console.log(`Character codes:`, Array.from(trimmedLine).map(c => c.charCodeAt(0)));
     }
   });
+  
+  console.log('Final mutants:', mutants);
   return mutants;
 };
 

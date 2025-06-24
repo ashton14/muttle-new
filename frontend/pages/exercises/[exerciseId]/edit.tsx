@@ -1,8 +1,10 @@
 import React, {useState, useEffect} from 'react';
 import { useRouter } from 'next/router';
 import {Button, Container} from 'react-bootstrap';
+import dynamic from 'next/dynamic';
+import { useAuth } from '../../../lib/context/AuthContext';
 
-import ExerciseForm from '../../../components/exercises/ExerciseForm';
+const ExerciseForm = dynamic(() => import('../../../components/exercises/ExerciseForm'), { ssr: false });
 import {useAuthenticatedApi} from '../../../lib/context/AuthenticatedApiContext';
 
 const EditExercise = () => {
@@ -15,6 +17,7 @@ const EditExercise = () => {
   const exerciseId = parseInt(idParam);
 
   const {getExercise, updateExercise} = useAuthenticatedApi();
+  const { authInfo: { userInfo } } = useAuth();
 
   useEffect(() => {
     const fetchExercise = async () => {
@@ -29,15 +32,17 @@ const EditExercise = () => {
 
   const submit = async () => {
     try {
+      if (!userInfo) throw new Error('User not authenticated');
       await updateExercise(exerciseId, {
         id: exerciseId,
         name,
         description,
         snippet,
+        owner: userInfo as import('../../../lib/api').User,
       });
       router.push(`/exercises/${exerciseId}`);
     } catch (e) {
-      if (e.response.status === 403) {
+      if (e.response && e.response.status === 403) {
         router.push({pathname: '/exercises', query: {message: e.response.data.message}});
       } else {
         console.error(e);

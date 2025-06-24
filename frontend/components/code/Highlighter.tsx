@@ -81,34 +81,44 @@ const Highlighter = (props: HighlighterProps) => {
    * CodeMirror editor displays the new selectedMutant, if any.
    */
   useEffect(() => {
-    if (selectedMutant) {
-      const {mutatedLines} = selectedMutant.mutation;
+    console.log('selectedMutant changed:', selectedMutant);
+    if (selectedMutant && selectedMutant.mutation?.mutatedLines) {
+      console.log('Displaying mutated code for:', selectedMutant);
+      // Only use ADDED lines if type is present, otherwise fallback to all
+      const mutatedLines = selectedMutant.mutation.mutatedLines.filter(
+        line => !line.type || line.type === 'ADDED'
+      );
+      console.log('mutatedLines:', mutatedLines);
       const editorLines = initialValue.split(/\n/);
       mutatedLines.forEach(({lineNo, mutatedSource}) => {
-        const currLine = editorLines[lineNo - 1];
-        editorLines[lineNo - 1] = `${mutatedSource} ${currLine.trim()}`;
+        console.log(`Replacing line ${lineNo} with: ${mutatedSource}`);
+        editorLines[lineNo - 1] = mutatedSource;
       });
+      console.log('Final editor value:', editorLines.join('\n'));
       setValue(editorLines.join('\n'));
     } else {
+      console.log('Resetting to original value');
       setValue(initialValue);
     }
   }, [selectedMutant, initialValue]);
 
   // If the editor contents change, redraw the struck-out text indicating
-  // code that has been mutated. If there is a selectedMutant, the original
-  // line is struck out. If there is no selectedMutant, the strikeout is cleared.
+  // code that has been mutated. Only apply strikethrough if the mutation is killed.
   useEffect(() => {
     const editor = codeMirrorRef.current?.editor;
-    if (selectedMutant) {
+    if (
+      selectedMutant &&
+      selectedMutant.mutation?.mutatedLines &&
+      selectedMutant.status === Status.KILLED
+    ) {
       markRef.current?.clear();
       selectedMutant.mutation.mutatedLines.forEach(({lineNo, mutatedSource}) => {
         if (editor) {
           const textAtLine = value.split(/\n/)[lineNo - 1];
-          const fromChar = mutatedSource.length + 1;
-          const toChar = textAtLine.length;
+          // Strike through the whole mutated line for killed mutations
           markRef.current = editor.markText(
-            {line: lineNo - 1, ch: fromChar},
-            {line: lineNo - 1, ch: toChar},
+            {line: lineNo - 1, ch: 0},
+            {line: lineNo - 1, ch: textAtLine.length},
             {className: 'strikethrough', inclusiveRight: false}
           );
         }
@@ -137,9 +147,15 @@ const Highlighter = (props: HighlighterProps) => {
      * @param mutant The MutationOutcome to be set as the selectedMutant.
      */
     const handleMutantSelect = (mutant: MutationOutcome) => {
+      console.log('handleMutantSelect called with:', mutant);
+      console.log('Current selectedMutant:', selectedMutant);
+      console.log('Are they equal?', _.isEqual(mutant, selectedMutant));
+      
       if (_.isEqual(mutant, selectedMutant)) {
+        console.log('Setting selectedMutant to null');
         setSelectedMutant(null);
       } else {
+        console.log('Setting selectedMutant to:', mutant);
         setSelectedMutant(mutant);
       }
     };
@@ -232,24 +248,42 @@ const displayMutationCoverage = (
   
   const mutationResultsByLine = _.groupBy(
     mutationOutcomes,
-    mutationOutcome => mutationOutcome.mutation.mutatedLines[0].lineNo
+    mutationOutcome => {
+      // Add safety check for mutatedLines
+      if (!mutationOutcome.mutation?.mutatedLines || mutationOutcome.mutation.mutatedLines.length === 0) {
+        return null; // Skip mutations without mutatedLines
+      }
+      return mutationOutcome.mutation.mutatedLines[0].lineNo;
+    }
   );
 
   const newWidgets: codemirror.LineWidget[] = [];
 
   const struckLinesSet: Set<string> = new Set<string>();
-  if (selectedMutant !== null) {
+  if (selectedMutant !== null && selectedMutant.mutation?.mutatedLines) {
     selectedMutant.mutation.mutatedLines.forEach(mutatedLine =>
       struckLinesSet.add(mutatedLine.lineNo.toString())
     );
   }
 
   const mutantBadges: [string, JSX.Element[]][] = Object.entries(
-    _.mapValues(mutationResultsByLine, (mutants, lineNo, _object) =>
-      mutants
-        .filter(mutationOutcome => mutationOutcome.status !== Status.KILLED)
-        .filter(mutationOutcome => mutationOutcome.mutation.equivalent == false)
-        .filter(mutationOutcome => displayedMutators?.includes(mutationOutcome.mutation.operator))
+    _.mapValues(mutationResultsByLine, (mutants, lineNo, _object) => {
+      console.log(`Line ${lineNo} has ${mutants.length} mutations:`, mutants.map(m => ({
+        status: m.status,
+        operator: m.mutation?.operator,
+        equivalent: m.mutation?.equivalent,
+        lineNo: m.mutation?.mutatedLines?.[0]?.lineNo
+      })));
+      
+      const filteredMutants = mutants
+        .filter(mutationOutcome => {
+          const notEquivalent = mutationOutcome.mutation?.equivalent == false;
+          const operatorIncluded = displayedMutators === undefined || displayedMutators?.includes(mutationOutcome.mutation?.operator || '');
+          
+          console.log(`Mutation ${mutationOutcome.mutation?.operator} (${mutationOutcome.status}): notEquivalent=${notEquivalent}, operatorIncluded=${operatorIncluded}`);
+          
+          return notEquivalent && operatorIncluded;
+        })
         .filter(
           mutationOutcome =>
             struckLinesSet.size === 1 ||
@@ -258,24 +292,27 @@ const displayMutationCoverage = (
         )
         .sort(({status: o1}, {status: o2}) => sortStatus(o1, o2))
         .map((mutationResult, i) => {
-          const {status, operator, mutation} = mutationResult;
+          const {status, mutation} = mutationResult;
           const isSelected = _.isEqual(mutationResult, selectedMutant);
           return (
             <MutantBadge
               status={status}
-              operator={operator}
-              mutatedLines={mutation.mutatedLines}
+              operator={mutation?.operator || ''}
+              mutatedLines={mutation?.mutatedLines || []}
               isSelected={isSelected}
               handleClick={() => handleMutantClick(mutationResult)}
               key={`mutant-${i}`}
             />
           );
-        })
-    )
+        });
+      
+      console.log(`Line ${lineNo} has ${filteredMutants.length} filtered mutations`);
+      return filteredMutants;
+    })
   )
   
   mutantBadges.forEach(([line, mutants]) => {
-    if (editor) {
+    if (editor && line !== 'null') { // Skip null lines
       const div: HTMLElement = document.createElement('div');
       render(mutants, div);
       const lineInt = parseInt(line) - 1;

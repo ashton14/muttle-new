@@ -42,7 +42,7 @@ const OwnedAssignments = () => {
           setLoading({ status: LoadingStatus.ERROR, error: err });
         });
     }
-  }, [getOwnedAssignments, userInfo]);
+  }, [getOwnedAssignments, getExercises, userInfo]);
 
   const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedId = Number(event.target.value); 

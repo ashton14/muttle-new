@@ -4,7 +4,7 @@ import Form from 'react-bootstrap/Form';
 import { CodeEditorProps } from '../code/CodeEditor';
 import Highlighter from '../code/Highlighter';
 
-const CodeEditor = dynamic<CodeEditorProps>(() => import('../code/CodeEditor'));
+const CodeEditor = dynamic<CodeEditorProps>(() => import('../code/CodeEditor'), { ssr: false });
 
 export interface ExerciseFormProps {
   name?: string;
@@ -60,7 +60,7 @@ const ExerciseForm = ({
 
         <Form.Group>
           <Form.Label>Code</Form.Label>
-          <CodeEditor value={snippet} onChange={value => setSnippet(value)} />
+          <CodeEditor value={snippet || ''} onChange={value => setSnippet(value)} />
           {
             error ? (
               <Form.Text className='text-danger'>

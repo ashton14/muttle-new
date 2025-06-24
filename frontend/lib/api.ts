@@ -88,8 +88,10 @@ export interface CoverageOutcome {
 }
 
 export interface Mutation {
-  mutatedLines: MutatedLine[]
-  mutationOutcomes: MutationOutcome[]
+  mutatedLines: MutatedLine[];
+  addedLines?: MutatedLine[];
+  removedLines?: MutatedLine[];
+  mutationOutcomes: MutationOutcome[];
   number: number;
   id: number;
   exerciseId: number;
@@ -100,6 +102,7 @@ export interface Mutation {
 export interface MutatedLine {
   lineNo: number;
   mutatedSource: string;
+  type?: string;
 }
 
 export enum Status {

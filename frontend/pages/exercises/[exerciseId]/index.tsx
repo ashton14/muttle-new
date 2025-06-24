@@ -53,6 +53,11 @@ const Exercise = () => {
   
   useEffect(() => {
     const fetchData = async () => {
+      // Only proceed if exerciseId is valid
+      if (!idParam || isNaN(parseInt(idParam))) {
+        return;
+      }
+
       if (user) {
         const exercise = await getExercise(exerciseId);
         setNotAuthorized(!(exercise.owner.email == user.email))

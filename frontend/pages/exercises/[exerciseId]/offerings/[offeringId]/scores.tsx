@@ -4,6 +4,7 @@ import { useAuthenticatedApi } from '../../../../../lib/context/AuthenticatedApi
 import { AttemptFeedback, AttemptRequest, User } from '../../../../../lib/api';
 import { useRouter } from 'next/router';
 import { Button } from 'react-bootstrap';
+import dynamic from 'next/dynamic';
 
 interface Score {
   student: string;
@@ -23,78 +24,82 @@ const Scores: React.FC = () => {
   const [scores, setScores] = useState<Score[]>([]);
   const { getUsers, getAllLatestAttempts, getExerciseOffering } = useAuthenticatedApi();
 
-  const fetchScores = async () => {
-    const offering = await getExerciseOffering(Number(exerciseId), Number(offeringID));
+  useEffect(() => {
+    const fetchScores = async () => {
+      const offering = await getExerciseOffering(Number(exerciseId), Number(offeringID));
 
-    try {
-      const fetchedUsers = await getUsers();
+      try {
+        const fetchedUsers = await getUsers();
 
-      if (!fetchedUsers) {
-        throw new Error(`Error fetching users`);
-      }
-
-      const filteredUsers = fetchedUsers.filter(user => {
-
-        for (const u of offering.users) {
-          if (u.id === user.id) {
-            return true;
-          }
+        if (!fetchedUsers) {
+          throw new Error(`Error fetching users`);
         }
-        return false; 
-      });
 
-      const attempts: AttemptFeedback[] = await getAllLatestAttempts({
-            userId: -1,
-            exerciseId: Number(exerciseId),
-            exerciseOfferingId: Number(offeringID),
+        const filteredUsers = fetchedUsers.filter(user => {
+
+          for (const u of offering.users) {
+            if (u.id === user.id) {
+              return true;
+            }
+          }
+          return false; 
+        });
+
+        const attempts: AttemptFeedback[] = await getAllLatestAttempts({
+              userId: -1,
+              exerciseId: Number(exerciseId),
+              exerciseOfferingId: Number(offeringID),
+            });
+
+        var scoresData: Score[] = [];
+        filteredUsers.map(async (user) => {
+          const attempt: AttemptFeedback | null =
+            attempts.find(a => a.userId == user.id) ?? null;
+
+          const numLines = attempt?.coverageOutcomes?.length || 0;
+          let numLinesCovered = 0;
+
+          attempt?.coverageOutcomes?.forEach((l) => {
+            numLinesCovered += l.lineCovered ? 1 : 0;
           });
 
-      var scoresData: Score[] = [];
-      filteredUsers.map(async (user) => {
-        const attempt: AttemptFeedback | null =
-          attempts.find(a => a.userId == user.id) ?? null;
+          const codeCoverage = (numLines > 0 ? numLinesCovered / numLines : 0) * 100;
 
-        const numLines = attempt?.coverageOutcomes?.length || 0;
-        let numLinesCovered = 0;
+          const numMutations = attempt?.mutationOutcomes?.length || 0;
+          let numMutationsKilled = 0;
 
-        attempt?.coverageOutcomes?.forEach((l) => {
-          numLinesCovered += l.lineCovered ? 1 : 0;
+          attempt?.mutationOutcomes?.forEach((m) => {
+            numMutationsKilled += m.status === 'KILLED' ? 1 : 0;
+          });
+
+          const mutationCoverage = (numMutations > 0 ? numMutationsKilled / numMutations : 0) * 100;
+
+          const attemptDate = attempt?.created
+            ? new Intl.DateTimeFormat('en-US', {
+              weekday: 'short',
+              month: 'short',
+              day: 'numeric',
+              year: 'numeric',
+            }).format(new Date(attempt.created))
+            : 'N/A';
+
+          scoresData.push({
+            student: `${user.name} (${user.email})`,
+            tests: attempt?.testCases?.length || 0,
+            codeCoverage: `${codeCoverage.toFixed(2)}%` || 'N/A',
+            mutationCoverage: `${mutationCoverage.toFixed(2)}%` || 'N/A',
+            date: attemptDate,
+          });
         });
 
-        const codeCoverage = (numLines > 0 ? numLinesCovered / numLines : 0) * 100;
+        setScores(scoresData);
+      } catch (error) {
+        console.error('Error fetching scores:', error);
+      }
+    };
 
-        const numMutations = attempt?.mutationOutcomes?.length || 0;
-        let numMutationsKilled = 0;
-
-        attempt?.mutationOutcomes?.forEach((m) => {
-          numMutationsKilled += m.status === 'KILLED' ? 1 : 0;
-        });
-
-        const mutationCoverage = (numMutations > 0 ? numMutationsKilled / numMutations : 0) * 100;
-
-        const attemptDate = attempt?.created
-          ? new Intl.DateTimeFormat('en-US', {
-            weekday: 'short',
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric',
-          }).format(new Date(attempt.created))
-          : 'N/A';
-
-        scoresData.push({
-          student: `${user.name} (${user.email})`,
-          tests: attempt?.testCases?.length || 0,
-          codeCoverage: `${codeCoverage.toFixed(2)}%` || 'N/A',
-          mutationCoverage: `${mutationCoverage.toFixed(2)}%` || 'N/A',
-          date: attemptDate,
-        });
-      });
-
-      setScores(scoresData);
-    } catch (error) {
-      console.error('Error fetching scores:', error);
-    }
-  };
+    fetchScores();
+  }, [exerciseId, offeringID, getUsers, getAllLatestAttempts, getExerciseOffering]);
 
   const downloadCSV = () => {
     const headers = ['Student', 'Number of Tests', 'Code Coverage', 'Mutation Coverage', 'Latest Attempt'];
@@ -121,10 +126,6 @@ const Scores: React.FC = () => {
 
     URL.revokeObjectURL(url);
   };
-
-  useEffect(() => {
-    fetchScores();
-  }, []);
 
   return (
     <div>

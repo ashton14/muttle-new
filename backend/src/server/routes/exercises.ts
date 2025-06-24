@@ -82,7 +82,20 @@ exercises.get('/:id/mutations', async (req: Request, res: Response) => {
   if (exercise?.owner?.email !== requestingUser.email) {
     res.status(403).json({ message: 'Unauthorised to retrieve mutations for that exercise.' });
   } else {
-    res.json(exercise.mutations)
+    // Group mutatedLines into addedLines and removedLines for each mutation
+    const mutations = exercise.mutations.map(mutation => {
+      const addedLines = (mutation.mutatedLines as any[]).filter(line => line.type === 'ADDED');
+      const removedLines = (mutation.mutatedLines as any[]).filter(line => line.type === 'REMOVED');
+      // fallback for old data: if type is missing, treat all as added
+      return {
+        ...mutation,
+        addedLines: addedLines.length > 0 || removedLines.length > 0
+          ? addedLines
+          : mutation.mutatedLines,
+        removedLines,
+      };
+    });
+    res.json(mutations);
   }
 });
 
@@ -173,11 +186,14 @@ exercises.post('/', async (req: Request, res: Response) => {
       owner: { connect: { email: (req.user as Token).email } },
       mutations: {
         create: mutants.map(
-          ({ operator, number, addedLines: mutatedLines }) => ({
+          ({ operator, number, addedLines, removedLines }) => ({
             operator,
             number,
             mutatedLines: {
-              create: mutatedLines,
+              create: [
+                ...addedLines.map(line => ({ ...line, type: 'ADDED' })),
+                ...removedLines.map(line => ({ ...line, type: 'REMOVED' })),
+              ],
             },
           })
         ),

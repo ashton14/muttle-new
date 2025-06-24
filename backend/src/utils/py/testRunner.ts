@@ -14,6 +14,7 @@ import {
   buildTestSnippet,
   getFunctionName,
   buildDummyTestSnippet,
+  PYTHON,
 } from './pythonUtils';
 import { COVERAGE_RESULTS_FILENAME } from './coverage';
 
@@ -99,7 +100,7 @@ const writeTestFile = async (
 };
 
 export const runTests = async (rootDir: string) => {
-  const python = spawn('python3.7', [
+  const python = spawn(PYTHON, [
     '-m',
     'pytest',
     path.join(rootDir, TESTS_FILENAME),
@@ -118,7 +119,24 @@ export const runTests = async (rootDir: string) => {
     allPassed: boolean;
     testResults: TestResult[];
   }>((resolve, reject) => {
-    python.on('close', async () => {
+    let stdout = '';
+    let stderr = '';
+
+    python.stdout.on('data', (data) => {
+      stdout += data.toString();
+      console.log('pytest stdout:', data.toString());
+    });
+
+    python.stderr.on('data', (data) => {
+      stderr += data.toString();
+      console.log('pytest stderr:', data.toString());
+    });
+
+    python.on('close', async (code) => {
+      console.log(`pytest exited with code: ${code}`);
+      console.log('pytest stdout:', stdout);
+      console.log('pytest stderr:', stderr);
+      
       try {
         const {
           exitcode,
@@ -131,11 +149,16 @@ export const runTests = async (rootDir: string) => {
             testResults,
           });
         } else {
-          reject('Unable to run test cases.');
+          reject(`Unable to run test cases. Exit code: ${exitcode}`);
         }
       } catch (error: any) {
-        reject(error);
+        reject(`Error reading test results: ${error.message}`);
       }
+    });
+
+    python.on('error', (error) => {
+      console.log('pytest spawn error:', error);
+      reject(`Failed to spawn pytest: ${error.message}`);
     });
   });
 };

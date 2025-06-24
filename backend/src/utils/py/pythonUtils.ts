@@ -11,7 +11,7 @@ export const SNIPPET_FILENAME = path.join('src', '__init__.py');
 export const TESTS_FILENAME = 'tests.py';
 export const PYTEST_RESULTS_FILENAME = path.join('reports', 'results.json');
 
-export const PYTHON = 'python3.7';
+export const PYTHON = 'python';
 
 export const getFunctionName = (snippet: string): string | null => {
   const match = snippet.match(/def (.+)\(.*\).*:/);
