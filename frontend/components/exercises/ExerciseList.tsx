@@ -73,8 +73,16 @@ export const ExerciseOfferingListItem = ({ exerciseOffering }: { exerciseOfferin
 }
 
 export const ExerciseListItem = ({exercise}: {exercise: SavedExercise}) => {
+  const router = useRouter();
   const signatureMatch = exercise.snippet.match(SIGNATURE_REGEX);
   const value = (signatureMatch && signatureMatch[1]) || '';
+  
+  const handleStudentTest = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    router.push(`/exercises/${exercise.id}/student-test`);
+  };
+
   return (
     <ListGroup.Item className="py-1" action href={`/exercises/${exercise.id}`}>
       <div className="font-weight-bold">{exercise.name}</div>
@@ -82,6 +90,15 @@ export const ExerciseListItem = ({exercise}: {exercise: SavedExercise}) => {
         <Highlighter value={value} />
       </div>
       <div>{exercise.description}</div>
+      <div className="mt-2">
+        <Button 
+          size="sm" 
+          variant="outline-primary" 
+          onClick={handleStudentTest}
+        >
+          Student Test
+        </Button>
+      </div>
     </ListGroup.Item>
   );
 };
