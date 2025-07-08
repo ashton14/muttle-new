@@ -1,5 +1,5 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {render} from 'react-dom';
+import ReactDOM from 'react-dom';
 
 import {Controlled as CodeMirror} from 'react-codemirror2';
 import codemirror from 'codemirror';
@@ -140,6 +140,10 @@ const Highlighter = (props: HighlighterProps) => {
   // If the editor value, mutationOutcomes, or selectedMutant change,
   // re-draw the mutation coverage feedback.
   useEffect(() => {
+    console.log('Highlighter useEffect - showFeedback:', showFeedback);
+    console.log('Highlighter useEffect - mutationOutcomes:', mutationOutcomes);
+    console.log('Highlighter useEffect - exerciseOffering?.mutators:', exerciseOffering?.mutators);
+    
     /**
      * If the specified mutant is different from selectedMutant, sets
      * it as the selectedMutant. If they are the same, sets selectedMutant
@@ -161,14 +165,22 @@ const Highlighter = (props: HighlighterProps) => {
     };
     if (showFeedback && mutationOutcomes) {
       const editor = codeMirrorRef.current?.editor;
-      widgetsRef.current?.forEach(w => w.clear());
-      widgetsRef.current = displayMutationCoverage(
-        editor,
-        mutationOutcomes,
-        selectedMutant,
-        handleMutantSelect,
-        exerciseOffering?.mutators
-      );
+      console.log('Editor ready:', !!editor);
+      if (editor) {
+        // Add a small delay to ensure editor is fully ready
+        setTimeout(() => {
+          widgetsRef.current?.forEach(w => w.clear());
+          widgetsRef.current = displayMutationCoverage(
+            editor,
+            mutationOutcomes,
+            selectedMutant,
+            handleMutantSelect,
+            exerciseOffering?.mutators
+          );
+        }, 100);
+      } else {
+        console.log('Editor not ready yet');
+      }
     } else {
       widgetsRef.current?.forEach(w => w.clear());
     }
@@ -245,17 +257,33 @@ const displayMutationCoverage = (
   handleMutantClick: Function,
   displayedMutators: string[] | undefined
 ) => {
+  console.log('displayMutationCoverage called with:', {
+    editor: !!editor,
+    mutationOutcomesCount: mutationOutcomes.length,
+    selectedMutant: !!selectedMutant,
+    displayedMutators
+  });
+  console.log('Raw mutationOutcomes:', mutationOutcomes);
   
   const mutationResultsByLine = _.groupBy(
     mutationOutcomes,
     mutationOutcome => {
+      console.log('Processing mutationOutcome:', mutationOutcome);
+      console.log('mutation:', mutationOutcome.mutation);
+      console.log('mutatedLines:', mutationOutcome.mutation?.mutatedLines);
+      
       // Add safety check for mutatedLines
       if (!mutationOutcome.mutation?.mutatedLines || mutationOutcome.mutation.mutatedLines.length === 0) {
+        console.log('Skipping mutation without mutatedLines:', mutationOutcome);
         return null; // Skip mutations without mutatedLines
       }
-      return mutationOutcome.mutation.mutatedLines[0].lineNo;
+      const lineNo = mutationOutcome.mutation.mutatedLines[0].lineNo;
+      console.log('Using lineNo:', lineNo);
+      return lineNo;
     }
   );
+  
+  console.log('mutationResultsByLine:', mutationResultsByLine);
 
   const newWidgets: codemirror.LineWidget[] = [];
 
@@ -275,12 +303,20 @@ const displayMutationCoverage = (
         lineNo: m.mutation?.mutatedLines?.[0]?.lineNo
       })));
       
+      console.log(`Line ${lineNo} has ${mutants.length} mutations before filtering`);
       const filteredMutants = mutants
         .filter(mutationOutcome => {
           const notEquivalent = mutationOutcome.mutation?.equivalent == false;
           const operatorIncluded = displayedMutators === undefined || displayedMutators?.includes(mutationOutcome.mutation?.operator || '');
           
-          console.log(`Mutation ${mutationOutcome.mutation?.operator} (${mutationOutcome.status}): notEquivalent=${notEquivalent}, operatorIncluded=${operatorIncluded}`);
+          console.log(`Mutation ${mutationOutcome.mutation?.operator} (${mutationOutcome.status}): notEquivalent=${notEquivalent}, operatorIncluded=${operatorIncluded}, equivalent=${mutationOutcome.mutation?.equivalent}`);
+          
+          if (!notEquivalent) {
+            console.log('Filtered out: equivalent mutation');
+          }
+          if (!operatorIncluded) {
+            console.log('Filtered out: operator not included');
+          }
           
           return notEquivalent && operatorIncluded;
         })
@@ -294,6 +330,7 @@ const displayMutationCoverage = (
         .map((mutationResult, i) => {
           const {status, mutation} = mutationResult;
           const isSelected = _.isEqual(mutationResult, selectedMutant);
+          console.log('Creating MutantBadge for:', { status, operator: mutation?.operator, isSelected });
           return (
             <MutantBadge
               status={status}
@@ -311,11 +348,14 @@ const displayMutationCoverage = (
     })
   )
   
+  console.log('mutantBadges to create:', mutantBadges);
   mutantBadges.forEach(([line, mutants]) => {
+    console.log(`Creating widget for line ${line} with ${mutants.length} mutants`);
     if (editor && line !== 'null') { // Skip null lines
       const div: HTMLElement = document.createElement('div');
-      render(mutants, div);
+      ReactDOM.render(mutants, div);
       const lineInt = parseInt(line) - 1;
+      console.log(`Adding line widget at line ${lineInt}`);
       const widget = editor.addLineWidget(lineInt, div, {
         above: true,
         handleMouseEvents: true,
@@ -323,6 +363,7 @@ const displayMutationCoverage = (
       newWidgets.push(widget);
     }
   });
+  console.log('Created widgets:', newWidgets.length);
   return newWidgets;
 };
 

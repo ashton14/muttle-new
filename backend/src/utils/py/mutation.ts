@@ -32,8 +32,8 @@ export interface Mutant {
 export const runMutationAnalysis = (
   rootDir: string,
   onlyCovered = true
-): Promise<Mutant[]> => {
-  return new Promise<Mutant[]>((resolve, reject) => {
+): Promise<{ mutants: Mutant[], output: string }> => {
+  return new Promise<{ mutants: Mutant[], output: string }>((resolve, reject) => {
     // rootDir is already the full path to the directory containing the files
     const target = path.resolve(rootDir, SNIPPET_FILENAME);
     const unitTest = path.resolve(rootDir, TESTS_FILENAME);
@@ -117,7 +117,7 @@ except Exception as e:
       if (code === 0) {
         try {
           const mutatedSources = getMutatedSource(output);
-          resolve(mutatedSources);
+          resolve({ mutants: mutatedSources, output });
         } catch (err) {
           reject(err);
         }
@@ -142,32 +142,77 @@ export type PartialMutationOutcome = Pick<
   | 'mutationId'
 >;
 
-export const getMutationData = async (rootDir: string) => {
+export const getMutationData = async (rootDir: string, output?: string) => {
   try {
+    // Try to read from YAML file first
+    console.log('Reading mutation results from:', path.join(rootDir, MUTATION_RESULTS_FILENAME));
     const resultsData = await readFile(
       path.join(rootDir, MUTATION_RESULTS_FILENAME),
       'utf-8'
     );
-    const doc = yaml.load(resultsData, {
-      schema: SCHEMA,
-    }) as any;
-    return doc.mutations.map((outcome: any) => {
+    console.log('Raw mutation results data length:', resultsData.length);
+    console.log('Raw mutation results data:', resultsData);
+
+    let doc: any = null;
+    try {
+      doc = yaml.load(resultsData, { schema: SCHEMA });
+    } catch (e) {
+      console.log('YAML parse error, falling back:', e);
+      throw new Error('YAML parse error');
+    }
+
+    if (
+      !resultsData ||
+      resultsData.trim() === '' ||
+      !doc ||
+      !doc.mutations ||
+      !Array.isArray(doc.mutations) ||
+      doc.mutations.length === 0
+    ) {
+      console.log('YAML file is empty or has no mutations, falling back to console output parsing');
+      throw new Error('No valid mutations in YAML');
+    }
+    
+    console.log('Parsed YAML doc:', doc);
+    console.log('Mutations in doc:', doc.mutations);
+    
+    const mutationOutcomes = doc.mutations.map((outcome: any) => {
       // The mutation analysis report from MutPy uses snake_case,
       // but the database uses camelCase. It also has some extra
       // fields.
       const { tests_run, exception_traceback, time, status, number } = outcome;
+      const convertedTime = Math.round(time * 1000); // Convert seconds to milliseconds
+      console.log(`Converting time for mutation ${number}: ${time}s -> ${convertedTime}ms`);
       return {
         number,
-        time,
+        time: convertedTime,
         status: statusToEnum(status),
         testsRun: tests_run,
         exceptionTraceback: exception_traceback,
         // operator: mutations[0].operator,
       };
-    }).filter((mutationOutcome: any) => mutationOutcome.mutation?.equivalent == false);
+    });
+    
+    console.log('Processed mutation outcomes from YAML:', mutationOutcomes);
+    return mutationOutcomes;
   } catch (err) {
     console.log('Unable to read mutation analysis report');
-    throw err;
+    console.log('Error details:', err);
+    
+    // If we have output, try parsing from console output
+    if (output) {
+      console.log('Falling back to console output parsing');
+      try {
+        return parseMutationResultsFromOutput(output);
+      } catch (parseErr) {
+        console.log('Console output parsing also failed:', parseErr);
+        throw parseErr;
+      }
+    }
+    
+    // If no output, return empty array instead of throwing
+    console.log('No output available, returning empty mutation outcomes');
+    return [];
   }
 };
 
@@ -269,6 +314,51 @@ const getMutatedSource = (output: string): Mutant[] => {
   
   console.log('Final mutants:', mutants);
   return mutants;
+};
+
+const parseMutationResultsFromOutput = (output: string): PartialMutationOutcome[] => {
+  // Parse mutation results from the console output
+  // The output format is: [time] status by test_name
+  console.log('parseMutationResultsFromOutput called with output length:', output.length);
+  
+  const mutationOutcomes: PartialMutationOutcome[] = [];
+  const lines = output.split(/\n|\r/);
+  
+  // Pattern to match: [time] status by test_name
+  // Examples: [0.47775 s] killed by tests.py::test_0, [0.37547 s] survived
+  const resultPattern = /\[([\d.]+)\s+s\]\s+(killed|survived|incompetent|timeout)(?:\s+by\s+(.+))?/;
+  
+  console.log('Looking for mutation result lines in output...');
+  
+  lines.forEach((line, index) => {
+    const trimmedLine = line.trim();
+    console.log(`Checking line ${index}: "${trimmedLine}"`);
+    const match = resultPattern.exec(trimmedLine);
+    if (match) {
+      const [, timeStr, status, testName] = match;
+      console.log(`Found mutation result at line ${index}: time=${timeStr}, status=${status}, test=${testName}`);
+      
+      const statusEnum = statusToEnum(status);
+      if (statusEnum) {
+        const convertedTime = Math.round(parseFloat(timeStr) * 1000); // Convert to milliseconds
+        console.log(`Converting time from output: ${timeStr}s -> ${convertedTime}ms`);
+        mutationOutcomes.push({
+          number: mutationOutcomes.length + 1, // Use sequential numbering
+          time: convertedTime,
+          status: statusEnum,
+          testsRun: testName ? 1 : 0, // Count of tests run
+          exceptionTraceback: null,
+          mutationId: 0, // Will be set when saving to database
+        });
+      }
+    } else if (trimmedLine.includes('[') && trimmedLine.includes('s]') && (trimmedLine.includes('killed') || trimmedLine.includes('survived'))) {
+      console.log(`Line looks like mutation result but regex didn't match: "${trimmedLine}"`);
+      console.log(`Regex test:`, resultPattern.test(trimmedLine));
+    }
+  });
+  
+  console.log('Parsed mutation outcomes from output:', mutationOutcomes);
+  return mutationOutcomes;
 };
 
 const statusToEnum = (status: string): MutationStatus | undefined => {

@@ -125,6 +125,9 @@ export default function Practice({ user, exercise, exerciseOffering, initialTest
     setTests(displayTests(attempt.testCases));
     setNewTests([]);
 
+    console.log('Practice component - attempt received:', attempt);
+    console.log('Practice component - mutation outcomes:', attempt.mutationOutcomes);
+    console.log('Practice component - mutation outcomes length:', attempt.mutationOutcomes?.length);
     setAttemptFeedback(attempt);
     setRunning(false);
   };

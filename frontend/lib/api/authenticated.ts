@@ -138,6 +138,8 @@ const runTests =
     try {
       const response = await api.post(`run/${exerciseId}`, { userId, exerciseOfferingId, testCases });
       console.log('Response from API:', response.data);
+      console.log('Mutation outcomes in response:', response.data.mutationOutcomes);
+      console.log('Mutation outcomes length:', response.data.mutationOutcomes?.length);
       return response.data;
     } catch (error) {
       console.error('Error during API call:', error);

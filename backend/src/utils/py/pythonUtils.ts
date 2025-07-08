@@ -45,7 +45,7 @@ export const compileSnippetAndGenerateMutations = async (
           rmdir(join(tmpPath), { recursive: true });
           reject(errOutput);
         } else {
-          const mutants = await runMutationAnalysis(tmpPath, false);
+          const { mutants } = await runMutationAnalysis(tmpPath, false);
           rmdir(join(tmpPath), { recursive: true });
           resolve(mutants);
         }

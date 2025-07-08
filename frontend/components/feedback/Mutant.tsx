@@ -26,7 +26,7 @@ const MutantBadge = ({
   handleClick: Function;
 }) => {
   const performClick = () => {
-    handleClick(mutatedLines);
+    handleClick();
   };
 
   const bugClassName = `bug ${isSelected ? 'bi-bug' : 'bi-bug-fill'}`;

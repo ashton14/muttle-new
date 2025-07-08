@@ -119,14 +119,13 @@ export const sortStatus = (o1: Status, o2: Status) =>
   values.indexOf(o1) - values.indexOf(o2);
 
 export interface MutationOutcome {
-  exception_traceback: string;
-  killer: string;
-  operator: string;
-  mutation: Mutation;
+  id: number;
+  exceptionTraceback?: string;
   number: number;
-  status: Status;
-  tests_run: number;
+  testsRun: number;
   time: number;
+  status: Status;
+  mutation: Mutation;
 }
 
 export interface SignupInfo {
