@@ -114,3 +114,5 @@ backend/tmp/
 .vscode
 .tags
 .next
+
+.env

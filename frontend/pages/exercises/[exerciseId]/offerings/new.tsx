@@ -12,6 +12,7 @@ export default function NewExerciseOfferingForm() {
   const [mutationCoverage, setMutationCoverage] = useState(false);
   const [mutators, setMutators] = useState<string[]>([]);
   const [minTests, setMinTests] = useState<number>(0);
+  const [hideCode, setHideCode] = useState(false);
   const [exercise, setExercise] = useState<SavedExercise | null>(null);
   const [inviteCode, setInviteCode] = useState('');
 
@@ -30,12 +31,14 @@ export default function NewExerciseOfferingForm() {
   }, [exerciseId, getExercise]);
 
   const submit = async () => {
-
+    console.log('Submitting with hideCode:', hideCode, 'type:', typeof hideCode);
+    
     const savedOffering = await createExerciseOffering({
       exerciseId,
       conditionCoverage,
       mutators,
       minTests,
+      hideCode,
     });
     setInviteCode(savedOffering.inviteCode);
   };
@@ -73,6 +76,8 @@ export default function NewExerciseOfferingForm() {
             setMutationOperators={setMutators}
             minTests={minTests}
             setMinTests={setMinTests}
+            hideCode={hideCode}
+            setHideCode={setHideCode}
           />
           <Button onClick={submit} disabled={!enabled}>
             Create Assignment

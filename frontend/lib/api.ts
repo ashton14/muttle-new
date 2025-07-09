@@ -28,6 +28,7 @@ export interface ExerciseOffering {
   conditionCoverage: boolean;
   mutators: string[];
   minTests?: number;
+  hideCode?: boolean;
 }
 
 export interface SavedExerciseOffering extends ExerciseOffering {
@@ -36,6 +37,7 @@ export interface SavedExerciseOffering extends ExerciseOffering {
   exercise: SavedExercise;
   created: Date;
   users: User[];
+  hideCode?: boolean;
 }
 
 export interface NewTestCase {

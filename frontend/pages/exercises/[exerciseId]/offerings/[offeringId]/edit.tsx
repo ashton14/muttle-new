@@ -102,6 +102,7 @@ const EditExerciseOffering = () => {
             setMutationOperators={setMutators}
             minTests={minTests}
             setMinTests={setMinTests}
+            setHideCode={() => {}}
           />
           <Button onClick={submit} disabled={!enabled}>
             Update Assignment

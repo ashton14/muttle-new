@@ -55,7 +55,7 @@ export function getCookie(name: string) {
 
 export function inviteLinkFromCode(code: string): string {
   if (typeof window !== 'undefined' && code) {
-    return `https://${window.location.host}/assignments/${code}`;
+    return `http://${window.location.host}/assignments/${code}`;
   } else {
     return '';
   }
