@@ -33,6 +33,13 @@ export default function Practice({ user, exercise, exerciseOffering, initialTest
   const operatorsToShow = exerciseOffering?.mutators ? exerciseOffering.mutators : undefined;
   const showMutationFeedback = operatorsToShow ? operatorsToShow.length > 0 : true;
   const showCodeCovFeedback = exerciseOffering?.conditionCoverage ? exerciseOffering.conditionCoverage : true;
+  
+  // Debug logging for hideCode
+  console.log('Practice component - exerciseOffering:', exerciseOffering);
+  console.log('Practice component - hideCode:', exerciseOffering?.hideCode);
+  console.log('Practice component - hideCode type:', typeof exerciseOffering?.hideCode);
+  console.log('Practice component - hideCode === true:', exerciseOffering?.hideCode === true);
+  console.log('Practice component - hideCode !== true:', exerciseOffering?.hideCode !== true);
 
   const {
     deleteTestCase,
@@ -148,17 +155,29 @@ export default function Practice({ user, exercise, exerciseOffering, initialTest
       </h1>
 
       <p>{exercise.description}</p>
-      <Highlighter
-        value={exercise.snippet}
-        options={{
-          lineNumbers: true,
-          gutters: ['CodeMirror-linenumbers', 'coverage-gutter'],
-        }}
-        coverageOutcomes={showCodeCovFeedback ? coverageOutcomes : []}
-        mutationOutcomes={showMutationFeedback ? filteredMutationOutcomes : []}
-        className="border rounded h-auto mb-4"
-        exerciseOffering={exerciseOffering}
-      />
+      {(() => {
+        console.log('Rendering decision - hideCode:', exerciseOffering?.hideCode, 'type:', typeof exerciseOffering?.hideCode);
+        console.log('Should hide code:', exerciseOffering?.hideCode === true);
+        // If hideCode is undefined (field doesn't exist in DB yet), show the code
+        // If hideCode is true, hide the code
+        // If hideCode is false, show the code
+        // If hideCode is undefined (field doesn't exist in DB yet), show the code
+        // If hideCode is true, hide the code
+        // If hideCode is false, show the code
+        return exerciseOffering?.hideCode !== true;
+      })() && (
+        <Highlighter
+          value={exercise.snippet}
+          options={{
+            lineNumbers: true,
+            gutters: ['CodeMirror-linenumbers', 'coverage-gutter'],
+          }}
+          coverageOutcomes={showCodeCovFeedback ? coverageOutcomes : []}
+          mutationOutcomes={showMutationFeedback ? filteredMutationOutcomes : []}
+          className="border rounded h-auto mb-4"
+          exerciseOffering={exerciseOffering}
+        />
+      )}
         <Row>
           <TestCaseTable
             savedTests={tests}

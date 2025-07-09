@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
   binaryTargets = ["native", "windows"]
 }
 
@@ -9,121 +9,122 @@ datasource db {
 }
 
 model User {
-  id  Int @id @default(autoincrement())
-  email String @unique
-  password String
-  name  String
-  attempts Attempt[]
-  exercises Exercise[]
+  id                     Int                @id @default(autoincrement())
+  email                  String             @unique
+  password               String
+  name                   String
+  attempts               Attempt[]
+  exercises              Exercise[]
   ownedExerciseOfferings ExerciseOffering[] @relation("Owner")
-  exerciseOfferings ExerciseOffering[] @relation("Assigned")
-  testCases TestCase[]
+  testCases              TestCase[]
+  exerciseOfferings      ExerciseOffering[] @relation("Assigned")
 }
 
 model Attempt {
-  id Int @id @default(autoincrement())
-  user User @relation(fields: [userId], references: [id])
-  userId Int
-  exercise Exercise @relation(fields: [exerciseId], references: [id])
-  exerciseId Int
-  exerciseOffering ExerciseOffering? @relation(fields: [exerciseOfferingId], references: [id])
+  id                 Int               @id @default(autoincrement())
+  userId             Int
+  exerciseId         Int
   exerciseOfferingId Int?
-  testCases TestCase[]
-  coverageOutcomes CoverageOutcome[]
-  mutationOutcomes MutationOutcome[]
-  created DateTime @default(now())
+  created            DateTime          @default(now())
+  exercise           Exercise          @relation(fields: [exerciseId], references: [id])
+  exerciseOffering   ExerciseOffering? @relation(fields: [exerciseOfferingId], references: [id])
+  user               User              @relation(fields: [userId], references: [id])
+  coverageOutcomes   CoverageOutcome[]
+  mutationOutcomes   MutationOutcome[]
+  testCases          TestCase[]
 }
 
 model ExerciseOffering {
-  id Int @id @default(autoincrement())
-  inviteCode String @unique
-  created DateTime @default(now())
-  exercise Exercise @relation(fields: [exerciseId], references: [id])
-  exerciseId Int
-  owner User @relation("Owner", fields: [ownerId], references: [id])
-  ownerId Int
-  users User[] @relation("Assigned")
-  conditionCoverage Boolean @default(false)
-  mutators String[] @default([])
-  minTests Int @default(1)
-  attempt Attempt[]
+  id                Int       @id @default(autoincrement())
+  inviteCode        String    @unique
+  created           DateTime  @default(now())
+  exerciseId        Int
+  ownerId           Int
+  conditionCoverage Boolean   @default(false)
+  mutators          String[]  @default([])
+  minTests          Int       @default(1)
+  hideCode          Boolean   @default(false)
+  attempt           Attempt[]
+  exercise          Exercise  @relation(fields: [exerciseId], references: [id])
+  owner             User      @relation("Owner", fields: [ownerId], references: [id])
+  users             User[]    @relation("Assigned")
 }
 
 model Exercise {
-  id Int @id @default(autoincrement())
-  name String
-  description String
-  snippet String
-  attempts Attempt[]
-  owner User @relation(fields: [ownerId], references: [id])
-  ownerId Int
-  testCases TestCase[]
+  id                Int                @id @default(autoincrement())
+  name              String
+  description       String
+  snippet           String
+  ownerId           Int
+  attempts          Attempt[]
+  owner             User               @relation(fields: [ownerId], references: [id])
   exerciseOfferings ExerciseOffering[]
-  mutations Mutation[]
+  mutations         Mutation[]
+  testCases         TestCase[]
 }
 
 model Mutation {
-  id Int @id @default(autoincrement())
-  operator String
-  number Int
-  equivalent Boolean @default(false)
-  mutatedLines MutatedLine[]
+  id               Int               @id @default(autoincrement())
+  operator         String
+  number           Int
+  equivalent       Boolean           @default(false)
+  exerciseId       Int
+  mutatedLines     MutatedLine[]
+  exercise         Exercise          @relation(fields: [exerciseId], references: [id])
   mutationOutcomes MutationOutcome[]
-  exercise Exercise @relation(fields: [exerciseId], references: [id])
-  exerciseId Int
 
   @@unique([operator, number, exerciseId])
 }
 
 model TestCase {
-  id Int @id @default(autoincrement())
-  input String
-  output String
-  passed Boolean?
-  actual String?
-  visible Boolean @default(true)
+  id           Int       @id @default(autoincrement())
+  input        String
+  output       String
+  passed       Boolean?
+  actual       String?
+  visible      Boolean   @default(true)
   errorMessage String?
-  fixed TestCase? @relation("FixedTestCaseHistory", fields: [fixedId], references: [id])
-  fixedFrom TestCase? @relation("FixedTestCaseHistory")
-  fixedId Int? @unique
-  exercise Exercise @relation(fields: [exerciseId], references: [id])
-  exerciseId Int
-  attempt Attempt @relation(fields: [attemptId], references: [id])
-  attemptId Int
-  user User @relation(fields: [userId], references: [id])
-  userId Int
+  fixedId      Int?      @unique
+  exerciseId   Int
+  attemptId    Int
+  userId       Int
+  attempt      Attempt   @relation(fields: [attemptId], references: [id])
+  exercise     Exercise  @relation(fields: [exerciseId], references: [id])
+  fixed        TestCase? @relation("FixedTestCaseHistory", fields: [fixedId], references: [id])
+  fixedFrom    TestCase? @relation("FixedTestCaseHistory")
+  user         User      @relation(fields: [userId], references: [id])
 }
 
 model CoverageOutcome {
-  id Int @id @default(autoincrement())
-  lineNo Int
-  lineCovered Boolean
-  conditions Int @default(0)
-  conditionsCovered Int @default(0)
-  attempt Attempt @relation(fields: [attemptId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  attemptId Int
+  id                Int     @id @default(autoincrement())
+  lineNo            Int
+  lineCovered       Boolean
+  conditions        Int     @default(0)
+  conditionsCovered Int     @default(0)
+  attemptId         Int
+  attempt           Attempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
 }
 
 model MutationOutcome {
-  id Int @id @default(autoincrement())
+  id                 Int            @id @default(autoincrement())
   exceptionTraceback String?
-  number Int
-  testsRun Int
-  time Int
-  status MutationStatus
-  attempt Attempt @relation(fields: [attemptId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  attemptId Int
-  mutation Mutation @relation(fields: [mutationId], references: [id])
-  mutationId Int 
+  number             Int
+  testsRun           Int
+  time               Int
+  status             MutationStatus
+  attemptId          Int
+  mutationId         Int
+  attempt            Attempt        @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  mutation           Mutation       @relation(fields: [mutationId], references: [id])
 }
 
 model MutatedLine {
-  id Int @id @default(autoincrement())
-  lineNo Int
+  id            Int      @id @default(autoincrement())
+  lineNo        Int
   mutatedSource String
-  type String // "ADDED" or "REMOVED"
-  Mutation Mutation @relation(fields: [mutationId], references: [id])
-  mutationId Int 
+  type          String
+  mutationId    Int
+  Mutation      Mutation @relation(fields: [mutationId], references: [id])
 }
 
 enum MutationStatus {

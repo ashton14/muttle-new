@@ -31,29 +31,33 @@ exerciseOfferings.post('/', async (req: Request, res: Response) => {
     return;
   }
 
-  const { conditionCoverage, mutators, minTests, exerciseId } = req.body;
+  const { conditionCoverage, mutators, minTests, exerciseId, hideCode } = req.body;
+  console.log('Creating exercise offering - request body:', req.body);
+  console.log('Creating exercise offering with hideCode:', hideCode, 'type:', typeof hideCode);
+  console.log('Creating exercise offering with hideCode:', hideCode, 'type:', typeof hideCode);
   try {
-    const saved = await prisma.exerciseOffering.create({
-      data: {
-        inviteCode,
-        conditionCoverage,
-        minTests: parseInt(minTests),
-        mutators,
-        owner: {
-          connect: {
-            id: user.id,
+          const saved = await prisma.exerciseOffering.create({
+        data: {
+          inviteCode,
+          conditionCoverage,
+          minTests: parseInt(minTests),
+          mutators,
+          hideCode: hideCode || false,
+          owner: {
+            connect: {
+              id: user.id,
+            },
+          },
+          exercise: {
+            connect: {
+              id: exerciseId,
+            },
           },
         },
-        exercise: {
-          connect: {
-            id: exerciseId,
-          },
+        include: {
+          exercise: true,
         },
-      },
-      include: {
-        exercise: true,
-      },
-    });
+      });
     res.status(200).json(saved);
   } catch (err) {
     res.status(400).json({ message: err });

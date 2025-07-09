@@ -12,7 +12,9 @@ interface OfferingFormProps {
   mutationOperators?: string[],
   setMutationOperators: Function,
   minTests?: number,
-  setMinTests: Function
+  setMinTests: Function,
+  hideCode?: boolean,
+  setHideCode: Function
 }
 
 export default function ExerciseOfferingForm({
@@ -25,7 +27,9 @@ export default function ExerciseOfferingForm({
   mutationOperators,
   setMutationOperators,
   minTests,
-  setMinTests
+  setMinTests,
+  hideCode,
+  setHideCode
 }: OfferingFormProps) {
   return (
     <>
@@ -60,6 +64,34 @@ export default function ExerciseOfferingForm({
                 />
               ) : '' 
             }
+          </Form.Group>
+          <Form.Group className="mb-3">
+            <h5>Assignment Type</h5>
+            <small className="form-hint">
+              Choose how students will interact with the exercise.
+            </small>
+            <Form.Check
+              type="radio"
+              id="testAssignment"
+              name="assignmentType"
+              label="Test (Hide Code)"
+              checked={hideCode}
+              onChange={() => setHideCode(true)}
+            />
+            <small className="form-hint ms-4">
+              Students will not see the exercise code and will only work with test cases.
+            </small>
+            <Form.Check
+              type="radio"
+              id="practiceAssignment"
+              name="assignmentType"
+              label="Practice (Show Code)"
+              checked={!hideCode}
+              onChange={() => setHideCode(false)}
+            />
+            <small className="form-hint ms-4">
+              Students can see the exercise code and receive feedback on their test cases.
+            </small>
           </Form.Group>
           <Form.Group className="mb-3">
             <Form.Label md={3}>Minimum required tests</Form.Label>
