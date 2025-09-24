@@ -68,12 +68,23 @@ const Mutations = () => {
   }, [exerciseId, getExercise, getMutations, router]);
 
   function getMutatedExercise(m: Mutation): string[] {
-    // Prefer addedLines if present, otherwise fallback to mutatedLines
-    const addedLines = m.addedLines && m.addedLines.length > 0 ? m.addedLines : m.mutatedLines;
-    const removedLines = m.removedLines || [];
+    // Use the new structure if available, otherwise fallback to old structure
+    let addedLines: any[] = [];
+    let removedLines: any[] = [];
+    
+    if (m.addedLines && m.removedLines) {
+      // New structure: separate added and removed lines
+      addedLines = m.addedLines;
+      removedLines = m.removedLines;
+    } else {
+      // Fallback to old structure: filter mutatedLines by type
+      addedLines = m.mutatedLines.filter(line => !line.type || line.type === 'ADDED');
+      removedLines = m.mutatedLines.filter(line => line.type === 'REMOVED');
+    }
+    
     const mutatedSnippet = original.slice();
 
-    // Remove lines (set to empty string or original, depending on UI preference)
+    // Remove lines (set to empty string)
     removedLines.forEach(line => {
       mutatedSnippet[line.lineNo - 1] = '';
     });

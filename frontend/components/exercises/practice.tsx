@@ -32,14 +32,14 @@ export default function Practice({ user, exercise, exerciseOffering, initialTest
   const minTests = exerciseOffering?.minTests ? exerciseOffering.minTests : 1 ;
   const operatorsToShow = exerciseOffering?.mutators ? exerciseOffering.mutators : undefined;
   const showMutationFeedback = operatorsToShow ? operatorsToShow.length > 0 : true;
-  const showCodeCovFeedback = exerciseOffering?.conditionCoverage ? exerciseOffering.conditionCoverage : true;
+  const showCodeCovFeedback = exerciseOffering?.conditionCoverage ? exerciseOffering.conditionCoverage : false;
   
-  // Debug logging for hideCode
+  // Debug logging for condition coverage
   console.log('Practice component - exerciseOffering:', exerciseOffering);
-  console.log('Practice component - hideCode:', exerciseOffering?.hideCode);
-  console.log('Practice component - hideCode type:', typeof exerciseOffering?.hideCode);
-  console.log('Practice component - hideCode === true:', exerciseOffering?.hideCode === true);
-  console.log('Practice component - hideCode !== true:', exerciseOffering?.hideCode !== true);
+  console.log('Practice component - conditionCoverage:', exerciseOffering?.conditionCoverage);
+  console.log('Practice component - conditionCoverage type:', typeof exerciseOffering?.conditionCoverage);
+  console.log('Practice component - showCodeCovFeedback:', showCodeCovFeedback);
+  //console.log('Practice component - coverageOutcomes length:', coverageOutcomes.length);
 
   const {
     deleteTestCase,
@@ -199,7 +199,6 @@ export default function Practice({ user, exercise, exerciseOffering, initialTest
     </Container>
   );
 };
-
 const smartKeyReplacements = new Map<string, string>([
   ['‘', "'"],
   ['’', "'"],
@@ -217,3 +216,4 @@ const replaceSmartKeys = (str: string) =>
     const replacement = smartKeyReplacements.get(smartKey);
     return replacement !== undefined ? replacement : smartKey;
   });
+
